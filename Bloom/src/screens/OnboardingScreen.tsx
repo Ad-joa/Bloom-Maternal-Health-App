@@ -55,7 +55,7 @@ const OnboardingScreen = ({ navigation }: any) => {
           <View key={index} style={styles.panel}>
             <View style={[styles.imagePlaceholder, { backgroundColor: panel.color + '20' }]}>
                {/* Image would go here */}
-               <View style={[styles.dot, { backgroundColor: panel.color, width: 100, height: 100, borderRadius: 50 }]} />
+               <View style={{ backgroundColor: panel.color, width: 100, height: 100, borderRadius: 50, opacity: 0.6 }} />
             </View>
             <View style={styles.textContainer}>
               <Text style={styles.title}>{panel.title}</Text>
