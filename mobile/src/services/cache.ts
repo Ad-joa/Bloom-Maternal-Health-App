@@ -23,12 +23,12 @@ export const cacheContent = (content: any[]) => {
 
 export const getCachedContent = (trimester: number): Promise<any[]> => {
   return new Promise((resolve, reject) => {
-    db.transaction(tx => {
+    db.transaction((tx: any) => {
       tx.executeSql(
         'SELECT * FROM health_content WHERE trimester = ?;',
         [trimester],
-        (_, { rows: { _array } }) => resolve(_array),
-        (_, error) => {
+        (_: any, { rows: { _array } }: { rows: { _array: any[] } }) => resolve(_array),
+        (_: any, error: any) => {
           reject(error);
           return false;
         }

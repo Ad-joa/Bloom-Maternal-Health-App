@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, ScrollView } from 'react-native';
 
-export const OnboardingScreen = ({ navigation }: any) => {
+export const OnboardingScreen = ({ navigation }: { navigation: any }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to BLOOM</Text>
@@ -20,8 +20,8 @@ export const TrimesterInfoScreen = () => {
     return (
         <FlatList 
             data={data}
-            keyExtractor={item => item.id}
-            renderItem={({ item }) => (
+            keyExtractor={(item: any) => item.id}
+            renderItem={({ item }: { item: any }) => (
                 <View style={styles.card}>
                     <Text style={styles.cardTitle}>{item.title}</Text>
                     <Text>{item.content}</Text>
