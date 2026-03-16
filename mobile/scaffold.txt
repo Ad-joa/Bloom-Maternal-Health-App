@@ -1,9 +1,0 @@
-# Mobile Scaffolding Tracker
-Directories created:
-- mobile/src/navigation
-- mobile/src/screens
-- mobile/src/components
-- mobile/src/services
-- mobile/src/hooks
-- mobile/src/utils
-- mobile/assets
