@@ -2,8 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { RegisterScreen } from './src/screens/RegisterScreen';
-import { LoginScreen } from './src/screens/LoginScreen';
+import { RegisterScreen, LoginScreen } from './src/screens/AuthScreens';
 import { DashboardScreen } from './src/screens/DashboardScreen';
 import { AdvisoryScreen } from './src/screens/AdvisoryScreen';
 
