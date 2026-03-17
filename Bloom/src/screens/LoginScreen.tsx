@@ -7,14 +7,17 @@ import {
   Platform, 
   ScrollView,
   TouchableOpacity,
-  Alert
+  Dimensions,
+  TextInput
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+import { Sun } from 'lucide-react-native';
 import { Colors, Spacing, Typography } from '../constants/theme';
-import InputField from '../components/InputField';
-import AppButton from '../components/AppButton';
-import ScreenHeader from '../components/ScreenHeader';
 import { useAuth } from '../hooks/useAuth';
+
+const { width, height } = Dimensions.get('window');
 
 const LoginScreen = ({ navigation }: any) => {
   const { login } = useAuth();
@@ -24,13 +27,11 @@ const LoginScreen = ({ navigation }: any) => {
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
   const handleLogin = () => {
-    // Basic validation
     let newErrors: any = {};
     if (!email) newErrors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Invalid email address';
     
     if (!password) newErrors.password = 'Password is required';
-    else if (password.length < 6) newErrors.password = 'Password must be at least 6 characters';
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -40,7 +41,6 @@ const LoginScreen = ({ navigation }: any) => {
     setErrors({});
     setIsLoading(true);
     
-    // Mock login delay
     setTimeout(() => {
       setIsLoading(false);
       login();
@@ -48,45 +48,93 @@ const LoginScreen = ({ navigation }: any) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
+    <View style={styles.container}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        bounces={false}
+        showsVerticalScrollIndicator={false}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          <ScreenHeader title="Welcome Back" subtitle="Log in to your Bloom account" />
-          
-          <View style={styles.form}>
-            <InputField
-              label="Email Address"
-              placeholder="example@mail.com"
-              value={email}
-              onChangeText={setEmail}
-              error={errors.email}
-              autoCapitalize="none"
-              keyboardType="email-address"
+        {/* Left/Top Hero Section */}
+        <View style={styles.heroSection}>
+          <View style={styles.heroOverlay}>
+            <LinearGradient
+              colors={['rgba(0,0,0,0.8)', 'transparent']}
+              style={StyleSheet.absoluteFill}
             />
             
-            <InputField
-              label="Password"
-              placeholder="••••••••"
-              value={password}
-              onChangeText={setPassword}
-              error={errors.password}
-              secureTextEntry
-            />
-            
-            <TouchableOpacity style={styles.forgotPassword}>
-              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            {/* Abstract Decorative Elements */}
+            <View style={styles.decorativeContainer}>
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <BlurView 
+                  key={i} 
+                  intensity={20} 
+                  style={[styles.blurBar, { left: (i - 1) * 40 }]} 
+                />
+              ))}
+              <View style={styles.orangeCircle} />
+              <View style={styles.whiteOval} />
+            </View>
+
+            <View style={styles.heroTextContainer}>
+              <Text style={styles.heroTitle}>
+                Your trusted partner for a healthy, happy pregnancy.
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Right/Bottom Form Section */}
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.formSection}
+        >
+          <View style={styles.formContainer}>
+            <View style={styles.logoContainer}>
+              <Sun size={40} color={Colors.brandOrange} />
+            </View>
+
+            <Text style={styles.welcomeTitle}>Welcome Back</Text>
+            <Text style={styles.welcomeSubtitle}>
+              Log in to your Bloom account
+            </Text>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Your email</Text>
+              <TextInput
+                style={[styles.input, errors.email && styles.inputError]}
+                placeholder="jane@bloom.com"
+                placeholderTextColor="#999"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
+              {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Password</Text>
+              <TextInput
+                style={[styles.input, errors.password && styles.inputError]}
+                placeholder="••••••••"
+                placeholderTextColor="#999"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
+              {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+            </View>
+
+            <TouchableOpacity 
+              style={styles.loginButton} 
+              onPress={handleLogin}
+              disabled={isLoading}
+            >
+              <Text style={styles.loginButtonText}>
+                {isLoading ? 'Logging in...' : 'Log in to account'}
+              </Text>
             </TouchableOpacity>
-            
-            <AppButton 
-              title="Login" 
-              onPress={handleLogin} 
-              loading={isLoading} 
-              style={styles.loginButton}
-            />
-            
+
             <View style={styles.footer}>
               <Text style={styles.footerText}>Don't have an account? </Text>
               <TouchableOpacity onPress={() => navigation.navigate('Register')}>
@@ -94,50 +142,158 @@ const LoginScreen = ({ navigation }: any) => {
               </TouchableOpacity>
             </View>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+        </KeyboardAvoidingView>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#000',
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: Spacing.xl,
   },
-  form: {
-    paddingHorizontal: Spacing.lg,
-    marginTop: Spacing.xl,
+  heroSection: {
+    height: height * 0.4,
+    backgroundColor: '#000',
+    overflow: 'hidden',
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
-  forgotPassword: {
-    alignSelf: 'flex-end',
-    marginBottom: Spacing.lg,
+  heroOverlay: {
+    flex: 1,
+    padding: 32,
+    justifyContent: 'flex-end',
   },
-  forgotPasswordText: {
-    ...Typography.caption,
-    color: Colors.primary,
+  decorativeContainer: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.5,
+  },
+  blurBar: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: 30,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+  },
+  orangeCircle: {
+    position: 'absolute',
+    bottom: -50,
+    left: -20,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: '#f97316',
+    opacity: 0.8,
+  },
+  whiteOval: {
+    position: 'absolute',
+    bottom: -30,
+    left: 40,
+    width: 100,
+    height: 60,
+    borderRadius: 50,
+    backgroundColor: '#fff',
+    opacity: 0.3,
+  },
+  heroTextContainer: {
+    zIndex: 10,
+  },
+  heroTitle: {
+    color: '#fff',
+    fontSize: 28,
     fontWeight: '600',
+    letterSpacing: -0.5,
+    lineHeight: 34,
+  },
+  formSection: {
+    flex: 1,
+    backgroundColor: Colors.background,
+    marginTop: -30,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    paddingTop: 32,
+  },
+  formContainer: {
+    paddingHorizontal: 32,
+    paddingBottom: 40,
+  },
+  logoContainer: {
+    marginBottom: 24,
+  },
+  welcomeTitle: {
+    fontSize: 32,
+    fontWeight: '600',
+    color: Colors.text,
+    letterSpacing: -0.5,
+  },
+  welcomeSubtitle: {
+    fontSize: 16,
+    color: Colors.textLight,
+    marginTop: 8,
+    marginBottom: 32,
+  },
+  inputGroup: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 14,
+    color: Colors.text,
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  input: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: '#000',
+  },
+  inputError: {
+    borderColor: '#ef4444',
+  },
+  errorText: {
+    color: '#ef4444',
+    fontSize: 12,
+    marginTop: 4,
   },
   loginButton: {
-    marginTop: Spacing.md,
+    backgroundColor: Colors.brandOrange,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 12,
+    shadowColor: Colors.brandOrange,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  loginButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: Spacing.xl,
+    marginTop: 24,
   },
   footerText: {
-    ...Typography.body,
-    color: Colors.textLight,
+    fontSize: 14,
+    color: '#64748b',
   },
   linkText: {
-    ...Typography.body,
-    color: Colors.primary,
-    fontWeight: '700',
+    fontSize: 14,
+    color: Colors.text,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
 });
 

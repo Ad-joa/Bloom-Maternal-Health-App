@@ -1,5 +1,6 @@
 export const Colors = {
   primary: '#f4bfbe', // Blush Pink
+  brandOrange: '#f97316', // Hexta Orange
   secondary: '#f7e3cf', // Soft Peach
   accent: '#e8b5db', // Lavender
   background: '#ffffff',
@@ -80,4 +81,15 @@ export const Shadow = {
     shadowRadius: 15,
     elevation: 5,
   },
+};
+
+export const theme = {
+  colors: Colors,
+  spacing: Spacing,
+  typography: Typography,
+  shadows: Shadow,
+  fonts: {
+    regular: 'System',
+    bold: 'System',
+  }
 };

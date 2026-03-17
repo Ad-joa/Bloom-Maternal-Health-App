@@ -14,6 +14,8 @@ import SymptomCheckerScreen from '../screens/SymptomCheckerScreen';
 import VisitsScreen from '../screens/VisitsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import DangerSignsScreen from '../screens/DangerSignsScreen';
+import SplashScreen from '../screens/SplashScreen';
+import LandingScreen from '../screens/LandingScreen';
 
 const AuthStack = createNativeStackNavigator();
 const AppTabs = createBottomTabNavigator();
@@ -21,7 +23,8 @@ const AppStack = createNativeStackNavigator();
 const RootStack = createNativeStackNavigator();
 
 const AuthNavigator = () => (
-  <AuthStack.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
+  <AuthStack.Navigator screenOptions={{ headerShown: false, animation: 'fade' }} initialRouteName="Landing">
+    <AuthStack.Screen name="Landing" component={LandingScreen} />
     <AuthStack.Screen name="Onboarding" component={OnboardingScreen} />
     <AuthStack.Screen name="Login" component={LoginScreen} />
     <AuthStack.Screen name="Register" component={RegisterScreen} />
@@ -79,7 +82,8 @@ export const RootNavigator = () => {
   const { isLoggedIn } = useAuth();
 
   return (
-    <RootStack.Navigator screenOptions={{ headerShown: false }}>
+    <RootStack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Splash">
+      <RootStack.Screen name="Splash" component={SplashScreen} />
       {isLoggedIn ? (
         <RootStack.Screen name="App" component={AppNavigator} />
       ) : (
