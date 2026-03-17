@@ -34,7 +34,8 @@
           "color": "#f4bfbe"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-asset"
     ],
     "web": {
       "favicon": "./assets/favicon.png"
