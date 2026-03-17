@@ -33,7 +33,8 @@
           "icon": "./assets/icon.png",
           "color": "#f4bfbe"
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "web": {
       "favicon": "./assets/favicon.png"
