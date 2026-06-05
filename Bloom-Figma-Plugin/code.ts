@@ -71,7 +71,7 @@ figma.ui.onmessage = async (msg) => {
     const card = figma.createRectangle();
     card.resize(345, 120);
     card.cornerRadius = 24;
-    card.fills = [{type: 'SOLID', color: {r: 255/255, g: 255/255, b: 255/255, a: 0.6}}];
+    card.fills = [{type: 'SOLID', color: {r: 255/255, g: 255/255, b: 255/255}, opacity: 0.6}];
     card.effects = [{
       type: 'DROP_SHADOW',
       color: {r: 0, g: 0, b: 0, a: 0.05},
@@ -103,6 +103,7 @@ figma.ui.onmessage = async (msg) => {
     cardDesc.y = 490;
     frame.appendChild(cardDesc);
 
+    figma.currentPage.appendChild(frame);
     figma.viewport.scrollAndZoomIntoView([frame]);
     figma.notify("Home Screen scaffolded!");
   }
