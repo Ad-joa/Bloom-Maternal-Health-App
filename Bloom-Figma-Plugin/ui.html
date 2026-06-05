@@ -1,3 +1,6 @@
+<!DOCTYPE html>
+<html>
+<head>
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; padding: 20px; background-color: #FAFAFA; margin: 0; }
   h2 { font-size: 14px; font-weight: 600; color: #333; margin-top: 0; margin-bottom: 12px; }
@@ -19,6 +22,8 @@
   .secondary { background-color: #FEEBC8; color: #DD6B20; }
   .secondary:hover { background-color: #FBD38D; }
 </style>
+</head>
+<body>
 <h2>Bloom UI Tools</h2>
 <p>Quickly scaffold Awwwards-level Bloom designs directly into your Figma canvas.</p>
 <button id="setup-styles">Set Up Bloom Color Styles</button>
@@ -36,3 +41,5 @@ document.getElementById('cancel').onclick = () => {
   parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*');
 };
 </script>
+</body>
+</html>
