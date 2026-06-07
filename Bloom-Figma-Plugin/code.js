@@ -516,9 +516,6 @@
             await figma.loadFontAsync({ family: "Inter", style: "Regular" });
             await figma.loadFontAsync({ family: "Inter", style: "Medium" });
             await figma.loadFontAsync({ family: "Inter", style: "Bold" });
-            const d = figma.createText();
-            await figma.loadFontAsync(d.fontName);
-            d.remove();
             const screenType = msg.screenType;
             let frame = createScreenFrame("Bloom " + screenType);
             if (msg.incAppbar && !["SplashScreen", "LandingScreen", "HomeScreen", "InsightsScreen", "ChatsScreen", "TrackerScreen"].includes(screenType)) {

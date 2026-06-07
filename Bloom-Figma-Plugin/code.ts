@@ -616,10 +616,6 @@ figma.ui.onmessage = async (msg: any) => {
       await figma.loadFontAsync({ family: "Inter", style: "Medium" });
       await figma.loadFontAsync({ family: "Inter", style: "Bold" });
 
-      const d = figma.createText();
-      await figma.loadFontAsync(d.fontName as FontName);
-      d.remove();
-
       const screenType = msg.screenType;
       let frame = createScreenFrame("Bloom " + screenType);
 
