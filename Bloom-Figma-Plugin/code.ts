@@ -1,5 +1,5 @@
 figma.showUI(__html__, { width: 320, height: 380 });
-
+console.log("Plugin UI initialized");
 // ------------- CONSTANTS -------------
 const textDark = {r: 30/255, g: 30/255, b: 30/255};
 const textLight = {r: 120/255, g: 120/255, b: 120/255};
