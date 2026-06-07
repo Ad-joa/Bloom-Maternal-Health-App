@@ -1,3 +1,4 @@
+/// <reference types="@figma/plugin-typings" />
 figma.showUI(__html__, { width: 320, height: 380 });
 console.log("Plugin UI initialized");
 // ------------- CONSTANTS -------------
@@ -595,7 +596,7 @@ function buildVisitsScreen(frame: FrameNode) {
 }
 
 // ------------- MAIN -------------
-figma.ui.onmessage = async (msg) => {
+figma.ui.onmessage = async (msg: any) => {
   try {
     if (msg.type === 'setup-styles') {
       const pBrandOrange = figma.createPaintStyle();

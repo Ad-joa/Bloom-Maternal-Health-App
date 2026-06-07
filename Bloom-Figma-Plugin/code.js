@@ -9,6 +9,7 @@
   var require_code = __commonJS({
     "code.ts"() {
       figma.showUI(__html__, { width: 320, height: 380 });
+      console.log("Plugin UI initialized");
       var textDark = { r: 30 / 255, g: 30 / 255, b: 30 / 255 };
       var textLight = { r: 120 / 255, g: 120 / 255, b: 120 / 255 };
       var brandOrange = { r: 249 / 255, g: 115 / 255, b: 22 / 255 };
