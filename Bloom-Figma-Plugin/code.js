@@ -4,10 +4,30 @@
   var __commonJS = (cb, mod) => function __require() {
     return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
   };
+  var __async = (__this, __arguments, generator) => {
+    return new Promise((resolve, reject) => {
+      var fulfilled = (value) => {
+        try {
+          step(generator.next(value));
+        } catch (e) {
+          reject(e);
+        }
+      };
+      var rejected = (value) => {
+        try {
+          step(generator.throw(value));
+        } catch (e) {
+          reject(e);
+        }
+      };
+      var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
+      step((generator = generator.apply(__this, __arguments)).next());
+    });
+  };
 
   // code.ts
   var require_code = __commonJS({
-    "code.ts"() {
+    "code.ts"(exports) {
       figma.showUI(__html__, { width: 320, height: 380 });
       console.log("Plugin UI initialized");
       var textDark = { r: 30 / 255, g: 30 / 255, b: 30 / 255 };
@@ -500,7 +520,7 @@
         addText(frame, "Past Visits", "Bold", 20, 24, 360, textDark);
         createListItem(frame, "First Appointment", "Sep 10", false, 24, 400, 345);
       }
-      figma.ui.onmessage = async (msg) => {
+      figma.ui.onmessage = (msg) => __async(null, null, function* () {
         try {
           if (msg.type === "setup-styles") {
             const pBrandOrange = figma.createPaintStyle();
@@ -513,9 +533,9 @@
             return;
           }
           if (msg.type === "generate-screen") {
-            await figma.loadFontAsync({ family: "Inter", style: "Regular" });
-            await figma.loadFontAsync({ family: "Inter", style: "Medium" });
-            await figma.loadFontAsync({ family: "Inter", style: "Bold" });
+            yield figma.loadFontAsync({ family: "Inter", style: "Regular" });
+            yield figma.loadFontAsync({ family: "Inter", style: "Medium" });
+            yield figma.loadFontAsync({ family: "Inter", style: "Bold" });
             const screenType = msg.screenType;
             let frame = createScreenFrame("Bloom " + screenType);
             if (msg.incAppbar && !["SplashScreen", "LandingScreen", "HomeScreen", "InsightsScreen", "ChatsScreen", "TrackerScreen"].includes(screenType)) {
@@ -575,7 +595,7 @@
               "ProfileScreen": 4
             };
             if (msg.incNav && !["SplashScreen", "LandingScreen", "OnboardingScreen", "LoginScreen", "RegisterScreen"].includes(screenType)) {
-              createBottomNav(frame, tabMap[screenType] ?? 0);
+              createBottomNav(frame, tabMap[screenType] !== void 0 ? tabMap[screenType] : 0);
             }
             figma.currentPage.appendChild(frame);
             figma.viewport.scrollAndZoomIntoView([frame]);
@@ -585,7 +605,7 @@
           console.error(error);
           figma.notify("Plugin Error: " + String(error), { error: true });
         }
-      };
+      });
     }
   });
   require_code();

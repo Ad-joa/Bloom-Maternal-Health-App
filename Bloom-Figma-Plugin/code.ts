@@ -646,7 +646,7 @@ figma.ui.onmessage = async (msg: any) => {
         'HomeScreen': 0, 'InsightsScreen': 1, 'ChatsScreen': 2, 'TrackerScreen': 3, 'ProfileScreen': 4
       };
       if (msg.incNav && !['SplashScreen', 'LandingScreen', 'OnboardingScreen', 'LoginScreen', 'RegisterScreen'].includes(screenType)) {
-        createBottomNav(frame, tabMap[screenType] ?? 0);
+        createBottomNav(frame, tabMap[screenType] !== undefined ? tabMap[screenType] : 0);
       }
 
       figma.currentPage.appendChild(frame);
