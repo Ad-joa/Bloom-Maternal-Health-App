@@ -25,7 +25,6 @@ const LandingScreen = () => {
   const slideAnim = useRef(new Animated.Value(50)).current;
   const blob1Anim = useRef(new Animated.Value(0)).current;
   const blob2Anim = useRef(new Animated.Value(0)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     // Entrance animation
@@ -41,22 +40,6 @@ const LandingScreen = () => {
         useNativeDriver: true,
       })
     ]).start();
-
-    // CTA Pulse Animation
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.04,
-          duration: 1200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1200,
-          useNativeDriver: true,
-        })
-      ])
-    ).start();
 
     // Floating blobs animation
     const createBlobAnimation = (anim: Animated.Value, delay: number) => {
@@ -157,23 +140,21 @@ const LandingScreen = () => {
               Your companion for a healthy, happy, and empowered maternal journey.
             </Text>
 
-            <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-              <TouchableOpacity 
-                style={styles.primaryButton}
-                onPress={() => navigation.navigate('Register')}
-                activeOpacity={0.8}
+            <TouchableOpacity 
+              style={styles.primaryButton}
+              onPress={() => navigation.navigate('Register')}
+              activeOpacity={0.8}
+            >
+              <LinearGradient
+                colors={[theme.colors.primary, '#e89f9f']} // Powder Blush to slightly deeper pink
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.buttonGradient}
               >
-                <LinearGradient
-                  colors={[theme.colors.primary, '#e89f9f']} // Powder Blush to slightly deeper pink
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.buttonGradient}
-                >
-                  <Text style={styles.primaryButtonText}>Get Started</Text>
-                  <ArrowRight size={20} color="#FFF" style={styles.buttonIcon} />
-                </LinearGradient>
-              </TouchableOpacity>
-            </Animated.View>
+                <Text style={styles.primaryButtonText}>Get Started</Text>
+                <ArrowRight size={20} color="#FFF" style={styles.buttonIcon} />
+              </LinearGradient>
+            </TouchableOpacity>
 
             <TouchableOpacity 
               style={styles.secondaryButton}
