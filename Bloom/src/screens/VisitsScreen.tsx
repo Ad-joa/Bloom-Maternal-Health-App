@@ -19,6 +19,7 @@ import ScreenHeader from '../components/ScreenHeader';
 import VisitCard from '../components/VisitCard';
 import EmptyState from '../components/EmptyState';
 import AppButton from '../components/AppButton';
+import AnimatedCard from '../components/AnimatedCard';
 import { useAuth } from '../hooks/useAuth';
 import { collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from 'firebase/firestore';
 import { db } from '../config/firebase';
@@ -104,8 +105,8 @@ const VisitsScreen = () => {
 
   const handleDeleteVisit = (id: string) => {
     Alert.alert(
-      "Delete Visit",
-      "Are you sure you want to delete this prenatal visit record?",
+      "Options",
+      "Do you want to delete this prenatal visit record?",
       [
         { text: "Cancel", style: "cancel" },
         { 
@@ -137,13 +138,14 @@ const VisitsScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <ScreenHeader 
         title="My Visits" 
+        largeTitle={true}
         subtitle="Track your prenatal appointments" 
         rightElement={
           <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
-            <Ionicons name="add-circle" size={32} color={Colors.primary} />
+            <Ionicons name="add-circle" size={36} color={Colors.primary} />
           </TouchableOpacity>
         }
       />
@@ -162,22 +164,30 @@ const VisitsScreen = () => {
         <FlatList
           data={visits}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <VisitCard
-              date={item.date}
-              notes={item.notes}
-              nextVisit={item.nextVisit}
-              onPress={() => handleDeleteVisit(item.id)}
-            />
+          renderItem={({ item, index }) => (
+            <View style={styles.timelineItem}>
+              {/* Timeline Indicator */}
+              <View style={styles.timelineIndicator}>
+                <View style={styles.timelineDot} />
+                {index !== visits.length - 1 && <View style={styles.timelineLine} />}
+              </View>
+              
+              {/* Content */}
+              <View style={styles.timelineContent}>
+                <AnimatedCard onPress={() => handleDeleteVisit(item.id)}>
+                  <VisitCard
+                    date={item.date}
+                    notes={item.notes}
+                    nextVisit={item.nextVisit}
+                  />
+                </AnimatedCard>
+              </View>
+            </View>
           )}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
         />
       )}
-
-      <TouchableOpacity style={styles.fab} onPress={openAddModal}>
-        <Ionicons name="add" size={30} color={Colors.white} />
-      </TouchableOpacity>
 
       {/* Add Visit Premium Modal */}
       <Modal
@@ -193,8 +203,11 @@ const VisitsScreen = () => {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Add Prenatal Visit</Text>
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Ionicons name="close" size={24} color={Colors.text} />
+              <TouchableOpacity 
+                onPress={() => setModalVisible(false)}
+                style={styles.closeModalBtn}
+              >
+                <Ionicons name="close" size={24} color={Colors.textLight} />
               </TouchableOpacity>
             </View>
 
@@ -212,10 +225,10 @@ const VisitsScreen = () => {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Visit Notes & Medical Feedback</Text>
+              <Text style={styles.label}>Visit Notes & Feedback</Text>
               <TextInput
                 style={[styles.input, styles.textArea]}
-                placeholder="Ultrasound details, prescriptions, weight gain, blood pressure, etc."
+                placeholder="Ultrasound details, prescriptions, weight gain..."
                 placeholderTextColor="#999"
                 multiline
                 numberOfLines={4}
@@ -225,7 +238,7 @@ const VisitsScreen = () => {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Next Appointment Date (Optional - YYYY-MM-DD)</Text>
+              <Text style={styles.label}>Next Appointment (Optional)</Text>
               <TextInput
                 style={styles.input}
                 placeholder="2026-07-24"
@@ -237,16 +250,10 @@ const VisitsScreen = () => {
 
             <View style={styles.modalButtons}>
               <AppButton 
-                title="Cancel" 
-                variant="outline" 
-                onPress={() => setModalVisible(false)} 
-                style={styles.modalButton}
-              />
-              <AppButton 
                 title={isSaving ? "Saving..." : "Save Visit"} 
                 onPress={handleAddVisit} 
                 disabled={isSaving}
-                style={styles.modalButton}
+                style={styles.saveButton}
               />
             </View>
           </View>
@@ -259,92 +266,122 @@ const VisitsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#fdfbfb',
   },
   listContent: {
-    padding: Spacing.lg,
-    paddingBottom: 100, // For FAB
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.sm,
+    paddingBottom: 120, // For floating tab bar
   },
   addButton: {
     padding: 4,
-  },
-  fab: {
-    position: 'absolute',
-    bottom: 24,
-    right: 24,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: Colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...Shadow.medium,
+    opacity: 0.9,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  
+  /* Timeline Styles */
+  timelineItem: {
+    flexDirection: 'row',
+  },
+  timelineIndicator: {
+    width: 30,
+    alignItems: 'center',
+    marginRight: Spacing.sm,
+  },
+  timelineDot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: Colors.primary,
+    marginTop: 20,
+    borderWidth: 3,
+    borderColor: 'rgba(243, 180, 180, 0.3)', // Soft powder blush glow
+  },
+  timelineLine: {
+    width: 2,
+    flex: 1,
+    backgroundColor: 'rgba(243, 180, 180, 0.2)', // Very faint powder blush line
+    marginTop: 4,
+    marginBottom: -20, // Overlap the next item slightly
+  },
+  timelineContent: {
+    flex: 1,
+    paddingBottom: Spacing.md,
+  },
+
+  /* Modal Styles */
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    padding: Spacing.lg,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
   },
   modalContent: {
     backgroundColor: Colors.white,
-    borderRadius: 24,
-    padding: Spacing.lg,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    padding: Spacing.xl,
+    paddingBottom: Platform.OS === 'ios' ? 40 : Spacing.xl,
     ...Shadow.medium,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.xl,
   },
   modalTitle: {
     ...Typography.h2,
     color: Colors.text,
   },
+  closeModalBtn: {
+    backgroundColor: Colors.surface,
+    padding: 8,
+    borderRadius: 16,
+  },
   modalErrorText: {
     color: Colors.error,
     ...Typography.caption,
-    textAlign: 'center',
     marginBottom: Spacing.md,
     fontWeight: '600',
   },
   inputGroup: {
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.lg,
   },
   label: {
     ...Typography.caption,
     fontWeight: '700',
-    color: Colors.text,
-    marginBottom: 6,
+    color: Colors.textLight,
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   input: {
     backgroundColor: Colors.surface,
-    borderRadius: 12,
+    borderRadius: 16,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     fontSize: 16,
     color: Colors.text,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: 'transparent',
   },
   textArea: {
     height: 100,
     textAlignVertical: 'top',
   },
   modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: Spacing.lg,
+    marginTop: Spacing.md,
   },
-  modalButton: {
-    flex: 1,
-    marginHorizontal: 6,
+  saveButton: {
+    width: '100%',
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
   },
 });
 

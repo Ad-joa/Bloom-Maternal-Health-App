@@ -4,15 +4,14 @@ import { initializeAuth, getReactNativePersistence, getAuth } from 'firebase/aut
 import { getFirestore } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Your web app's Firebase configuration.
-// Replace placeholders with your Firebase console settings.
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDtI0Fp4pjRQgGSLPYb87V07F_2hN9GXZA",
+  authDomain: "bloom-maternal-advisory-app.firebaseapp.com",
+  projectId: "bloom-maternal-advisory-app",
+  storageBucket: "bloom-maternal-advisory-app.firebasestorage.app",
+  messagingSenderId: "335978952577",
+  appId: "1:335978952577:web:c7cf9d914fe944d86b9a80",
+  measurementId: "G-40ZWQNFM98"
 };
 
 // Initialize Firebase

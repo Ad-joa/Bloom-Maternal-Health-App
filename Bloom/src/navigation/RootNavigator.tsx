@@ -1,7 +1,9 @@
 import React from 'react';
+import { StyleSheet, View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 import { useAuth } from '../hooks/useAuth';
 import { Colors } from '../constants/theme';
 
@@ -49,23 +51,23 @@ const TabNavigator = () => (
           iconName = focused ? 'person' : 'person-outline';
         }
 
-        return <Ionicons name={iconName} size={24} color={color} />;
+        return <Ionicons name={iconName} size={26} color={color} style={{ marginTop: 10 }} />;
       },
       tabBarActiveTintColor: Colors.primary,
-      tabBarInactiveTintColor: Colors.border,
-      tabBarStyle: {
-        height: 60,
-        paddingBottom: 10,
-        backgroundColor: Colors.white,
-        borderTopWidth: 1,
-        borderTopColor: Colors.surface,
-      },
+      tabBarInactiveTintColor: Colors.textLight,
+      tabBarShowLabel: false,
+      tabBarStyle: styles.tabBar,
+      tabBarBackground: () => (
+        <View style={styles.blurContainer}>
+          <BlurView intensity={80} tint="light" style={StyleSheet.absoluteFill} />
+        </View>
+      ),
       headerShown: false,
     })}
   >
     <AppTabs.Screen name="Home" component={HomeScreen} />
-    <AppTabs.Screen name="Trimester" component={TrimesterInfoScreen} options={{ title: 'Library' }} />
-    <AppTabs.Screen name="Symptoms" component={SymptomCheckerScreen} options={{ title: 'Checker' }} />
+    <AppTabs.Screen name="Trimester" component={TrimesterInfoScreen} />
+    <AppTabs.Screen name="Symptoms" component={SymptomCheckerScreen} />
     <AppTabs.Screen name="Visits" component={VisitsScreen} />
     <AppTabs.Screen name="Profile" component={ProfileScreen} />
   </AppTabs.Navigator>
@@ -92,3 +94,27 @@ export const RootNavigator = () => {
     </RootStack.Navigator>
   );
 };
+
+const styles = StyleSheet.create({
+  tabBar: {
+    position: 'absolute',
+    bottom: 24,
+    left: 20,
+    right: 20,
+    elevation: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    borderRadius: 30,
+    height: 65,
+    borderTopWidth: 0,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+  },
+  blurContainer: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 30,
+    overflow: 'hidden',
+    backgroundColor: 'transparent',
+  }
+});
