@@ -16,11 +16,13 @@ import { BlurView } from 'expo-blur';
 import { Sun } from 'lucide-react-native';
 import { Colors, Spacing, Typography } from '../constants/theme';
 import { useAuth } from '../hooks/useAuth';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, db } from '../config/firebase';
 
 const { width, height } = Dimensions.get('window');
 
 const RegisterScreen = ({ navigation }: any) => {
-  const { login } = useAuth();
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -32,7 +34,7 @@ const RegisterScreen = ({ navigation }: any) => {
   const [errors, setErrors] = useState<any>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     let newErrors: any = {};
     if (!form.name) newErrors.name = 'Full name is required';
     if (!form.email) newErrors.email = 'Email is required';
@@ -41,6 +43,15 @@ const RegisterScreen = ({ navigation }: any) => {
     if (form.password !== form.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
     if (!form.lmpDate) newErrors.lmpDate = 'LMP date is required';
 
+    if (form.lmpDate && !/^\d{4}-\d{2}-\d{2}$/.test(form.lmpDate)) {
+      newErrors.lmpDate = 'LMP date must be in YYYY-MM-DD format';
+    } else if (form.lmpDate) {
+      const parsedDate = new Date(form.lmpDate);
+      if (isNaN(parsedDate.getTime())) {
+        newErrors.lmpDate = 'LMP date is invalid';
+      }
+    }
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -48,11 +59,37 @@ const RegisterScreen = ({ navigation }: any) => {
 
     setErrors({});
     setIsLoading(true);
-    
-    setTimeout(() => {
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, form.email, form.password);
+      const uid = userCredential.user.uid;
+
+      // Save user profile details to Firestore
+      await setDoc(doc(db, 'users', uid), {
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        lmpDate: form.lmpDate,
+        createdAt: new Date().toISOString(),
+      });
+    } catch (error: any) {
+      console.error('Error during registration:', error);
+      let errorMessage = 'An error occurred during registration. Please try again.';
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'This email is already registered';
+        setErrors({ email: errorMessage });
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address';
+        setErrors({ email: errorMessage });
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = 'Password is too weak (min 6 characters)';
+        setErrors({ password: errorMessage });
+      } else {
+        setErrors({ general: errorMessage });
+      }
+    } finally {
       setIsLoading(false);
-      login();
-    }, 1500);
+    }
   };
 
   const updateForm = (key: string, value: string) => {
@@ -189,6 +226,8 @@ const RegisterScreen = ({ navigation }: any) => {
               />
               {errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
             </View>
+
+            {errors.general && <Text style={[styles.errorText, { marginBottom: 12, textAlign: 'center' }]}>{errors.general}</Text>}
 
             <TouchableOpacity 
               style={styles.registerButton} 

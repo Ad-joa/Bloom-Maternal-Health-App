@@ -13,13 +13,26 @@ import { Colors, Spacing, Typography, Shadow } from '../constants/theme';
 import ScreenHeader from '../components/ScreenHeader';
 import TrimesterBadge from '../components/TrimesterBadge';
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../hooks/useAuth';
+import { calculatePregnancyDetails } from '../utils/pregnancyCalculator';
 
 const { width } = Dimensions.get('window');
 
 const HomeScreen = () => {
   const navigation = useNavigation<any>();
-  const userName = "Sarah"; // Hardcoded as per requirements
-  const currentTrimester = 2; // Hardcoded example
+  const { profile } = useAuth();
+
+  const userName = profile?.name || "Mama";
+  const pregnancyDetails = profile?.lmpDate ? calculatePregnancyDetails(profile.lmpDate) : null;
+
+  const currentTrimester = pregnancyDetails?.trimester || 1;
+  const trimesterLabel = pregnancyDetails?.trimesterLabel || "First Trimester";
+  const weeksProgress = pregnancyDetails?.weeks ?? 0;
+  const daysProgress = pregnancyDetails?.days ?? 0;
+  const progressText = pregnancyDetails 
+    ? `${weeksProgress} Week${weeksProgress !== 1 ? 's' : ''}, ${daysProgress} Day${daysProgress !== 1 ? 's' : ''}`
+    : "Enter LMP in registration to track progress";
+  const profileInitial = userName.charAt(0).toUpperCase();
 
   const quickActions = [
     { title: 'Symptom Checker', icon: 'medical', color: Colors.primary, route: 'Symptoms' },
@@ -35,9 +48,12 @@ const HomeScreen = () => {
           title={`Hello, ${userName}`} 
           subtitle="How are you feeling today?" 
           rightElement={
-            <TouchableOpacity style={styles.profileButton}>
+            <TouchableOpacity 
+              style={styles.profileButton}
+              onPress={() => navigation.navigate('Profile')}
+            >
               <View style={styles.profileCircle}>
-                <Text style={styles.profileInitial}>S</Text>
+                <Text style={styles.profileInitial}>{profileInitial}</Text>
               </View>
             </TouchableOpacity>
           }
@@ -47,8 +63,8 @@ const HomeScreen = () => {
         <View style={styles.trimesterCard}>
           <View style={styles.trimesterInfo}>
             <Text style={styles.trimesterLabel}>Current Trimester</Text>
-            <Text style={styles.trimesterValue}>Second Trimester</Text>
-            <Text style={styles.weeksText}>24 Weeks, 3 Days</Text>
+            <Text style={styles.trimesterValue}>{trimesterLabel}</Text>
+            <Text style={styles.weeksText}>{progressText}</Text>
             <TrimesterBadge trimester={currentTrimester} />
           </View>
           <View style={styles.trimesterIconContainer}>

@@ -16,17 +16,18 @@ import { BlurView } from 'expo-blur';
 import { Sun } from 'lucide-react-native';
 import { Colors, Spacing, Typography } from '../constants/theme';
 import { useAuth } from '../hooks/useAuth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../config/firebase';
 
 const { width, height } = Dimensions.get('window');
 
 const LoginScreen = ({ navigation }: any) => {
-  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     let newErrors: any = {};
     if (!email) newErrors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Invalid email address';
@@ -41,10 +42,27 @@ const LoginScreen = ({ navigation }: any) => {
     setErrors({});
     setIsLoading(true);
     
-    setTimeout(() => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error: any) {
+      console.error('Error during login:', error);
+      let errorMessage = 'An error occurred during login. Please try again.';
+      if (
+        error.code === 'auth/invalid-credential' || 
+        error.code === 'auth/user-not-found' || 
+        error.code === 'auth/wrong-password'
+      ) {
+        errorMessage = 'Invalid email or password';
+        setErrors({ general: errorMessage });
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address';
+        setErrors({ email: errorMessage });
+      } else {
+        setErrors({ general: errorMessage });
+      }
+    } finally {
       setIsLoading(false);
-      login();
-    }, 1500);
+    }
   };
 
   return (
@@ -124,6 +142,8 @@ const LoginScreen = ({ navigation }: any) => {
               />
               {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
             </View>
+
+            {errors.general && <Text style={[styles.errorText, { marginBottom: 12, textAlign: 'center' }]}>{errors.general}</Text>}
 
             <TouchableOpacity 
               style={styles.loginButton} 

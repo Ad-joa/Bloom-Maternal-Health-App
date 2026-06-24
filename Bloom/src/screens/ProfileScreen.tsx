@@ -13,18 +13,20 @@ import { Colors, Spacing, Typography, Shadow } from '../constants/theme';
 import ScreenHeader from '../components/ScreenHeader';
 import AppButton from '../components/AppButton';
 import { useAuth } from '../hooks/useAuth';
+import { calculatePregnancyDetails } from '../utils/pregnancyCalculator';
 
 const ProfileScreen = () => {
-  const { logout } = useAuth();
+  const { logout, profile } = useAuth();
   
-  // Hardcoded user details as per requirements
+  const pregnancyDetails = profile?.lmpDate ? calculatePregnancyDetails(profile.lmpDate) : null;
+
   const user = {
-    name: 'Sarah Doe',
-    email: 'sarah.doe@example.com',
-    phone: '+1 234 567 8900',
-    lmp: '2025-09-20',
-    dueDate: '2026-06-27',
-    trimester: 'Second',
+    name: profile?.name || 'Mama',
+    email: profile?.email || '',
+    phone: profile?.phone || 'Not set',
+    lmp: profile?.lmpDate || 'Not set',
+    dueDate: pregnancyDetails?.dueDate || 'Not calculated',
+    trimester: pregnancyDetails?.trimesterLabel || 'First Trimester',
   };
 
   const menuItems = [

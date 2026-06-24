@@ -7,7 +7,7 @@ import { useAuth } from '../hooks/useAuth';
 
 const SplashScreen = () => {
   const navigation = useNavigation<any>();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, loading } = useAuth();
   const fadeAnim = new Animated.Value(0);
   const scaleAnim = new Animated.Value(0.9);
 
@@ -25,16 +25,18 @@ const SplashScreen = () => {
       }),
     ]).start();
 
+    if (loading) return;
+
     const timer = setTimeout(() => {
       if (isLoggedIn) {
         navigation.replace('App');
       } else {
         navigation.replace('Auth');
       }
-    }, 2500);
+    }, 1500);
 
     return () => clearTimeout(timer);
-  }, [navigation, isLoggedIn]);
+  }, [navigation, isLoggedIn, loading]);
 
   return (
     <View style={styles.container}>
