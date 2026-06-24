@@ -1,28 +1,28 @@
 export const Colors = {
-  primary: '#f4bfbe', // Blush Pink
-  brandOrange: '#f97316', // Hexta Orange
-  secondary: '#f7e3cf', // Soft Peach
-  accent: '#e8b5db', // Lavender
+  primary: '#f3b4b4', // Powder Blush (Dominant Pink)
+  brandOrange: '#66b2b2', // Tropical Teal (Secondary/Accent)
+  secondary: '#f5e8aa', // Vanilla Custard
+  accent: '#9be18a', // Light Green
   background: '#ffffff',
   surface: '#f9f9f9',
   text: '#2d2d2d',
   textLight: '#757575',
   error: '#FF5252',
-  success: '#8dd3c1', // Mint
-  info: '#c8eaea', // Light Seafoam
+  success: '#9be18a', // Light Green
+  info: '#66b2b2', // Tropical Teal
   border: '#e0e0e0',
   white: '#ffffff',
   black: '#000000',
   
   // Trimesters
-  t1: '#8dd3c1', // Mint
-  t2: '#f7e3cf', // Soft Peach
-  t3: '#f4bfbe', // Blush Pink
+  t1: '#f5e8aa', // Vanilla Custard
+  t2: '#f3b4b4', // Powder Blush
+  t3: '#66b2b2', // Tropical Teal
   
   // Risk
-  low: '#8dd3c1',
-  medium: '#f7e3cf',
-  high: '#f4bfbe',
+  low: '#9be18a', // Light Green
+  medium: '#f5e8aa', // Vanilla Custard
+  high: '#f3b4b4', // Powder Blush
 };
 
 export const Spacing = {

@@ -9,33 +9,52 @@ interface ScreenHeaderProps {
   subtitle?: string;
   showBack?: boolean;
   rightElement?: React.ReactNode;
+  largeTitle?: boolean;
 }
 
 const ScreenHeader: React.FC<ScreenHeaderProps> = ({ 
   title, 
   subtitle, 
   showBack = false,
-  rightElement
+  rightElement,
+  largeTitle = true
 }) => {
   const navigation = useNavigation();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, largeTitle ? styles.containerLarge : null]}>
       <View style={styles.topRow}>
         {showBack && (
           <TouchableOpacity 
             onPress={() => navigation.goBack()} 
             style={styles.backButton}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Ionicons name="chevron-back" size={24} color={Colors.text} />
+            <Ionicons name="chevron-back" size={28} color={Colors.text} />
           </TouchableOpacity>
         )}
-        <View style={styles.titleContainer}>
-          <Text style={styles.title}>{title}</Text>
-          {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
-        </View>
-        {rightElement && <View style={styles.rightElement}>{rightElement}</View>}
+        
+        {!largeTitle && (
+          <View style={styles.titleContainerSmall}>
+            <Text style={styles.titleSmall} numberOfLines={1}>{title}</Text>
+          </View>
+        )}
+
+        <View style={styles.rightSpacer} />
+
+        {rightElement && (
+          <View style={styles.rightElementContainer}>
+            {rightElement}
+          </View>
+        )}
       </View>
+
+      {largeTitle && (
+        <View style={styles.largeTitleContainer}>
+          <Text style={styles.titleLarge}>{title}</Text>
+          {subtitle && <Text style={styles.subtitleLarge}>{subtitle}</Text>}
+        </View>
+      )}
     </View>
   );
 };
@@ -45,31 +64,56 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.md,
     paddingBottom: Spacing.sm,
-    backgroundColor: Colors.background,
+    backgroundColor: 'transparent',
+  },
+  containerLarge: {
+    paddingBottom: Spacing.md,
   },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 44,
   },
   backButton: {
-    marginRight: Spacing.sm,
     marginLeft: -Spacing.sm,
-    padding: Spacing.sm,
+    padding: Spacing.xs,
   },
-  titleContainer: {
+  titleContainerSmall: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: -1,
   },
-  title: {
-    ...Typography.h2,
+  titleSmall: {
+    ...Typography.h3,
+    fontWeight: '700',
     color: Colors.text,
   },
-  subtitle: {
+  rightSpacer: {
+    flex: 1,
+  },
+  rightElementContainer: {
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+  },
+  largeTitleContainer: {
+    marginTop: Spacing.md,
+  },
+  titleLarge: {
+    fontSize: 34,
+    fontWeight: '800',
+    color: Colors.text,
+    letterSpacing: -0.5,
+  },
+  subtitleLarge: {
     ...Typography.body,
     color: Colors.textLight,
-    marginTop: 2,
-  },
-  rightElement: {
-    marginLeft: Spacing.sm,
+    marginTop: 4,
+    fontWeight: '500',
   },
 });
 
