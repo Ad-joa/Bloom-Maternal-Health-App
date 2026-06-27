@@ -31,21 +31,21 @@ Used to convey meaning, particularly important in a health app.
 
 ## 2. Typography
 
-We utilize a 9-level scale inspired by iOS typography, optimized for readability. We assume the system font (`SF Pro` on iOS, `Roboto` on Android) or a modern sans-serif like `Inter` for web.
+We utilize a 9-level scale optimized for readability. We use a combination of **Montserrat** for headings and **Poppins** for body text to create a friendly, modern, and highly legible experience.
 
-| Level | Weight | Size (pt/px) | Line Height (pt/px) | Usage |
-| :--- | :--- | :--- | :--- | :--- |
-| **Large Title** | Bold | 34 | 41 | Top-level screen headers |
-| **Title 1** | Bold | 28 | 34 | Primary section headers |
-| **Title 2** | Semibold | 22 | 28 | Secondary section headers |
-| **Title 3** | Semibold | 20 | 25 | Modal titles, large card headers |
-| **Headline** | Semibold | 17 | 22 | Important text, default button text |
-| **Body** | Regular | 17 | 22 | Standard paragraph text |
-| **Callout** | Regular | 16 | 21 | Pull quotes, highlighted text |
-| **Subhead** | Regular | 15 | 20 | Secondary lists, subtitles |
-| **Footnote** | Regular | 13 | 18 | Small text, input descriptions |
-| **Caption 1** | Regular | 12 | 16 | Very small text, tab bar labels |
-| **Caption 2** | Medium | 11 | 13 | Badges, micro-copy |
+| Level | Font Family | Size (pt/px) | Usage |
+| :--- | :--- | :--- | :--- |
+| **Large Title** | Montserrat Bold | 34 | Top-level screen headers |
+| **Title 1** | Montserrat Bold | 28 | Primary section headers |
+| **Title 2** | Montserrat Semibold | 22 | Secondary section headers |
+| **Title 3** | Montserrat Semibold | 20 | Modal titles, large card headers |
+| **Headline** | Poppins Semibold | 17 | Important text, default button text |
+| **Body** | Poppins Regular | 17 | Standard paragraph text |
+| **Callout** | Poppins Regular | 16 | Pull quotes, highlighted text |
+| **Subhead** | Poppins Medium | 15 | Secondary lists, subtitles |
+| **Footnote** | Poppins Regular | 13 | Small text, input descriptions |
+| **Caption 1** | Poppins Regular | 12 | Very small text, tab bar labels |
+| **Caption 2** | Poppins Medium | 11 | Badges, micro-copy |
 
 *(Note: All fonts must dynamically scale with OS accessibility settings)*
 
