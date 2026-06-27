@@ -22,6 +22,16 @@ export const theme = {
     border: tokens.colors.light.border.value,
   },
   typography: {
+    families: {
+      headingRegular: tokens.typography.families.headingRegular.value,
+      headingMedium: tokens.typography.families.headingMedium.value,
+      headingSemibold: tokens.typography.families.headingSemibold.value,
+      headingBold: tokens.typography.families.headingBold.value,
+      bodyRegular: tokens.typography.families.bodyRegular.value,
+      bodyMedium: tokens.typography.families.bodyMedium.value,
+      bodySemibold: tokens.typography.families.bodySemibold.value,
+      bodyBold: tokens.typography.families.bodyBold.value,
+    },
     sizes: {
       largeTitle: parseInt(tokens.typography.sizes.largeTitle.value, 10),
       title1: parseInt(tokens.typography.sizes.title1.value, 10),

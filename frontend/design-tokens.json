@@ -27,6 +27,16 @@
     }
   },
   "typography": {
+    "families": {
+      "headingRegular": { "value": "Montserrat_400Regular", "type": "string" },
+      "headingMedium": { "value": "Montserrat_500Medium", "type": "string" },
+      "headingSemibold": { "value": "Montserrat_600SemiBold", "type": "string" },
+      "headingBold": { "value": "Montserrat_700Bold", "type": "string" },
+      "bodyRegular": { "value": "Poppins_400Regular", "type": "string" },
+      "bodyMedium": { "value": "Poppins_500Medium", "type": "string" },
+      "bodySemibold": { "value": "Poppins_600SemiBold", "type": "string" },
+      "bodyBold": { "value": "Poppins_700Bold", "type": "string" }
+    },
     "sizes": {
       "largeTitle": { "value": "34", "type": "number" },
       "title1": { "value": "28", "type": "number" },

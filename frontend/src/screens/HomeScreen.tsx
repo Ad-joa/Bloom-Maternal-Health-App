@@ -1,6 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { theme } from '../theme/theme';
+import { Typography } from '../components/Typography';
+import { Button } from '../components/Button';
+import { Card } from '../components/Card';
 
 type RootStackParamList = {
   Home: undefined;
@@ -17,30 +21,53 @@ interface Props {
 export default function HomeScreen({ navigation }: Props) {
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Bloom Maternal Health</Text>
-      <Text style={styles.subtitle}>Empowering expectant mothers with knowledge and timely advice.</Text>
+      <View style={styles.header}>
+        <Typography variant="largeTitle" color={theme.colors.primaryDark} align="center">
+          Bloom
+        </Typography>
+        <Typography variant="body" color={theme.colors.textMedium} align="center">
+          Empowering expectant mothers with knowledge and timely advice.
+        </Typography>
+      </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Your Pregnancy Journey</Text>
-        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Trimester', { trimesterId: 1 })}>
-          <Text style={styles.cardText}>First Trimester (Weeks 1-12)</Text>
+        <Typography variant="title3" style={styles.sectionTitle}>
+          Your Pregnancy Journey
+        </Typography>
+        
+        <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate('Trimester', { trimesterId: 1 })}>
+          <Card style={styles.card}>
+            <Typography variant="headline">First Trimester</Typography>
+            <Typography variant="subhead" color={theme.colors.textMedium}>Weeks 1-12</Typography>
+          </Card>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Trimester', { trimesterId: 2 })}>
-          <Text style={styles.cardText}>Second Trimester (Weeks 13-26)</Text>
+
+        <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate('Trimester', { trimesterId: 2 })}>
+          <Card style={styles.card}>
+            <Typography variant="headline">Second Trimester</Typography>
+            <Typography variant="subhead" color={theme.colors.textMedium}>Weeks 13-26</Typography>
+          </Card>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Trimester', { trimesterId: 3 })}>
-          <Text style={styles.cardText}>Third Trimester (Weeks 27+)</Text>
+
+        <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate('Trimester', { trimesterId: 3 })}>
+          <Card style={styles.card}>
+            <Typography variant="headline">Third Trimester</Typography>
+            <Typography variant="subhead" color={theme.colors.textMedium}>Weeks 27+</Typography>
+          </Card>
         </TouchableOpacity>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Health Advisory</Text>
-        <Text style={styles.description}>
+        <Typography variant="title3" style={styles.sectionTitle}>
+          Health Advisory
+        </Typography>
+        <Typography variant="body" color={theme.colors.textMedium} style={styles.description}>
           Feeling unwell or experiencing unfamiliar symptoms? Check our smart advisory system for guidance.
-        </Text>
-        <TouchableOpacity style={[styles.card, styles.primaryCard]} onPress={() => navigation.navigate('Advisory')}>
-          <Text style={styles.primaryCardText}>Check Symptoms Now</Text>
-        </TouchableOpacity>
+        </Typography>
+        <Button 
+          title="Check Symptoms Now" 
+          onPress={() => navigation.navigate('Advisory')} 
+        />
       </View>
     </ScrollView>
   );
@@ -49,60 +76,23 @@ export default function HomeScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    padding: 20,
-    backgroundColor: '#FDFBF7',
+    padding: theme.spacing[4],
+    backgroundColor: theme.colors.surfaceVariant, // Using surfaceVariant for the background, like iOS grouped background
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#D47285',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 30,
+  header: {
+    marginBottom: theme.spacing[6],
+    marginTop: theme.spacing[4],
   },
   section: {
-    marginBottom: 30,
+    marginBottom: theme.spacing[6],
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 15,
+    marginBottom: theme.spacing[3],
   },
   description: {
-    fontSize: 14,
-    color: '#555',
-    marginBottom: 15,
+    marginBottom: theme.spacing[4],
   },
   card: {
-    backgroundColor: '#FFF',
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: '#EFEFEF',
-  },
-  cardText: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '500',
-  },
-  primaryCard: {
-    backgroundColor: '#D47285',
-    alignItems: 'center',
-  },
-  primaryCardText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: 'bold',
+    marginBottom: theme.spacing[3],
   },
 });

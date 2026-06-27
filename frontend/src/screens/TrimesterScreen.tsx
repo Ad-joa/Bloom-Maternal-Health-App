@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, ScrollView } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 import { getTrimesterInfo } from '../api/api';
+import { theme } from '../theme/theme';
+import { Typography } from '../components/Typography';
+import { Card } from '../components/Card';
 
 type RootStackParamList = {
   Home: undefined;
@@ -37,17 +40,21 @@ export default function TrimesterScreen({ route }: Props) {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#D47285" />
+        <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
   }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>{info?.title || 'Unknown Trimester'}</Text>
-      <View style={styles.card}>
-        <Text style={styles.description}>{info?.description || 'Information not available.'}</Text>
-      </View>
+      <Typography variant="largeTitle" color={theme.colors.primaryDark} style={styles.title}>
+        {info?.title || 'Unknown Trimester'}
+      </Typography>
+      <Card>
+        <Typography variant="body" style={styles.description}>
+          {info?.description || 'Information not available.'}
+        </Typography>
+      </Card>
     </ScrollView>
   );
 }
@@ -55,33 +62,19 @@ export default function TrimesterScreen({ route }: Props) {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    padding: 20,
-    backgroundColor: '#FDFBF7',
+    padding: theme.spacing[4],
+    backgroundColor: theme.colors.surfaceVariant,
   },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FDFBF7',
+    backgroundColor: theme.colors.surfaceVariant,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#D47285',
-    marginBottom: 20,
-  },
-  card: {
-    backgroundColor: '#FFF',
-    padding: 20,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
+    marginBottom: theme.spacing[4],
   },
   description: {
-    fontSize: 16,
     lineHeight: 24,
-    color: '#444',
   }
 });
