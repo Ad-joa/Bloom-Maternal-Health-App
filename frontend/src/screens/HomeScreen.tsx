@@ -10,6 +10,7 @@ type RootStackParamList = {
   Home: undefined;
   Trimester: { trimesterId: number };
   Advisory: undefined;
+  DailyLog: undefined;
 };
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
@@ -28,6 +29,21 @@ export default function HomeScreen({ navigation }: Props) {
         <Typography variant="body" color={theme.colors.textMedium} align="center">
           Empowering expectant mothers with knowledge and timely advice.
         </Typography>
+      </View>
+
+      <View style={styles.section}>
+        <Card variant="filled" style={styles.dailyLogCard}>
+          <Typography variant="title3" style={styles.sectionTitle}>
+            How are you feeling?
+          </Typography>
+          <Typography variant="body" color={theme.colors.textMedium} style={styles.description}>
+            Log your daily symptoms to track your pregnancy journey.
+          </Typography>
+          <Button 
+            title="Log Today's Symptoms" 
+            onPress={() => navigation.navigate('DailyLog')} 
+          />
+        </Card>
       </View>
 
       <View style={styles.section}>
@@ -95,4 +111,7 @@ const styles = StyleSheet.create({
   card: {
     marginBottom: theme.spacing[3],
   },
+  dailyLogCard: {
+    padding: theme.spacing[5],
+  }
 });

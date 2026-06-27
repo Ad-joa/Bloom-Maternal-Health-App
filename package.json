@@ -1,0 +1,9 @@
+{
+  "name": "bloom-maternal-health-workspace",
+  "private": true,
+  "scripts": {
+    "dev:frontend": "cd frontend && npm start",
+    "dev:backend": "cd backend && .\\venv\\Scripts\\python.exe -m uvicorn main:app --reload --port 8000",
+    "dev:all": "npx concurrently -c \"green,blue\" -n \"expo,api\" \"npm run dev:frontend\" \"npm run dev:backend\""
+  }
+}
