@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from './src/screens/HomeScreen';
 import TrimesterScreen from './src/screens/TrimesterScreen';
 import AdvisoryScreen from './src/screens/AdvisoryScreen';
+import DailyLogScreen from './src/screens/DailyLogScreen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { theme } from './src/theme/theme';
 import * as Font from 'expo-font';
@@ -26,10 +27,11 @@ import {
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
-type RootStackParamList = {
+export type RootStackParamList = {
   Home: undefined;
   Trimester: { trimesterId: number };
   Advisory: undefined;
+  DailyLog: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -94,6 +96,11 @@ export default function App() {
             name="Advisory" 
             component={AdvisoryScreen} 
             options={{ title: 'Health Advisory' }} 
+          />
+          <Stack.Screen 
+            name="DailyLog" 
+            component={DailyLogScreen} 
+            options={{ title: 'Daily Log' }} 
           />
         </Stack.Navigator>
       </NavigationContainer>
