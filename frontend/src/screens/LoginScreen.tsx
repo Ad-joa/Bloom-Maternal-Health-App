@@ -28,7 +28,12 @@ export default function LoginScreen({ navigation }: Props) {
       try {
         const response = await loginUser({ email, password });
         if (response.user) {
-          login(response.user);
+          if (!response.user.trimester || !response.user.due_date) {
+            // User hasn't finished onboarding
+            navigation.navigate('Onboarding', { user: response.user });
+          } else {
+            login(response.user);
+          }
         }
       } catch (error) {
         console.error("Login failed", error);
