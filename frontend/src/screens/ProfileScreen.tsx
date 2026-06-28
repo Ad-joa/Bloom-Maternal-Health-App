@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { Settings, Bell, CircleHelp, LogOut, ChevronRight } from 'lucide-react-native';
 
 export default function ProfileScreen() {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
 
   const menuItems = [
     { title: 'Personal Information', icon: <Settings size={20} color={theme.colors.textMedium} /> },
@@ -20,10 +20,12 @@ export default function ProfileScreen() {
 
       <View style={styles.profileHeader}>
         <View style={styles.avatarLarge}>
-          <Typography variant="largeTitle" color={theme.colors.primaryDark}>S</Typography>
+          <Typography variant="largeTitle" color={theme.colors.primaryDark}>
+            {user?.name ? user.name[0].toUpperCase() : 'B'}
+          </Typography>
         </View>
-        <Typography variant="title2" style={styles.name}>Diapim Fortune</Typography>
-        <Typography variant="body" color={theme.colors.textMedium}>diapimfortunetables a@example.com</Typography>
+        <Typography variant="title2" style={styles.name}>{user?.name || 'Bloom User'}</Typography>
+        <Typography variant="body" color={theme.colors.textMedium}>{user?.email || 'user@example.com'}</Typography>
       </View>
 
       <View style={styles.section}>

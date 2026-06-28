@@ -11,7 +11,8 @@ const getBaseUrl = () => {
     // Fallback for local development if .env is missing
     if (__DEV__) {
         // Typically 10.0.2.2 for Android emulator, or your local machine's IP (e.g., 172.20.10.3)
-        return 'http://127.0.0.1:8000';
+        // Since we know your IP is 172.20.10.3, we'll hardcode the fallback here so it works instantly
+        return 'http://172.20.10.3:8000';
     }
     
     // Production fallback (should ideally be injected via EXPO_PUBLIC_API_URL in CI/CD)
@@ -71,6 +72,26 @@ export const getInsights = async (userId: number) => {
         return response.data;
     } catch (error) {
         console.error("Error fetching insights:", error);
+        throw error;
+    }
+};
+
+export const registerUser = async (userData: any) => {
+    try {
+        const response = await apiClient.post('/register', userData);
+        return response.data;
+    } catch (error) {
+        console.error("Error registering:", error);
+        throw error;
+    }
+};
+
+export const onboardUser = async (userId: number, data: { trimester: number, due_date: string }) => {
+    try {
+        const response = await apiClient.put(`/users/${userId}/onboard`, data);
+        return response.data;
+    } catch (error) {
+        console.error("Error saving onboarding:", error);
         throw error;
     }
 };
