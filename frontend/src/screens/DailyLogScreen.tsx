@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
-import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { Check } from 'lucide-react-native';
 import { useAuth } from '../context/AuthContext';
 import { saveSymptomLog } from '../api/api';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const symptomsList = [
-  'Nausea', 'Fatigue', 'Headache', 'Back Pain', 'Cramps', 'Heartburn'
+  'Nausea', 'Fatigue', 'Headache', 'Back Pain', 'Cramps', 'Heartburn', 'Swelling', 'Dizziness', 'Mood Swings'
 ];
 
 export default function DailyLogScreen() {
@@ -46,113 +47,111 @@ export default function DailyLogScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-        <Typography variant="largeTitle" color={theme.colors.primaryDark}>
-          Daily Tracker
-        </Typography>
-        <Typography variant="body" color={theme.colors.textMedium}>
-          Log how you're feeling today
-        </Typography>
-      </View>
+    <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.container}>
+      <SafeAreaView edges={['top']} style={styles.safeArea}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          
+          <View style={styles.header}>
+            <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.headerTitle}>
+              Log period
+            </Typography>
+            <Typography variant="body" color={theme.colors.textMedium}>
+              Or any symptoms you're feeling today
+            </Typography>
+          </View>
 
-      <Typography variant="title3" style={styles.sectionTitle}>
-        Common Symptoms
-      </Typography>
-      
-      <View style={styles.grid}>
-        {symptomsList.map((symptom) => {
-          const isSelected = selectedSymptoms.includes(symptom);
-          return (
-            <TouchableOpacity 
-              key={symptom} 
-              onPress={() => toggleSymptom(symptom)}
-              activeOpacity={0.8}
-              style={styles.gridItem}
-            >
-              <Card 
-                style={[
-                  styles.symptomCard, 
-                  isSelected && styles.symptomCardSelected
-                ]}
-                variant={isSelected ? 'elevated' : 'outlined'}
-              >
-                {isSelected && (
-                  <View style={styles.checkBadge}>
-                    <Check size={12} color="#fff" />
-                  </View>
-                )}
-                <Typography 
-                  variant={isSelected ? 'headline' : 'body'} 
-                  color={isSelected ? theme.colors.primaryDark : theme.colors.textMedium}
-                  align="center"
-                >
-                  {symptom}
-                </Typography>
-              </Card>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+          <View style={styles.section}>
+            <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
+              Symptoms
+            </Typography>
+            <View style={styles.chipContainer}>
+              {symptomsList.map((symptom) => {
+                const isSelected = selectedSymptoms.includes(symptom);
+                return (
+                  <TouchableOpacity 
+                    key={symptom} 
+                    onPress={() => toggleSymptom(symptom)}
+                    activeOpacity={0.8}
+                    style={[styles.chip, isSelected && styles.chipSelected]}
+                  >
+                    {isSelected && <Check size={16} color="#fff" style={{ marginRight: 6 }} />}
+                    <Typography 
+                      variant="subhead" 
+                      color={isSelected ? '#fff' : theme.colors.textHigh}
+                    >
+                      {symptom}
+                    </Typography>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
 
-      <Button 
-        title="Save Log" 
-        onPress={handleSave}
-        loading={loading}
-        style={styles.submitButton}
-        disabled={selectedSymptoms.length === 0}
-      />
-    </ScrollView>
+          <View style={styles.footer}>
+            <Button 
+              title="Save Log" 
+              onPress={handleSave}
+              loading={loading}
+              disabled={selectedSymptoms.length === 0}
+            />
+          </View>
+
+        </ScrollView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    backgroundColor: theme.colors.surfaceVariant,
-    padding: theme.spacing[5],
+    flex: 1,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: theme.spacing[4],
+    paddingBottom: theme.spacing[8],
   },
   header: {
     marginBottom: theme.spacing[6],
-    marginTop: theme.spacing[4],
+    marginTop: theme.spacing[2],
+  },
+  headerTitle: {
+    fontFamily: theme.typography.families.headingBold,
+  },
+  section: {
+    marginBottom: theme.spacing[6],
   },
   sectionTitle: {
     marginBottom: theme.spacing[4],
+    fontFamily: theme.typography.families.headingBold,
   },
-  grid: {
+  chipContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: theme.spacing[3],
-    marginBottom: theme.spacing[6],
   },
-  gridItem: {
-    width: '47%', // roughly half width with gap
-  },
-  symptomCard: {
-    padding: theme.spacing[4],
+  chip: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 80,
-    marginBottom: 0,
-    backgroundColor: theme.colors.surface,
-  },
-  symptomCardSelected: {
-    backgroundColor: theme.colors.primaryLight + '50',
-    borderColor: theme.colors.primary,
+    backgroundColor: '#fff',
+    paddingVertical: theme.spacing[3],
+    paddingHorizontal: theme.spacing[4],
+    borderRadius: theme.radii.pill,
+    shadowColor: theme.colors.primaryDark,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
     borderWidth: 1,
+    borderColor: '#f5f5f5',
   },
-  checkBadge: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+  chipSelected: {
     backgroundColor: theme.colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderColor: theme.colors.primary,
   },
-  submitButton: {
-    marginTop: 'auto',
+  footer: {
+    marginTop: theme.spacing[4],
   }
 });

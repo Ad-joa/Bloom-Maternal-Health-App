@@ -1,5 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
@@ -16,7 +18,9 @@ export default function ProfileScreen() {
   ];
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.container}>
+      <SafeAreaView edges={['top']} style={styles.safeArea}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
       <View style={styles.profileHeader}>
         <View style={styles.avatarLarge}>
@@ -61,15 +65,22 @@ export default function ProfileScreen() {
         </Card>
       </TouchableOpacity>
 
-    </ScrollView>
+        </ScrollView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    backgroundColor: theme.colors.surfaceVariant,
+    flex: 1,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  scrollContent: {
     padding: theme.spacing[5],
+    paddingBottom: theme.spacing[8],
   },
   profileHeader: {
     alignItems: 'center',

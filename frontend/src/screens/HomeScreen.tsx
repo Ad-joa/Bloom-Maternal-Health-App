@@ -1,17 +1,15 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../App';
+import React, { useState } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../theme/theme';
 import { useAuth } from '../context/AuthContext';
 import { Typography } from '../components/Typography';
-import { Card } from '../components/Card';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Calendar, Stethoscope, ChevronRight, AlertTriangle } from 'lucide-react-native';
-import { getDaysUntilDue, getWeeksPregnant, getCurrentTrimester, getTrimesterName } from '../utils/dateUtils';
+import { Droplet, Heart, CheckCircle, MessageCircle, Calendar } from 'lucide-react-native';
+import { getDaysUntilDue, getWeeksPregnant, getCurrentTrimester } from '../utils/dateUtils';
 
-// We have to ignore the strict type for navigating to a nested Tab for now, 
-// or define the composite type. For simplicity, we use `any` to navigate to tabs.
+const { width } = Dimensions.get('window');
+
 type Props = {
   navigation: any; 
 };
@@ -23,252 +21,241 @@ export default function HomeScreen({ navigation }: Props) {
   const daysUntilDue = dueDate ? getDaysUntilDue(dueDate) : 0;
   const weeksPregnant = dueDate ? getWeeksPregnant(dueDate) : 0;
   const currentTrimester = dueDate ? getCurrentTrimester(dueDate) : (user?.trimester || 1);
-  const trimesterName = getTrimesterName(currentTrimester);
+
+  // Generate a mock calendar ribbon for the next 7 days
+  const today = new Date();
+  const calendarDays = Array.from({ length: 7 }).map((_, i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i - 3); // Center around today
+    return {
+      dayStr: d.toLocaleDateString('en-US', { weekday: 'short' })[0], // 'M', 'T', 'W'
+      dateNum: d.getDate(),
+      isToday: i === 3,
+    };
+  });
+
+  const actionButtons = [
+    { id: 'tracker', label: 'Log', icon: <Droplet color="#fff" size={24} />, route: 'Tracker', color: theme.colors.primary },
+    { id: 'symptoms', label: 'Symptoms', icon: <Heart color={theme.colors.textHigh} size={24} />, route: 'Advisory', color: '#fff' },
+    { id: 'ai', label: 'Bloom AI', icon: <MessageCircle color={theme.colors.textHigh} size={24} />, route: 'BloomAI', color: '#fff' },
+    { id: 'checkin', label: 'Check-in', icon: <CheckCircle color={theme.colors.textHigh} size={24} />, route: 'Tracker', color: '#fff' },
+  ];
+
+  const insights = [
+    { id: '1', title: 'Today\'s chance\nof symptoms', subtitle: 'Updating ...', color: theme.colors.primaryLight },
+    { id: '2', title: 'What makes you\nfeel loved?', subtitle: 'QUIZ', color: theme.colors.primaryDark, textLight: true },
+    { id: '3', title: 'Nutrition Check', subtitle: 'Drink Water', color: '#F3E8FF' },
+  ];
 
   return (
-    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Typography variant="body" color={theme.colors.textMedium}>
-            Good morning,
-          </Typography>
-          <Typography variant="largeTitle" color={theme.colors.primaryDark}>
-            {user?.name ? user.name.split(' ')[0] : 'Bloom User'}
-          </Typography>
-        </View>
-        <View style={styles.avatarPlaceholder}>
-          <Typography variant="title2" color={theme.colors.primaryDark}>
-            {user?.name ? user.name[0].toUpperCase() : 'B'}
-          </Typography>
-        </View>
-      </View>
-
-      {/* Hero Card: Current Trimester */}
-      <TouchableOpacity 
-        activeOpacity={0.9} 
-        onPress={() => navigation.navigate('Trimester', { trimesterId: currentTrimester })}
-      >
-        <LinearGradient
-          colors={[theme.colors.primary, theme.colors.primaryDark]}
-          style={styles.heroCard}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <View style={styles.heroContent}>
-            <View>
-              <Typography variant="subhead" color="#ffffffa0">
-                CURRENT STAGE
-              </Typography>
-              <Typography variant="title2" color="#fff" style={styles.heroTitle}>
-                {trimesterName}
-              </Typography>
-              <Typography variant="body" color="#ffffffd0">
-                {dueDate ? `Week ${weeksPregnant} • ${daysUntilDue} days until due date` : 'No due date set'}
+    <LinearGradient
+      colors={['#ffffff', '#fdf2f4', '#fce7eb']}
+      style={styles.container}
+    >
+      <SafeAreaView edges={['top']} style={styles.safeArea}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+          
+          {/* Header Row */}
+          <View style={styles.header}>
+            <View style={styles.avatar}>
+              <Typography variant="headline" color="#fff">
+                {user?.name ? user.name[0].toUpperCase() : 'B'}
               </Typography>
             </View>
-            <View style={styles.heroIconContainer}>
-              <Typography style={{fontSize: 40}}>👶</Typography>
+            <View style={styles.dateSelector}>
+              <Typography variant="headline" color={theme.colors.textHigh} style={{ marginRight: 8 }}>
+                {today.toLocaleDateString('en-US', { day: 'numeric', month: 'long' })}
+              </Typography>
+              <Calendar color={theme.colors.textHigh} size={20} />
             </View>
           </View>
-        </LinearGradient>
-      </TouchableOpacity>
 
-      {/* Quick Actions */}
-      <View style={styles.section}>
-        <Typography variant="title3" style={styles.sectionTitle}>
-          Quick Actions
-        </Typography>
-        <View style={styles.row}>
-          <TouchableOpacity 
-            style={styles.actionButton} 
-            onPress={() => navigation.navigate('Advisory')}
-          >
-            <Card style={styles.actionCard}>
-              <View style={[styles.iconWrapper, { backgroundColor: theme.colors.danger + '20' }]}>
-                <Stethoscope color={theme.colors.danger} size={24} />
+          {/* Calendar Ribbon */}
+          <View style={styles.calendarRibbon}>
+            {calendarDays.map((day, idx) => (
+              <View key={idx} style={[styles.dayColumn, day.isToday && styles.todayColumn]}>
+                <Typography variant="caption1" color={theme.colors.textMedium} style={styles.dayStr}>
+                  {day.dayStr}
+                </Typography>
+                <Typography variant="title3" color={theme.colors.textHigh} style={styles.dateNum}>
+                  {day.dateNum}
+                </Typography>
               </View>
-              <Typography variant="subhead" style={styles.actionText}>Symptom Check</Typography>
-            </Card>
-          </TouchableOpacity>
+            ))}
+          </View>
 
+          {/* Huge Hero Typography */}
           <TouchableOpacity 
-            style={styles.actionButton} 
-            onPress={() => navigation.navigate('Tracker')}
+            activeOpacity={0.9} 
+            style={styles.heroSection}
+            onPress={() => navigation.navigate('Trimester', { trimesterId: currentTrimester })}
           >
-            <Card style={styles.actionCard}>
-              <View style={[styles.iconWrapper, { backgroundColor: theme.colors.success + '20' }]}>
-                <Calendar color={theme.colors.success} size={24} />
-              </View>
-              <Typography variant="subhead" style={styles.actionText}>Log Symptoms</Typography>
-            </Card>
+            {dueDate ? (
+              <>
+                <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.heroTitle}>
+                  Week {weeksPregnant}
+                </Typography>
+                <Typography variant="body" color={theme.colors.textMedium} style={styles.heroSubtitle}>
+                  {daysUntilDue} days until due date ⓘ
+                </Typography>
+              </>
+            ) : (
+              <>
+                <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.heroTitle}>
+                  No Due Date
+                </Typography>
+                <Typography variant="body" color={theme.colors.textMedium} style={styles.heroSubtitle}>
+                  Tap to set your due date ⓘ
+                </Typography>
+              </>
+            )}
           </TouchableOpacity>
-        </View>
-      </View>
 
-      {/* Emergency Danger Signs */}
-      <View style={styles.section}>
-        <Typography variant="title3" style={styles.sectionTitle}>
-          Emergency Danger Signs
-        </Typography>
-        <Card variant="outlined" style={styles.dangerCard}>
-          <View style={styles.dangerHeader}>
-            <AlertTriangle color={theme.colors.danger} size={24} />
-            <Typography variant="headline" style={styles.dangerTitle}>Go to hospital immediately if you have:</Typography>
+          {/* Circular Action Buttons */}
+          <View style={styles.actionRow}>
+            {actionButtons.map(btn => (
+              <TouchableOpacity key={btn.id} style={styles.actionItem} onPress={() => navigation.navigate(btn.route)}>
+                <View style={[styles.circleButton, { backgroundColor: btn.color }]}>
+                  {btn.icon}
+                </View>
+                <Typography variant="caption1" color={theme.colors.textHigh} style={{ marginTop: 8 }}>
+                  {btn.label}
+                </Typography>
+              </TouchableOpacity>
+            ))}
           </View>
-          <View style={styles.dangerList}>
-            <Typography variant="body" color={theme.colors.textMedium}>• Heavy vaginal bleeding</Typography>
-            <Typography variant="body" color={theme.colors.textMedium}>• Convulsions or fits</Typography>
-            <Typography variant="body" color={theme.colors.textMedium}>• Severe headache with blurred vision</Typography>
-            <Typography variant="body" color={theme.colors.textMedium}>• Fever and too weak to get out of bed</Typography>
-          </View>
-          <TouchableOpacity style={styles.emergencyBtn} activeOpacity={0.8}>
-            <Typography variant="headline" color="#fff">Emergency Contacts</Typography>
-          </TouchableOpacity>
-        </Card>
-      </View>
 
-      {/* Daily Tip */}
-      <View style={styles.section}>
-        <Typography variant="title3" style={styles.sectionTitle}>
-          Today's Tip
-        </Typography>
-        <Card variant="outlined" style={styles.tipCard}>
-          <View style={styles.tipHeader}>
-            <Typography style={{fontSize: 24}}>💧</Typography>
-            <Typography variant="headline" style={styles.tipTitle}>Stay Hydrated</Typography>
+          {/* Daily Insights */}
+          <View style={styles.insightsSection}>
+            <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
+              My daily insights • Today
+            </Typography>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.insightsScroll}>
+              {insights.map(item => (
+                <TouchableOpacity key={item.id} style={[styles.insightCard, { backgroundColor: item.color }]}>
+                  <Typography variant="headline" color={item.textLight ? '#fff' : theme.colors.textHigh} style={styles.insightTitle}>
+                    {item.title}
+                  </Typography>
+                  <Typography variant="subhead" color={item.textLight ? '#ffffffa0' : theme.colors.primaryDark}>
+                    {item.subtitle}
+                  </Typography>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
-          <Typography variant="body" color={theme.colors.textMedium}>
-            Drinking 8-10 glasses of water helps form the amniotic fluid around the baby and carries extra nutrients!
-          </Typography>
-        </Card>
-      </View>
 
-    </ScrollView>
+        </ScrollView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    backgroundColor: theme.colors.surfaceVariant,
-    padding: theme.spacing[5],
-    paddingTop: theme.spacing[8],
+    flex: 1,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: theme.spacing[8],
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: theme.spacing[6],
+    paddingHorizontal: theme.spacing[4],
+    marginTop: theme.spacing[2],
+    marginBottom: theme.spacing[4],
   },
-  avatarPlaceholder: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: theme.colors.primaryLight,
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: theme.colors.success,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#fff',
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
   },
-  heroCard: {
-    borderRadius: theme.radii.xl,
-    padding: theme.spacing[5],
-    marginBottom: theme.spacing[6],
-    shadowColor: theme.colors.primaryDark,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  heroContent: {
+  dateSelector: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  heroTitle: {
-    marginVertical: theme.spacing[1],
+  calendarRibbon: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing[2],
+    marginBottom: theme.spacing[8],
   },
-  heroIconContainer: {
+  dayColumn: {
+    alignItems: 'center',
+    width: 44,
+    height: 60,
+    justifyContent: 'center',
+    borderRadius: 22,
+  },
+  todayColumn: {
+    backgroundColor: '#E5E5EA', // Or a very light gray shadow
+  },
+  dayStr: {
+    marginBottom: 4,
+  },
+  dateNum: {
+    fontFamily: theme.typography.families.headingBold,
+  },
+  heroSection: {
+    alignItems: 'center',
+    marginBottom: theme.spacing[8],
+  },
+  heroTitle: {
+    fontSize: 42,
+    fontFamily: theme.typography.families.headingBold,
+    textAlign: 'center',
+    marginBottom: theme.spacing[2],
+  },
+  heroSubtitle: {
+    textAlign: 'center',
+  },
+  actionRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: theme.spacing[5],
+    marginBottom: theme.spacing[8],
+    paddingHorizontal: theme.spacing[4],
+  },
+  actionItem: {
+    alignItems: 'center',
+  },
+  circleButton: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: theme.colors.primaryDark,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
   },
-  section: {
-    marginBottom: theme.spacing[6],
+  insightsSection: {
+    paddingLeft: theme.spacing[4],
   },
   sectionTitle: {
     marginBottom: theme.spacing[3],
-    color: theme.colors.textHigh,
+    fontFamily: theme.typography.families.headingBold,
   },
-  row: {
-    flexDirection: 'row',
+  insightsScroll: {
+    paddingRight: theme.spacing[4],
     gap: theme.spacing[3],
   },
-  actionButton: {
-    flex: 1,
-  },
-  actionCard: {
-    alignItems: 'center',
+  insightCard: {
+    width: width * 0.4,
+    height: 180,
+    borderRadius: theme.radii.xl,
     padding: theme.spacing[4],
-    marginBottom: 0,
+    justifyContent: 'space-between',
   },
-  iconWrapper: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: theme.spacing[2],
-  },
-  actionText: {
-    textAlign: 'center',
-  },
-  tipCard: {
-    backgroundColor: '#fff',
-    padding: theme.spacing[5],
-  },
-  tipHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: theme.spacing[2],
-    gap: theme.spacing[2],
-  },
-  tipTitle: {
-    color: theme.colors.primaryDark,
-  },
-  dangerCard: {
-    borderColor: theme.colors.danger + '40',
-    backgroundColor: theme.colors.danger + '05',
-    padding: theme.spacing[5],
-  },
-  dangerHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: theme.spacing[3],
-    gap: theme.spacing[2],
-  },
-  dangerTitle: {
-    color: theme.colors.danger,
-    flex: 1,
-  },
-  dangerList: {
-    paddingLeft: theme.spacing[2],
-    gap: theme.spacing[1],
-    marginBottom: theme.spacing[4],
-  },
-  emergencyBtn: {
-    backgroundColor: theme.colors.danger,
-    padding: theme.spacing[3],
-    borderRadius: theme.radii.lg,
-    alignItems: 'center',
+  insightTitle: {
+    fontFamily: theme.typography.families.headingBold,
   }
 });
