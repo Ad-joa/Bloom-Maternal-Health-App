@@ -11,6 +11,12 @@ class UserOnboarding(BaseModel):
     due_date: Optional[str] = None
     is_first_pregnancy: Optional[bool] = None
     medical_conditions: Optional[str] = None
+    age: Optional[int] = None
+    weight: Optional[str] = None
+    primary_goal: Optional[str] = None
+    dietary_preferences: Optional[str] = None
+    emergency_contact_name: Optional[str] = None
+    emergency_contact_phone: Optional[str] = None
 
 class UserResponse(BaseModel):
     id: int

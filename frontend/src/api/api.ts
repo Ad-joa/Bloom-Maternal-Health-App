@@ -36,9 +36,11 @@ export const getTrimesterInfo = async (trimesterId: number) => {
     }
 };
 
-export const getAdvisory = async (symptoms: string[]) => {
+export const getAdvisory = async (symptoms: string[], userId?: number) => {
     try {
-        const response = await apiClient.post('/advisory', { symptoms });
+        const payload: any = { symptoms };
+        if (userId) payload.user_id = userId;
+        const response = await apiClient.post('/advisory', payload);
         return response.data;
     } catch (error) {
         console.error("Error fetching advisory:", error);
@@ -93,6 +95,12 @@ export const onboardUser = async (
         due_date?: string; 
         is_first_pregnancy?: boolean; 
         medical_conditions?: string;
+        age?: number;
+        weight?: string;
+        primary_goal?: string;
+        dietary_preferences?: string;
+        emergency_contact_name?: string;
+        emergency_contact_phone?: string;
     }
 ) => {
     try {

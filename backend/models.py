@@ -16,6 +16,12 @@ class User(Base):
     due_date = Column(String, nullable=True, index=True)
     is_first_pregnancy = Column(Boolean, nullable=True)
     medical_conditions = Column(String, nullable=True)
+    age = Column(Integer, nullable=True)
+    weight = Column(String, nullable=True)
+    primary_goal = Column(String, nullable=True)
+    dietary_preferences = Column(String, nullable=True)
+    emergency_contact_name = Column(String, nullable=True)
+    emergency_contact_phone = Column(String, nullable=True)
 
     # Relationships
     logs = relationship("SymptomLog", back_populates="user")
