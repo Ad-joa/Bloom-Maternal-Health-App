@@ -1,42 +1,51 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../App';
+import React, { useState } from 'react';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, SafeAreaView } from 'react-native';
 import { theme } from '../theme/theme';
+import { useAuth } from '../context/AuthContext';
 
-type OnboardingScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Onboarding'>;
+export default function OnboardingScreen() {
+  const [trimester, setTrimester] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const { login } = useAuth();
 
-type Props = {
-  navigation: OnboardingScreenNavigationProp;
-};
+  const handleComplete = () => {
+    // In a real app, save this data to the backend before logging in
+    login();
+  };
 
-export default function OnboardingScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <View style={styles.imagePlaceholder}>
-          <Text style={styles.imagePlaceholderText}>🌸</Text>
-        </View>
-        
-        <Text style={styles.title}>Welcome to Bloom</Text>
-        <Text style={styles.subtitle}>Your maternal health journey, supported every step of the way.</Text>
-        
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity 
-            style={styles.primaryButton} 
-            onPress={() => navigation.navigate('Register')}
-          >
-            <Text style={styles.primaryButtonText}>Get Started</Text>
-          </TouchableOpacity>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.container}
+      >
+        <View style={styles.content}>
+          <Text style={styles.title}>Tell us about you</Text>
+          <Text style={styles.subtitle}>Help us personalize your Bloom experience</Text>
           
-          <TouchableOpacity 
-            style={styles.secondaryButton} 
-            onPress={() => navigation.navigate('Login')}
-          >
-            <Text style={styles.secondaryButtonText}>Log In</Text>
-          </TouchableOpacity>
+          <View style={styles.form}>
+            <TextInput
+              style={styles.input}
+              placeholder="Current Trimester (e.g. 1, 2, or 3)"
+              placeholderTextColor={theme.colors.textMedium}
+              value={trimester}
+              onChangeText={setTrimester}
+              keyboardType="number-pad"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Expected Due Date (MM/DD/YYYY)"
+              placeholderTextColor={theme.colors.textMedium}
+              value={dueDate}
+              onChangeText={setDueDate}
+            />
+            
+            <TouchableOpacity style={styles.primaryButton} onPress={handleComplete}>
+              <Text style={styles.primaryButtonText}>Complete Setup</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -48,63 +57,47 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+  },
+  content: {
+    flex: 1,
     padding: theme.spacing[4],
-    alignItems: 'center',
     justifyContent: 'center',
-  },
-  imagePlaceholder: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: theme.colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: theme.spacing[6],
-  },
-  imagePlaceholderText: {
-    fontSize: 80,
   },
   title: {
     fontFamily: theme.typography.families.headingBold,
     fontSize: theme.typography.sizes.largeTitle,
     color: theme.colors.textHigh,
-    marginBottom: theme.spacing[2],
-    textAlign: 'center',
+    marginBottom: theme.spacing[1],
   },
   subtitle: {
     fontFamily: theme.typography.families.bodyRegular,
     fontSize: theme.typography.sizes.body,
     color: theme.colors.textMedium,
-    textAlign: 'center',
-    marginBottom: theme.spacing[8],
-    paddingHorizontal: theme.spacing[4],
+    marginBottom: theme.spacing[6],
   },
-  buttonContainer: {
-    width: '100%',
+  form: {
     gap: theme.spacing[3],
+  },
+  input: {
+    backgroundColor: theme.colors.surfaceVariant,
+    padding: theme.spacing[3],
+    borderRadius: theme.radii.md,
+    fontFamily: theme.typography.families.bodyRegular,
+    fontSize: theme.typography.sizes.body,
+    color: theme.colors.textHigh,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   primaryButton: {
     backgroundColor: theme.colors.primary,
     paddingVertical: theme.spacing[3],
     borderRadius: theme.radii.pill,
     alignItems: 'center',
+    marginTop: theme.spacing[2],
   },
   primaryButtonText: {
     fontFamily: theme.typography.families.bodyBold,
     color: '#fff',
-    fontSize: theme.typography.sizes.body,
-  },
-  secondaryButton: {
-    backgroundColor: 'transparent',
-    paddingVertical: theme.spacing[3],
-    borderRadius: theme.radii.pill,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.primary,
-  },
-  secondaryButtonText: {
-    fontFamily: theme.typography.families.bodyBold,
-    color: theme.colors.primary,
     fontSize: theme.typography.sizes.body,
   },
 });

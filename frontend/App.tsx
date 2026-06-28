@@ -5,6 +5,7 @@ import HomeScreen from './src/screens/HomeScreen';
 import TrimesterScreen from './src/screens/TrimesterScreen';
 import AdvisoryScreen from './src/screens/AdvisoryScreen';
 import DailyLogScreen from './src/screens/DailyLogScreen';
+import WelcomeScreen from './src/screens/WelcomeScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
@@ -13,7 +14,7 @@ import BloomAIScreen from './src/screens/BloomAIScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
+import { Home, LineChart, MessageCircle, Calendar, User } from 'lucide-react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { theme } from './src/theme/theme';
 import * as Font from 'expo-font';
@@ -37,6 +38,7 @@ import {
 SplashScreen.preventAutoHideAsync();
 
 export type RootStackParamList = {
+  Welcome: undefined;
   Onboarding: undefined;
   Login: undefined;
   Register: undefined;
@@ -61,13 +63,12 @@ function MainTabs() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap = 'home';
-          if (route.name === 'Home') iconName = focused ? 'home' : 'home-outline';
-          else if (route.name === 'Insights') iconName = focused ? 'bar-chart' : 'bar-chart-outline';
-          else if (route.name === 'BloomAI') iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
-          else if (route.name === 'Tracker') iconName = focused ? 'calendar' : 'calendar-outline';
-          else if (route.name === 'Profile') iconName = focused ? 'person' : 'person-outline';
-          return <Ionicons name={iconName} size={size} color={color} />;
+          if (route.name === 'Home') return <Home size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
+          if (route.name === 'Insights') return <LineChart size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
+          if (route.name === 'BloomAI') return <MessageCircle size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
+          if (route.name === 'Tracker') return <Calendar size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
+          if (route.name === 'Profile') return <User size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
+          return null;
         },
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: 'gray',
@@ -104,8 +105,8 @@ function Navigation() {
         {!isAuthenticated ? (
           <>
             <Stack.Screen 
-              name="Onboarding" 
-              component={OnboardingScreen} 
+              name="Welcome" 
+              component={WelcomeScreen} 
               options={{ headerShown: false }} 
             />
             <Stack.Screen 
@@ -116,6 +117,11 @@ function Navigation() {
             <Stack.Screen 
               name="Register" 
               component={RegisterScreen} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="Onboarding" 
+              component={OnboardingScreen} 
               options={{ headerShown: false }} 
             />
           </>
