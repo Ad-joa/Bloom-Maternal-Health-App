@@ -3,6 +3,7 @@ import { View, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-nat
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { theme } from '../theme/theme';
+import { useAuth } from '../context/AuthContext';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -15,6 +16,8 @@ type Props = {
 };
 
 export default function HomeScreen({ navigation }: Props) {
+  const { user } = useAuth();
+
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       
@@ -25,11 +28,13 @@ export default function HomeScreen({ navigation }: Props) {
             Good morning,
           </Typography>
           <Typography variant="largeTitle" color={theme.colors.primaryDark}>
-            Sarah
+            {user?.name ? user.name.split(' ')[0] : 'Bloom User'}
           </Typography>
         </View>
         <View style={styles.avatarPlaceholder}>
-          <Typography variant="title2" color={theme.colors.primaryDark}>S</Typography>
+          <Typography variant="title2" color={theme.colors.primaryDark}>
+            {user?.name ? user.name[0].toUpperCase() : 'B'}
+          </Typography>
         </View>
       </View>
 
