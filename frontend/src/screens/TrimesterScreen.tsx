@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
     paddingHorizontal: theme.spacing[3],
     paddingVertical: theme.spacing[2],
-    borderRadius: theme.radii.full,
+    borderRadius: theme.radii.pill,
     alignSelf: 'flex-start',
   },
   contentSection: {
