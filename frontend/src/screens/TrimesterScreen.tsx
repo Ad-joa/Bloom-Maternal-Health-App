@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   },
   heroCard: {
     padding: theme.spacing[6],
-    borderRadius: theme.radii['2xl'],
+    borderRadius: theme.radii.xl,
     marginBottom: theme.spacing[5],
     shadowColor: theme.colors.primary,
     shadowOffset: { width: 0, height: 6 },
