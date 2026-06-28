@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { getAdvisory } from '../api/api';
 import { theme } from '../theme/theme';
 import { useAuth } from '../context/AuthContext';
 import { Typography } from '../components/Typography';
 import { Button } from '../components/Button';
 import { TextInput } from '../components/TextInput';
+import { BounceButton } from '../components/BounceButton';
 import { Card } from '../components/Card';
 import { AlertTriangle, Info, Check } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const COMMON_SYMPTOMS = [
   "Nausea", "Headache", "Swollen Feet", "Fever", "Back Pain", 
@@ -44,11 +47,8 @@ export default function AdvisoryScreen() {
     setAdvice(null);
     try {
       const response = await getAdvisory(allSymptoms, user?.id);
-      // Mocking a severity logic if the backend doesn't provide it yet
-      // If the backend just returns a string, we map it into an object
       const adviceStr = typeof response.advice === 'string' ? response.advice : response.advice.text;
       
-      // Super naive danger check for demo purposes (usually backend does this)
       const isDanger = allSymptoms.some(s => ['fever', 'spotting', 'cramping'].includes(s.toLowerCase()));
       
       setAdvice({
@@ -65,166 +65,185 @@ export default function AdvisoryScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        <Typography variant="largeTitle" color={theme.colors.primaryDark}>
-          Symptom Checker
-        </Typography>
-        <Typography variant="body" color={theme.colors.textMedium} style={styles.subtitle}>
-          Select common symptoms or describe what you are feeling to get intelligent advisory guidance.
-        </Typography>
-      </View>
-
-      <Typography variant="title3" style={styles.sectionTitle}>
-        Common Symptoms
-      </Typography>
-      <View style={styles.chipContainer}>
-        {COMMON_SYMPTOMS.map((symptom) => {
-          const isSelected = selectedChips.includes(symptom);
-          return (
-            <TouchableOpacity
-              key={symptom}
-              activeOpacity={0.8}
-              onPress={() => toggleChip(symptom)}
-              style={[styles.chip, isSelected && styles.chipSelected]}
-            >
-              {isSelected && <Check size={14} color={theme.colors.primaryDark} style={styles.chipIcon} />}
-              <Typography 
-                variant="subhead" 
-                color={isSelected ? theme.colors.primaryDark : theme.colors.textMedium}
-              >
-                {symptom}
-              </Typography>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-
-      <Typography variant="title3" style={styles.sectionTitle}>
-        Other Symptoms
-      </Typography>
-      <TextInput
-        placeholder="E.g. blurry vision, dizziness..."
-        value={additionalSymptoms}
-        onChangeText={setAdditionalSymptoms}
-        multiline
-        style={styles.textArea}
-      />
-
-      <Button 
-        title="Analyze Symptoms" 
-        onPress={handleSubmit} 
-        loading={loading} 
-        style={styles.button}
-      />
-
-      {advice && (
-        <Card 
-          style={[
-            styles.resultCard, 
-            { borderLeftColor: advice.severity === 'danger' ? theme.colors.danger : theme.colors.success }
-          ]}
-        >
-          <View style={styles.resultHeader}>
-            {advice.severity === 'danger' ? (
-              <AlertTriangle color={theme.colors.danger} size={24} />
-            ) : (
-              <Info color={theme.colors.success} size={24} />
-            )}
-            <Typography 
-              variant="title3" 
-              color={advice.severity === 'danger' ? theme.colors.danger : theme.colors.success}
-              style={styles.resultTitle}
-            >
-              {advice.severity === 'danger' ? "Medical Attention Recommended" : "Advisory"}
+    <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.container}>
+      <SafeAreaView edges={['top']} style={styles.safeArea}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          
+          <View style={styles.header}>
+            <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.headerTitle}>
+              Symptom Checker
+            </Typography>
+            <Typography variant="body" color={theme.colors.textMedium} style={styles.subtitle}>
+              Select common symptoms or describe what you are feeling to get intelligent advisory guidance.
             </Typography>
           </View>
-          <Typography variant="body" style={styles.resultText}>
-            {advice.text}
-          </Typography>
-          
-          {advice.severity === 'danger' && (
-            <TouchableOpacity style={styles.emergencyCallBtn}>
-              <Typography variant="headline" color="#fff">Call Hospital</Typography>
-            </TouchableOpacity>
+
+          <View style={styles.section}>
+            <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
+              Common Symptoms
+            </Typography>
+            <View style={styles.chipContainer}>
+              {COMMON_SYMPTOMS.map((symptom) => {
+                const isSelected = selectedChips.includes(symptom);
+                return (
+                  <BounceButton
+                    key={symptom}
+                    onPress={() => toggleChip(symptom)}
+                    style={[styles.chip, isSelected && styles.chipSelected]}
+                  >
+                    {isSelected && <Check size={16} color="#fff" style={{ marginRight: 6 }} />}
+                    <Typography 
+                      variant="subhead" 
+                      color={isSelected ? '#fff' : theme.colors.textHigh}
+                    >
+                      {symptom}
+                    </Typography>
+                  </BounceButton>
+                );
+              })}
+            </View>
+          </View>
+
+          <View style={styles.section}>
+            <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
+              Other Symptoms
+            </Typography>
+            <TextInput
+              placeholder="E.g. blurry vision, dizziness..."
+              value={additionalSymptoms}
+              onChangeText={setAdditionalSymptoms}
+              multiline
+              style={styles.textArea}
+            />
+          </View>
+
+          <Button 
+            title="Analyze Symptoms" 
+            onPress={handleSubmit} 
+            loading={loading} 
+            style={styles.button}
+          />
+
+          {advice && (
+            <Card 
+              style={[
+                styles.resultCard, 
+                { borderLeftColor: advice.severity === 'danger' ? theme.colors.danger : theme.colors.success }
+              ]}
+            >
+              <View style={styles.resultHeader}>
+                {advice.severity === 'danger' ? (
+                  <AlertTriangle color={theme.colors.danger} size={24} />
+                ) : (
+                  <Info color={theme.colors.success} size={24} />
+                )}
+                <Typography 
+                  variant="title3" 
+                  color={advice.severity === 'danger' ? theme.colors.danger : theme.colors.success}
+                  style={styles.resultTitle}
+                >
+                  {advice.severity === 'danger' ? "Medical Attention Recommended" : "Advisory"}
+                </Typography>
+              </View>
+              <Typography variant="body" color={theme.colors.textHigh} style={styles.resultText}>
+                {advice.text}
+              </Typography>
+            </Card>
           )}
-        </Card>
-      )}
-    </ScrollView>
+
+        </ScrollView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    padding: theme.spacing[5],
-    backgroundColor: theme.colors.surfaceVariant,
+    flex: 1,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: theme.spacing[4],
+    paddingBottom: theme.spacing[8],
   },
   header: {
-    marginBottom: theme.spacing[5],
+    marginBottom: theme.spacing[6],
+    marginTop: theme.spacing[2],
+  },
+  headerTitle: {
+    fontFamily: theme.typography.families.headingBold,
+    marginBottom: theme.spacing[2],
   },
   subtitle: {
-    marginTop: theme.spacing[2],
-    lineHeight: 22,
+    lineHeight: 24,
+  },
+  section: {
+    marginBottom: theme.spacing[6],
   },
   sectionTitle: {
-    marginBottom: theme.spacing[3],
-    color: theme.colors.textHigh,
+    marginBottom: theme.spacing[4],
+    fontFamily: theme.typography.families.headingBold,
   },
   chipContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: theme.spacing[2],
-    marginBottom: theme.spacing[6],
+    gap: theme.spacing[3],
   },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: theme.spacing[4],
-    paddingVertical: theme.spacing[2],
-    borderRadius: theme.radii.pill,
     backgroundColor: '#fff',
+    paddingVertical: theme.spacing[3],
+    paddingHorizontal: theme.spacing[4],
+    borderRadius: theme.radii.pill,
+    shadowColor: theme.colors.primaryDark,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: '#f5f5f5',
   },
   chipSelected: {
-    backgroundColor: theme.colors.primaryLight + '30',
+    backgroundColor: theme.colors.primary,
     borderColor: theme.colors.primary,
   },
-  chipIcon: {
-    marginRight: theme.spacing[2],
-  },
   textArea: {
-    height: 100,
+    minHeight: 100,
     textAlignVertical: 'top',
-    marginBottom: theme.spacing[5],
+    backgroundColor: '#fff',
+    borderWidth: 0,
+    shadowColor: theme.colors.primaryDark,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   button: {
+    marginTop: theme.spacing[2],
     marginBottom: theme.spacing[6],
   },
   resultCard: {
-    borderLeftWidth: 6,
-    padding: theme.spacing[5],
+    borderLeftWidth: 4,
     backgroundColor: '#fff',
+    shadowColor: theme.colors.primaryDark,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 4,
   },
   resultHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: theme.spacing[3],
-    gap: theme.spacing[2],
   },
   resultTitle: {
-    flex: 1,
+    marginLeft: theme.spacing[2],
+    fontFamily: theme.typography.families.headingBold,
   },
   resultText: {
     lineHeight: 24,
-    color: theme.colors.textHigh,
-  },
-  emergencyCallBtn: {
-    marginTop: theme.spacing[4],
-    backgroundColor: theme.colors.danger,
-    padding: theme.spacing[3],
-    borderRadius: theme.radii.md,
-    alignItems: 'center',
   }
 });

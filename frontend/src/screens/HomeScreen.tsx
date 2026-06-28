@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../theme/theme';
 import { useAuth } from '../context/AuthContext';
 import { Typography } from '../components/Typography';
+import { BounceButton } from '../components/BounceButton';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Droplet, Heart, CheckCircle, MessageCircle, Calendar } from 'lucide-react-native';
 import { getDaysUntilDue, getWeeksPregnant, getCurrentTrimester } from '../utils/dateUtils';
@@ -158,14 +159,14 @@ export default function HomeScreen({ navigation }: Props) {
           {/* Circular Action Buttons */}
           <View style={styles.actionRow}>
             {actionButtons.map(btn => (
-              <TouchableOpacity key={btn.id} style={styles.actionItem} onPress={() => navigation.navigate(btn.route)}>
+              <BounceButton key={btn.id} style={styles.actionItem} onPress={() => navigation.navigate(btn.route)}>
                 <View style={[styles.circleButton, { backgroundColor: btn.color }]}>
                   {btn.icon}
                 </View>
                 <Typography variant="caption1" color={theme.colors.textHigh} style={{ marginTop: 8 }}>
                   {btn.label}
                 </Typography>
-              </TouchableOpacity>
+              </BounceButton>
             ))}
           </View>
 
@@ -176,18 +177,19 @@ export default function HomeScreen({ navigation }: Props) {
             </Typography>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.insightsScroll}>
               {insights.map(item => (
-                <TouchableOpacity 
+                <BounceButton 
                   key={item.id} 
-                  style={[styles.insightCard, { backgroundColor: item.color }]}
                   onPress={() => navigation.navigate(item.route)}
                 >
-                  <Typography variant="headline" color={item.textLight ? '#fff' : theme.colors.textHigh} style={styles.insightTitle}>
-                    {item.title}
-                  </Typography>
-                  <Typography variant="subhead" color={item.textLight ? '#ffffffa0' : theme.colors.primaryDark}>
-                    {item.subtitle}
-                  </Typography>
-                </TouchableOpacity>
+                  <View style={[styles.insightCard, { backgroundColor: item.color }]}>
+                    <Typography variant="headline" color={item.textLight ? '#fff' : theme.colors.textHigh} style={styles.insightTitle}>
+                      {item.title}
+                    </Typography>
+                    <Typography variant="subhead" color={item.textLight ? '#ffffffa0' : theme.colors.primaryDark}>
+                      {item.subtitle}
+                    </Typography>
+                  </View>
+                </BounceButton>
               ))}
             </ScrollView>
           </View>

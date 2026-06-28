@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
@@ -21,8 +21,9 @@ export default function BloomAIScreen() {
   const { user } = useAuth();
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
+  const scrollViewRef = useRef<ScrollView>(null);
   const [messages, setMessages] = useState<Message[]>([
-    { id: '1', text: 'Hi Sarah! I am Bloom AI. Do you have any questions about your pregnancy today? Describe what you are feeling.', sender: 'ai' },
+    { id: '1', text: `Hi ${user?.name ? user.name.split(' ')[0] : 'there'}! I am Bloom AI. Do you have any questions about your pregnancy today? Describe what you are feeling.`, sender: 'ai' },
   ]);
 
   const handleSend = async () => {
@@ -58,77 +59,113 @@ export default function BloomAIScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-        style={styles.container}
-        keyboardVerticalOffset={90}
-      >
-        <ScrollView contentContainerStyle={styles.chatContainer}>
-          {messages.map((msg) => (
-            <View 
-              key={msg.id} 
-              style={[
-                styles.messageRow, 
-                msg.sender === 'user' ? styles.messageRowUser : styles.messageRowAI
-              ]}
-            >
-              {msg.sender === 'ai' && (
+    <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.container}>
+      <SafeAreaView edges={['top']} style={styles.safeArea}>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+          style={styles.container}
+          keyboardVerticalOffset={90}
+        >
+          <View style={styles.header}>
+            <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.headerTitle}>
+              Bloom AI
+            </Typography>
+            <Typography variant="body" color={theme.colors.textMedium}>
+              Your intelligent pregnancy assistant
+            </Typography>
+          </View>
+
+          <ScrollView 
+            ref={scrollViewRef}
+            contentContainerStyle={styles.chatContainer}
+            onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+            showsVerticalScrollIndicator={false}
+          >
+            {messages.map((msg) => (
+              <View 
+                key={msg.id} 
+                style={[
+                  styles.messageRow, 
+                  msg.sender === 'user' ? styles.messageRowUser : styles.messageRowAI
+                ]}
+              >
+                {msg.sender === 'ai' && (
+                  <View style={styles.aiAvatar}>
+                    <Typography style={{fontSize: 16}}>🌸</Typography>
+                  </View>
+                )}
+                <View 
+                  style={[
+                    styles.bubble, 
+                    msg.sender === 'user' ? styles.bubbleUser : styles.bubbleAI
+                  ]}
+                >
+                  <Typography 
+                    variant="body" 
+                    color={msg.sender === 'user' ? '#fff' : theme.colors.textHigh}
+                  >
+                    {msg.text}
+                  </Typography>
+                </View>
+              </View>
+            ))}
+            {loading && (
+              <View style={[styles.messageRow, styles.messageRowAI]}>
                 <View style={styles.aiAvatar}>
                   <Typography style={{fontSize: 16}}>🌸</Typography>
                 </View>
-              )}
-              <View 
-                style={[
-                  styles.bubble, 
-                  msg.sender === 'user' ? styles.bubbleUser : styles.bubbleAI
-                ]}
-              >
-                <Typography 
-                  variant="body" 
-                  color={msg.sender === 'user' ? '#fff' : theme.colors.textHigh}
-                >
-                  {msg.text}
-                </Typography>
+                <View style={[styles.bubble, styles.bubbleAI, styles.loadingBubble]}>
+                  <ActivityIndicator size="small" color={theme.colors.primary} />
+                </View>
               </View>
+            )}
+          </ScrollView>
+          
+          <View style={styles.inputArea}>
+            <View style={styles.inputContainer}>
+              <TextInput
+                placeholder="Ask anything..."
+                value={inputText}
+                onChangeText={setInputText}
+                style={styles.input}
+                containerStyle={{ marginBottom: 0, flex: 1 }}
+              />
+              <Button 
+                title="" 
+                onPress={handleSend}
+                style={styles.sendButton}
+              >
+                <Send color="#fff" size={20} />
+              </Button>
             </View>
-          ))}
-        </ScrollView>
-        
-        <View style={styles.inputArea}>
-          <View style={styles.inputContainer}>
-            <TextInput
-              placeholder="Ask anything..."
-              value={inputText}
-              onChangeText={setInputText}
-              style={styles.input}
-              containerStyle={{ marginBottom: 0, flex: 1 }}
-            />
-            <Button 
-              title="" 
-              onPress={handleSend}
-              style={styles.sendButton}
-            >
-              <Send color="#fff" size={20} />
-            </Button>
           </View>
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.colors.surfaceVariant,
-  },
   container: {
     flex: 1,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  header: {
+    paddingHorizontal: theme.spacing[4],
+    paddingTop: theme.spacing[2],
+    paddingBottom: theme.spacing[2],
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.05)',
+  },
+  headerTitle: {
+    fontFamily: theme.typography.families.headingBold,
   },
   chatContainer: {
     padding: theme.spacing[4],
     gap: theme.spacing[4],
+    paddingBottom: theme.spacing[8],
   },
   messageRow: {
     flexDirection: 'row',
@@ -149,15 +186,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: theme.spacing[2],
-    shadowColor: '#000',
+    shadowColor: theme.colors.primaryDark,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.05,
     shadowRadius: 4,
+    elevation: 2,
   },
   bubble: {
-    maxWidth: '75%',
-    padding: theme.spacing[4],
-    borderRadius: theme.radii.xl,
+    maxWidth: '80%',
+    padding: theme.spacing[3],
+    paddingHorizontal: theme.spacing[4],
+    borderRadius: 20,
+    shadowColor: theme.colors.primaryDark,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   bubbleUser: {
     backgroundColor: theme.colors.primary,
@@ -166,25 +210,35 @@ const styles = StyleSheet.create({
   bubbleAI: {
     backgroundColor: '#fff',
     borderBottomLeftRadius: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+  },
+  loadingBubble: {
+    paddingHorizontal: theme.spacing[6],
+    paddingVertical: theme.spacing[3],
   },
   inputArea: {
     padding: theme.spacing[4],
-    backgroundColor: '#fff',
+    paddingTop: theme.spacing[2],
+    paddingBottom: Platform.OS === 'ios' ? theme.spacing[2] : theme.spacing[4],
+    backgroundColor: 'rgba(255,255,255,0.8)',
     borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
+    borderTopColor: 'rgba(0,0,0,0.05)',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing[3],
+    gap: theme.spacing[2],
   },
   input: {
-    minHeight: 48,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#f0f0f0',
+    borderRadius: 24,
+    paddingHorizontal: theme.spacing[4],
+    shadowColor: theme.colors.primaryDark,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   sendButton: {
     width: 48,
@@ -193,5 +247,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 0,
   }
 });

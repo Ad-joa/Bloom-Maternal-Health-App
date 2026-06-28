@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator, StyleSheet, ScrollView, TouchableOpacity, LayoutAnimation, Platform, UIManager } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, ActivityIndicator, StyleSheet, ScrollView, TouchableOpacity, LayoutAnimation, Platform, UIManager, Animated } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp } from '@react-navigation/native';
 import { getTrimesterInfo } from '../api/api';
 import { theme } from '../theme/theme';
@@ -7,6 +8,7 @@ import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { ChevronDown, ChevronUp, AlertTriangle, CheckCircle, Baby, Activity } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -29,6 +31,7 @@ const AccordionItem = ({ title, icon, children, defaultOpen = false }: any) => {
 
   const toggleOpen = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setIsOpen(!isOpen);
   };
 
@@ -54,6 +57,7 @@ export default function TrimesterScreen({ route }: Props) {
   const { trimesterId } = route.params;
   const [info, setInfo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const fetchInfo = async () => {
@@ -64,6 +68,11 @@ export default function TrimesterScreen({ route }: Props) {
         console.error(error);
       } finally {
         setLoading(false);
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }).start();
       }
     };
     fetchInfo();
@@ -71,13 +80,12 @@ export default function TrimesterScreen({ route }: Props) {
 
   if (loading) {
     return (
-      <View style={styles.center}>
+      <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.center}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
+      </LinearGradient>
     );
   }
 
-  // Using mocked structured data if the backend still returns simple string
   const babyDevText = info?.babyDevelopment || "Your baby is developing rapidly! Vital organs are forming, and you might start feeling tiny flutters soon.";
   const bodyChangesText = info?.bodyChanges || "You may experience fatigue, nausea, or changes in appetite. These are normal as your body adjusts to the pregnancy hormones.";
   const dosAndDonts = info?.dosAndDonts || [
@@ -88,126 +96,143 @@ export default function TrimesterScreen({ route }: Props) {
   ];
 
   return (
-    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-      
-      {/* Hero Header */}
-      <LinearGradient
-        colors={[theme.colors.primaryLight, theme.colors.primary]}
-        style={styles.heroCard}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <Typography variant="largeTitle" color="#fff" style={styles.title}>
-          {info?.title || `Trimester ${trimesterId}`}
-        </Typography>
-        <Typography variant="body" color="#ffffffd0" style={styles.subtitle}>
-          {info?.description || 'Learn about your current stage of pregnancy.'}
-        </Typography>
-        <View style={styles.sizeIndicator}>
-          <Typography variant="title3">🍋</Typography>
-          <Typography variant="subhead" color="#fff" style={{ marginLeft: 8 }}>Baby is the size of a lemon</Typography>
-        </View>
-      </LinearGradient>
+    <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.container}>
+      <SafeAreaView edges={['top']} style={styles.safeArea}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          
+          <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }}>
+            {/* Hero Header */}
+            <LinearGradient
+              colors={[theme.colors.primaryLight, theme.colors.primary]}
+              style={styles.heroCard}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Typography variant="largeTitle" color="#fff" style={styles.title}>
+                {info?.title || `Trimester ${trimesterId}`}
+              </Typography>
+              <Typography variant="body" color="#ffffffd0" style={styles.subtitle}>
+                {info?.description || 'Learn about your current stage of pregnancy.'}
+              </Typography>
+              <View style={styles.sizeIndicator}>
+                <Typography variant="title3">🍋</Typography>
+                <Typography variant="subhead" color="#fff" style={{ marginLeft: 8 }}>Baby is the size of a lemon</Typography>
+              </View>
+            </LinearGradient>
 
-      {/* Accordions */}
-      <View style={styles.contentSection}>
-        <AccordionItem 
-          title="Baby's Development" 
-          icon={<Baby size={20} color={theme.colors.primaryDark} />} 
-          defaultOpen={true}
-        >
-          <Typography variant="body" style={styles.accordionText}>
-            {babyDevText}
-          </Typography>
-        </AccordionItem>
+            {/* Accordions */}
+            <View style={styles.contentSection}>
+              <AccordionItem 
+                title="Baby's Development" 
+                icon={<Baby size={20} color={theme.colors.primaryDark} />} 
+                defaultOpen={true}
+              >
+                <Typography variant="body" color={theme.colors.textMedium} style={styles.accordionText}>
+                  {babyDevText}
+                </Typography>
+              </AccordionItem>
 
-        <AccordionItem 
-          title="Your Body Changes" 
-          icon={<Activity size={20} color={theme.colors.primaryDark} />}
-        >
-          <Typography variant="body" style={styles.accordionText}>
-            {bodyChangesText}
-          </Typography>
-        </AccordionItem>
+              <AccordionItem 
+                title="Your Body Changes" 
+                icon={<Activity size={20} color={theme.colors.primaryDark} />}
+              >
+                <Typography variant="body" color={theme.colors.textMedium} style={styles.accordionText}>
+                  {bodyChangesText}
+                </Typography>
+              </AccordionItem>
 
-        <AccordionItem 
-          title="Do's and Don'ts" 
-          icon={<CheckCircle size={20} color={theme.colors.success} />}
-        >
-          {dosAndDonts.map((item: string, index: number) => (
-            <View key={index} style={styles.listItem}>
-              <View style={[styles.bullet, { backgroundColor: item.startsWith("Do") && !item.startsWith("Don't") ? theme.colors.success : theme.colors.danger }]} />
-              <Typography variant="body" style={styles.listText}>{item}</Typography>
+              <AccordionItem 
+                title="Do's and Don'ts" 
+                icon={<CheckCircle size={20} color={theme.colors.success} />}
+              >
+                {dosAndDonts.map((item: string, index: number) => (
+                  <View key={index} style={styles.listItem}>
+                    <View style={[styles.bullet, { backgroundColor: item.startsWith("Do") && !item.startsWith("Don't") ? theme.colors.success : theme.colors.danger }]} />
+                    <Typography variant="body" color={theme.colors.textMedium} style={styles.listText}>{item}</Typography>
+                  </View>
+                ))}
+              </AccordionItem>
             </View>
-          ))}
-        </AccordionItem>
-      </View>
-    </ScrollView>
+          </Animated.View>
+
+        </ScrollView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    padding: theme.spacing[4],
-    backgroundColor: theme.colors.surfaceVariant,
+    flex: 1,
+  },
+  safeArea: {
+    flex: 1,
   },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: theme.colors.surfaceVariant,
+  },
+  scrollContent: {
+    padding: theme.spacing[4],
+    paddingBottom: theme.spacing[8],
   },
   heroCard: {
     padding: theme.spacing[6],
-    borderRadius: theme.radii.xl,
-    marginBottom: theme.spacing[5],
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 6 },
+    borderRadius: theme.radii.2xl,
+    marginBottom: theme.spacing[6],
+    shadowColor: theme.colors.primaryDark,
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
-    shadowRadius: 12,
+    shadowRadius: 16,
     elevation: 8,
   },
   title: {
     marginBottom: theme.spacing[2],
+    fontFamily: theme.typography.families.headingBold,
   },
   subtitle: {
-    lineHeight: 22,
-    marginBottom: theme.spacing[4],
+    marginBottom: theme.spacing[6],
   },
   sizeIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.2)',
+    alignSelf: 'flex-start',
     paddingHorizontal: theme.spacing[3],
     paddingVertical: theme.spacing[2],
     borderRadius: theme.radii.pill,
-    alignSelf: 'flex-start',
   },
   contentSection: {
-    gap: theme.spacing[3],
+    gap: theme.spacing[4],
   },
   accordionCard: {
-    marginBottom: 0,
-    padding: 0,
+    padding: 0, // Reset padding because we use internal views
     overflow: 'hidden',
+    backgroundColor: '#fff',
+    borderWidth: 0,
+    shadowColor: theme.colors.primaryDark,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   accordionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: theme.spacing[4],
-    backgroundColor: theme.colors.surface,
+    backgroundColor: '#fff',
   },
   accordionHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   iconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: theme.colors.primaryLight + '40',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: theme.colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: theme.spacing[3],
@@ -215,11 +240,10 @@ const styles = StyleSheet.create({
   accordionContent: {
     padding: theme.spacing[4],
     paddingTop: 0,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: '#fff',
   },
   accordionText: {
     lineHeight: 24,
-    color: theme.colors.textMedium,
   },
   listItem: {
     flexDirection: 'row',
@@ -235,7 +259,6 @@ const styles = StyleSheet.create({
   },
   listText: {
     flex: 1,
-    lineHeight: 22,
-    color: theme.colors.textMedium,
+    lineHeight: 24,
   }
 });
