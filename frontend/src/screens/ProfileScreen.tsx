@@ -1,58 +1,132 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { theme } from '../theme/theme';
+import { Typography } from '../components/Typography';
+import { Card } from '../components/Card';
 import { useAuth } from '../context/AuthContext';
+import { Settings, Bell, CircleHelp, LogOut, ChevronRight } from 'lucide-react-native';
 
 export default function ProfileScreen() {
   const { logout } = useAuth();
 
+  const menuItems = [
+    { title: 'Personal Information', icon: <Settings size={20} color={theme.colors.textMedium} /> },
+    { title: 'Notifications', icon: <Bell size={20} color={theme.colors.textMedium} /> },
+    { title: 'Help & Support', icon: <CircleHelp size={20} color={theme.colors.textMedium} /> },
+  ];
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <Text style={styles.title}>Profile</Text>
-        <Text style={styles.subtitle}>Manage your account and settings.</Text>
-        
-        <TouchableOpacity style={styles.logoutButton} onPress={logout}>
-          <Text style={styles.logoutButtonText}>Log Out</Text>
-        </TouchableOpacity>
+    <ScrollView contentContainerStyle={styles.container}>
+      
+      <View style={styles.profileHeader}>
+        <View style={styles.avatarLarge}>
+          <Typography variant="largeTitle" color={theme.colors.primaryDark}>S</Typography>
+        </View>
+        <Typography variant="title2" style={styles.name}>Sarah Johnson</Typography>
+        <Typography variant="body" color={theme.colors.textMedium}>sarah@example.com</Typography>
       </View>
-    </SafeAreaView>
+
+      <View style={styles.section}>
+        <Typography variant="subhead" color={theme.colors.textMedium} style={styles.sectionLabel}>
+          ACCOUNT
+        </Typography>
+        
+        <Card style={styles.menuCard}>
+          {menuItems.map((item, index) => (
+            <TouchableOpacity 
+              key={item.title} 
+              style={[
+                styles.menuItem, 
+                index !== menuItems.length - 1 && styles.menuItemBorder
+              ]}
+            >
+              <View style={styles.menuItemLeft}>
+                {item.icon}
+                <Typography variant="body" style={styles.menuItemText}>{item.title}</Typography>
+              </View>
+              <ChevronRight size={20} color={theme.colors.textMedium} />
+            </TouchableOpacity>
+          ))}
+        </Card>
+      </View>
+
+      <TouchableOpacity onPress={logout} style={styles.logoutButton}>
+        <Card style={styles.logoutCard}>
+          <LogOut size={20} color={theme.colors.danger} />
+          <Typography variant="body" color={theme.colors.danger} style={styles.logoutText}>
+            Log Out
+          </Typography>
+        </Card>
+      </TouchableOpacity>
+
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.colors.surface,
-  },
   container: {
-    flex: 1,
-    padding: theme.spacing[4],
+    flexGrow: 1,
+    backgroundColor: theme.colors.surfaceVariant,
+    padding: theme.spacing[5],
+  },
+  profileHeader: {
+    alignItems: 'center',
+    marginVertical: theme.spacing[8],
+  },
+  avatarLarge: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: theme.colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: theme.spacing[4],
   },
-  title: {
-    fontFamily: theme.typography.families.headingBold,
-    fontSize: theme.typography.sizes.largeTitle,
-    color: theme.colors.primaryDark,
+  name: {
+    marginBottom: theme.spacing[1],
+  },
+  section: {
+    marginBottom: theme.spacing[6],
+  },
+  sectionLabel: {
     marginBottom: theme.spacing[2],
+    marginLeft: theme.spacing[2],
   },
-  subtitle: {
-    fontFamily: theme.typography.families.bodyRegular,
-    fontSize: theme.typography.sizes.body,
-    color: theme.colors.textMedium,
-    textAlign: 'center',
-    marginBottom: theme.spacing[8],
+  menuCard: {
+    padding: 0,
+    overflow: 'hidden',
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: theme.spacing[4],
+    backgroundColor: theme.colors.surface,
+  },
+  menuItemBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+  },
+  menuItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing[3],
+  },
+  menuItemText: {
+    marginTop: 2, // optical alignment
   },
   logoutButton: {
-    backgroundColor: theme.colors.danger,
-    paddingVertical: theme.spacing[3],
-    paddingHorizontal: theme.spacing[6],
-    borderRadius: theme.radii.pill,
+    marginTop: 'auto',
+    marginBottom: theme.spacing[8],
   },
-  logoutButtonText: {
-    fontFamily: theme.typography.families.bodyBold,
-    color: '#fff',
-    fontSize: theme.typography.sizes.body,
+  logoutCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing[2],
+    padding: theme.spacing[4],
   },
+  logoutText: {
+    fontFamily: theme.typography.families.bodySemibold,
+  }
 });

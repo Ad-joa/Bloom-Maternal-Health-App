@@ -1,151 +1,132 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
-import { ProgressBar } from '../components/ProgressBar';
-import { Tag } from '../components/Tag';
-import { FloatingActionButton } from '../components/FloatingActionButton';
+import { Button } from '../components/Button';
+import { Check } from 'lucide-react-native';
 
-// Define the navigation param list shape inline here for convenience, 
-// though typically this should be exported from App.tsx or a types file.
-type RootStackParamList = {
-  Home: undefined;
-  Trimester: { trimesterId: number };
-  Advisory: undefined;
-  DailyLog: undefined;
-};
-
-type DailyLogNavigationProp = NativeStackNavigationProp<RootStackParamList, 'DailyLog'>;
-
-interface Props {
-  navigation: DailyLogNavigationProp;
-}
-
-const COMMON_SYMPTOMS = [
-  'Nausea', 'Fatigue', 'Headache', 'Heartburn',
-  'Backache', 'Swollen Feet', 'Cramps', 'Spotting',
-  'Happy', 'Anxious', 'Trouble Sleeping'
+const symptomsList = [
+  'Nausea', 'Fatigue', 'Headache', 'Back Pain', 'Cramps', 'Heartburn'
 ];
 
-export default function DailyLogScreen({ navigation }: Props) {
+export default function DailyLogScreen() {
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
 
   const toggleSymptom = (symptom: string) => {
-    setSelectedSymptoms((prev) => 
-      prev.includes(symptom) 
-        ? prev.filter((s) => s !== symptom)
-        : [...prev, symptom]
-    );
+    if (selectedSymptoms.includes(symptom)) {
+      setSelectedSymptoms(prev => prev.filter(s => s !== symptom));
+    } else {
+      setSelectedSymptoms(prev => [...prev, symptom]);
+    }
   };
-
-  const handleSave = () => {
-    // In a real app, we would save this data to an API or local storage here
-    Alert.alert(
-      "Log Saved!", 
-      "Your symptoms for today have been securely logged.",
-      [{ text: "OK", onPress: () => navigation.goBack() }]
-    );
-  };
-
-  // Get current date formatted nicely
-  const today = new Date().toLocaleDateString('en-US', { 
-    weekday: 'long', month: 'long', day: 'numeric' 
-  });
 
   return (
-    <View style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.header}>
-          <Typography variant="title1" color={theme.colors.primaryDark}>
-            Daily Log
-          </Typography>
-          <Typography variant="subhead" color={theme.colors.textMedium}>
-            {today}
-          </Typography>
-        </View>
+    <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.header}>
+        <Typography variant="largeTitle" color={theme.colors.primaryDark}>
+          Daily Tracker
+        </Typography>
+        <Typography variant="body" color={theme.colors.textMedium}>
+          Log how you're feeling today
+        </Typography>
+      </View>
 
-        <Card style={styles.progressCard}>
-          <Typography variant="headline" style={styles.progressTitle}>
-            Week 14, Day 2
-          </Typography>
-          <ProgressBar progress={35} color={theme.colors.success} trackColor={theme.colors.surfaceVariant} />
-          <Typography variant="caption1" color={theme.colors.textMedium} style={styles.progressText}>
-            Second Trimester (35% complete)
-          </Typography>
-        </Card>
+      <Typography variant="title3" style={styles.sectionTitle}>
+        Common Symptoms
+      </Typography>
+      
+      <View style={styles.grid}>
+        {symptomsList.map((symptom) => {
+          const isSelected = selectedSymptoms.includes(symptom);
+          return (
+            <TouchableOpacity 
+              key={symptom} 
+              onPress={() => toggleSymptom(symptom)}
+              activeOpacity={0.8}
+              style={styles.gridItem}
+            >
+              <Card 
+                style={[
+                  styles.symptomCard, 
+                  isSelected && styles.symptomCardSelected
+                ]}
+                variant={isSelected ? 'elevated' : 'outlined'}
+              >
+                {isSelected && (
+                  <View style={styles.checkBadge}>
+                    <Check size={12} color="#fff" />
+                  </View>
+                )}
+                <Typography 
+                  variant={isSelected ? 'headline' : 'body'} 
+                  color={isSelected ? theme.colors.primaryDark : theme.colors.textMedium}
+                  align="center"
+                >
+                  {symptom}
+                </Typography>
+              </Card>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
 
-        <View style={styles.section}>
-          <Typography variant="title2" style={styles.sectionTitle}>
-            How are you feeling today?
-          </Typography>
-          <Typography variant="body" color={theme.colors.textMedium} style={styles.sectionSubtitle}>
-            Select all that apply to track your trends.
-          </Typography>
-
-          <View style={styles.tagContainer}>
-            {COMMON_SYMPTOMS.map((symptom) => (
-              <Tag 
-                key={symptom}
-                label={symptom}
-                selected={selectedSymptoms.includes(symptom)}
-                onPress={() => toggleSymptom(symptom)}
-                style={styles.tag}
-              />
-            ))}
-          </View>
-        </View>
-        
-        {/* Extra padding at bottom to ensure scrolling content isn't hidden by FAB */}
-        <View style={{ height: 80 }} />
-      </ScrollView>
-
-      <FloatingActionButton 
-        onPress={handleSave}
-        label="Save Log"
+      <Button 
+        title="Save Log" 
+        style={styles.submitButton}
+        disabled={selectedSymptoms.length === 0}
       />
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: theme.colors.surfaceVariant,
-  },
   container: {
     flexGrow: 1,
-    padding: theme.spacing[4],
+    backgroundColor: theme.colors.surfaceVariant,
+    padding: theme.spacing[5],
   },
   header: {
-    marginBottom: theme.spacing[5],
-  },
-  progressCard: {
     marginBottom: theme.spacing[6],
-  },
-  progressTitle: {
-    marginBottom: theme.spacing[2],
-  },
-  progressText: {
-    marginTop: theme.spacing[2],
-    textAlign: 'right',
-  },
-  section: {
-    marginBottom: theme.spacing[6],
+    marginTop: theme.spacing[4],
   },
   sectionTitle: {
-    marginBottom: theme.spacing[1],
-  },
-  sectionSubtitle: {
     marginBottom: theme.spacing[4],
   },
-  tagContainer: {
+  grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    gap: theme.spacing[3],
+    marginBottom: theme.spacing[6],
   },
-  tag: {
-    marginRight: theme.spacing[2],
-    marginBottom: theme.spacing[3],
+  gridItem: {
+    width: '47%', // roughly half width with gap
+  },
+  symptomCard: {
+    padding: theme.spacing[4],
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 80,
+    marginBottom: 0,
+    backgroundColor: theme.colors.surface,
+  },
+  symptomCardSelected: {
+    backgroundColor: theme.colors.primaryLight + '50',
+    borderColor: theme.colors.primary,
+    borderWidth: 1,
+  },
+  checkBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: theme.colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  submitButton: {
+    marginTop: 'auto',
   }
 });

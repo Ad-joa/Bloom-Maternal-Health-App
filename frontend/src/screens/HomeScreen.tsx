@@ -1,90 +1,116 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../App';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
-import { Button } from '../components/Button';
 import { Card } from '../components/Card';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Calendar, Stethoscope, ChevronRight } from 'lucide-react-native';
 
-type RootStackParamList = {
-  Home: undefined;
-  Trimester: { trimesterId: number };
-  Advisory: undefined;
-  DailyLog: undefined;
+// We have to ignore the strict type for navigating to a nested Tab for now, 
+// or define the composite type. For simplicity, we use `any` to navigate to tabs.
+type Props = {
+  navigation: any; 
 };
-
-type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
-
-interface Props {
-  navigation: HomeScreenNavigationProp;
-}
 
 export default function HomeScreen({ navigation }: Props) {
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+      
+      {/* Header */}
       <View style={styles.header}>
-        <Typography variant="largeTitle" color={theme.colors.primaryDark} align="center">
-          Bloom
-        </Typography>
-        <Typography variant="body" color={theme.colors.textMedium} align="center">
-          Empowering expectant mothers with knowledge and timely advice.
-        </Typography>
+        <View>
+          <Typography variant="body" color={theme.colors.textMedium}>
+            Good morning,
+          </Typography>
+          <Typography variant="largeTitle" color={theme.colors.primaryDark}>
+            Sarah
+          </Typography>
+        </View>
+        <View style={styles.avatarPlaceholder}>
+          <Typography variant="title2" color={theme.colors.primaryDark}>S</Typography>
+        </View>
       </View>
 
+      {/* Hero Card: Current Trimester */}
+      <TouchableOpacity 
+        activeOpacity={0.9} 
+        onPress={() => navigation.navigate('Trimester', { trimesterId: 2 })}
+      >
+        <LinearGradient
+          colors={[theme.colors.primary, theme.colors.primaryDark]}
+          style={styles.heroCard}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <View style={styles.heroContent}>
+            <View>
+              <Typography variant="subhead" color="#ffffffa0">
+                CURRENT STAGE
+              </Typography>
+              <Typography variant="title2" color="#fff" style={styles.heroTitle}>
+                Second Trimester
+              </Typography>
+              <Typography variant="body" color="#ffffffd0">
+                Week 18 • 154 days until due date
+              </Typography>
+            </View>
+            <View style={styles.heroIconContainer}>
+              <Typography style={{fontSize: 40}}>👶</Typography>
+            </View>
+          </View>
+        </LinearGradient>
+      </TouchableOpacity>
+
+      {/* Quick Actions */}
       <View style={styles.section}>
-        <Card variant="filled" style={styles.dailyLogCard}>
-          <Typography variant="title3" style={styles.sectionTitle}>
-            How are you feeling?
+        <Typography variant="title3" style={styles.sectionTitle}>
+          Quick Actions
+        </Typography>
+        <View style={styles.row}>
+          <TouchableOpacity 
+            style={styles.actionButton} 
+            onPress={() => navigation.navigate('Advisory')}
+          >
+            <Card style={styles.actionCard}>
+              <View style={[styles.iconWrapper, { backgroundColor: theme.colors.danger + '20' }]}>
+                <Stethoscope color={theme.colors.danger} size={24} />
+              </View>
+              <Typography variant="subhead" style={styles.actionText}>Symptom Check</Typography>
+            </Card>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.actionButton} 
+            onPress={() => navigation.navigate('Tracker')}
+          >
+            <Card style={styles.actionCard}>
+              <View style={[styles.iconWrapper, { backgroundColor: theme.colors.success + '20' }]}>
+                <Calendar color={theme.colors.success} size={24} />
+              </View>
+              <Typography variant="subhead" style={styles.actionText}>Log Symptoms</Typography>
+            </Card>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Daily Tip */}
+      <View style={styles.section}>
+        <Typography variant="title3" style={styles.sectionTitle}>
+          Today's Tip
+        </Typography>
+        <Card variant="outlined" style={styles.tipCard}>
+          <View style={styles.tipHeader}>
+            <Typography style={{fontSize: 24}}>💧</Typography>
+            <Typography variant="headline" style={styles.tipTitle}>Stay Hydrated</Typography>
+          </View>
+          <Typography variant="body" color={theme.colors.textMedium}>
+            Drinking 8-10 glasses of water helps form the amniotic fluid around the baby and carries extra nutrients!
           </Typography>
-          <Typography variant="body" color={theme.colors.textMedium} style={styles.description}>
-            Log your daily symptoms to track your pregnancy journey.
-          </Typography>
-          <Button 
-            title="Log Today's Symptoms" 
-            onPress={() => navigation.navigate('DailyLog')} 
-          />
         </Card>
       </View>
 
-      <View style={styles.section}>
-        <Typography variant="title3" style={styles.sectionTitle}>
-          Your Pregnancy Journey
-        </Typography>
-        
-        <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate('Trimester', { trimesterId: 1 })}>
-          <Card style={styles.card}>
-            <Typography variant="headline">First Trimester</Typography>
-            <Typography variant="subhead" color={theme.colors.textMedium}>Weeks 1-12</Typography>
-          </Card>
-        </TouchableOpacity>
-
-        <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate('Trimester', { trimesterId: 2 })}>
-          <Card style={styles.card}>
-            <Typography variant="headline">Second Trimester</Typography>
-            <Typography variant="subhead" color={theme.colors.textMedium}>Weeks 13-26</Typography>
-          </Card>
-        </TouchableOpacity>
-
-        <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate('Trimester', { trimesterId: 3 })}>
-          <Card style={styles.card}>
-            <Typography variant="headline">Third Trimester</Typography>
-            <Typography variant="subhead" color={theme.colors.textMedium}>Weeks 27+</Typography>
-          </Card>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.section}>
-        <Typography variant="title3" style={styles.sectionTitle}>
-          Health Advisory
-        </Typography>
-        <Typography variant="body" color={theme.colors.textMedium} style={styles.description}>
-          Feeling unwell or experiencing unfamiliar symptoms? Check our smart advisory system for guidance.
-        </Typography>
-        <Button 
-          title="Check Symptoms Now" 
-          onPress={() => navigation.navigate('Advisory')} 
-        />
-      </View>
     </ScrollView>
   );
 }
@@ -92,26 +118,97 @@ export default function HomeScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    padding: theme.spacing[4],
-    backgroundColor: theme.colors.surfaceVariant, // Using surfaceVariant for the background, like iOS grouped background
+    backgroundColor: theme.colors.surfaceVariant,
+    padding: theme.spacing[5],
+    paddingTop: theme.spacing[8],
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: theme.spacing[6],
-    marginTop: theme.spacing[4],
+  },
+  avatarPlaceholder: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: theme.colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  heroCard: {
+    borderRadius: theme.radii.xl,
+    padding: theme.spacing[5],
+    marginBottom: theme.spacing[6],
+    shadowColor: theme.colors.primaryDark,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  heroContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  heroTitle: {
+    marginVertical: theme.spacing[1],
+  },
+  heroIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   section: {
     marginBottom: theme.spacing[6],
   },
   sectionTitle: {
     marginBottom: theme.spacing[3],
+    color: theme.colors.textHigh,
   },
-  description: {
-    marginBottom: theme.spacing[4],
+  row: {
+    flexDirection: 'row',
+    gap: theme.spacing[3],
   },
-  card: {
-    marginBottom: theme.spacing[3],
+  actionButton: {
+    flex: 1,
   },
-  dailyLogCard: {
+  actionCard: {
+    alignItems: 'center',
+    padding: theme.spacing[4],
+    marginBottom: 0,
+  },
+  iconWrapper: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: theme.spacing[2],
+  },
+  actionText: {
+    textAlign: 'center',
+  },
+  tipCard: {
+    backgroundColor: '#fff',
     padding: theme.spacing[5],
+  },
+  tipHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.spacing[2],
+    gap: theme.spacing[2],
+  },
+  tipTitle: {
+    color: theme.colors.primaryDark,
   }
 });
