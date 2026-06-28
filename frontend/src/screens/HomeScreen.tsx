@@ -6,7 +6,7 @@ import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Calendar, Stethoscope, ChevronRight } from 'lucide-react-native';
+import { Calendar, Stethoscope, ChevronRight, AlertTriangle } from 'lucide-react-native';
 
 // We have to ignore the strict type for navigating to a nested Tab for now, 
 // or define the composite type. For simplicity, we use `any` to navigate to tabs.
@@ -93,6 +93,28 @@ export default function HomeScreen({ navigation }: Props) {
             </Card>
           </TouchableOpacity>
         </View>
+      </View>
+
+      {/* Emergency Danger Signs */}
+      <View style={styles.section}>
+        <Typography variant="title3" style={styles.sectionTitle}>
+          Emergency Danger Signs
+        </Typography>
+        <Card variant="outlined" style={styles.dangerCard}>
+          <View style={styles.dangerHeader}>
+            <AlertTriangle color={theme.colors.danger} size={24} />
+            <Typography variant="headline" style={styles.dangerTitle}>Go to hospital immediately if you have:</Typography>
+          </View>
+          <View style={styles.dangerList}>
+            <Typography variant="body" color={theme.colors.textMedium}>• Heavy vaginal bleeding</Typography>
+            <Typography variant="body" color={theme.colors.textMedium}>• Convulsions or fits</Typography>
+            <Typography variant="body" color={theme.colors.textMedium}>• Severe headache with blurred vision</Typography>
+            <Typography variant="body" color={theme.colors.textMedium}>• Fever and too weak to get out of bed</Typography>
+          </View>
+          <TouchableOpacity style={styles.emergencyBtn} activeOpacity={0.8}>
+            <Typography variant="headline" color="#fff">Emergency Contacts</Typography>
+          </TouchableOpacity>
+        </Card>
       </View>
 
       {/* Daily Tip */}
@@ -210,5 +232,31 @@ const styles = StyleSheet.create({
   },
   tipTitle: {
     color: theme.colors.primaryDark,
+  },
+  dangerCard: {
+    borderColor: theme.colors.danger + '40',
+    backgroundColor: theme.colors.danger + '05',
+    padding: theme.spacing[5],
+  },
+  dangerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.spacing[3],
+    gap: theme.spacing[2],
+  },
+  dangerTitle: {
+    color: theme.colors.danger,
+    flex: 1,
+  },
+  dangerList: {
+    paddingLeft: theme.spacing[2],
+    gap: theme.spacing[1],
+    marginBottom: theme.spacing[4],
+  },
+  emergencyBtn: {
+    backgroundColor: theme.colors.danger,
+    padding: theme.spacing[3],
+    borderRadius: theme.radii.lg,
+    alignItems: 'center',
   }
 });
