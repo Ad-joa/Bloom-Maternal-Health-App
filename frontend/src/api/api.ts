@@ -4,7 +4,8 @@ import { Platform } from 'react-native';
 // For Android emulator, localhost is 10.0.2.2. For iOS emulator, it's 127.0.0.1 or localhost.
 const getBaseUrl = () => {
     if (__DEV__) {
-        return Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://127.0.0.1:8000';
+        // Use your computer's local IP address so your physical phone can connect to the backend
+        return 'http://172.20.10.3:8000';
     }
     // Production URL here
     return 'https://api.yourdomain.com';
