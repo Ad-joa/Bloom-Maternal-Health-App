@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
 import { Button } from '../components/Button';
+import { BounceButton } from '../components/BounceButton';
 import { Check } from 'lucide-react-native';
 import { useAuth } from '../context/AuthContext';
 import { saveSymptomLog } from '../api/api';
@@ -68,10 +69,9 @@ export default function DailyLogScreen() {
               {symptomsList.map((symptom) => {
                 const isSelected = selectedSymptoms.includes(symptom);
                 return (
-                  <TouchableOpacity 
+                  <BounceButton 
                     key={symptom} 
                     onPress={() => toggleSymptom(symptom)}
-                    activeOpacity={0.8}
                     style={[styles.chip, isSelected && styles.chipSelected]}
                   >
                     {isSelected && <Check size={16} color="#fff" style={{ marginRight: 6 }} />}
@@ -81,7 +81,7 @@ export default function DailyLogScreen() {
                     >
                       {symptom}
                     </Typography>
-                  </TouchableOpacity>
+                  </BounceButton>
                 );
               })}
             </View>
