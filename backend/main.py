@@ -45,7 +45,9 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
         "user": {
             "id": user.id, 
             "name": user.name, 
-            "email": user.email
+            "email": user.email,
+            "trimester": user.trimester,
+            "due_date": user.due_date
         }
     }
 
