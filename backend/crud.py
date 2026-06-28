@@ -24,3 +24,13 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.commit()
     db.refresh(db_user)
     return db_user
+
+def create_symptom_log(db: Session, log: schemas.SymptomLogCreate, user_id: int):
+    db_log = models.SymptomLog(
+        user_id=user_id,
+        symptoms=log.symptoms
+    )
+    db.add(db_log)
+    db.commit()
+    db.refresh(db_log)
+    return db_log

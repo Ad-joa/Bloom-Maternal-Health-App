@@ -19,3 +19,14 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class SymptomLogCreate(BaseModel):
+    symptoms: str
+
+class SymptomLogResponse(BaseModel):
+    id: int
+    user_id: int
+    symptoms: str
+    
+    class Config:
+        from_attributes = True
