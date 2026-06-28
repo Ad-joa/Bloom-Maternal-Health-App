@@ -136,6 +136,10 @@ def onboard_user(user_id: int, data: schemas.UserOnboarding, db: Session = Depen
         user.trimester = data.trimester
     if data.due_date is not None:
         user.due_date = data.due_date
+    if data.is_first_pregnancy is not None:
+        user.is_first_pregnancy = data.is_first_pregnancy
+    if data.medical_conditions is not None:
+        user.medical_conditions = data.medical_conditions
         
     db.commit()
     db.refresh(user)

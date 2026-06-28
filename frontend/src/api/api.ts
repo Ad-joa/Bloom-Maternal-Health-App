@@ -86,7 +86,15 @@ export const registerUser = async (userData: any) => {
     }
 };
 
-export const onboardUser = async (userId: number, data: { trimester: number, due_date: string }) => {
+export const onboardUser = async (
+    userId: number, 
+    data: { 
+        trimester?: number; 
+        due_date?: string; 
+        is_first_pregnancy?: boolean; 
+        medical_conditions?: string;
+    }
+) => {
     try {
         const response = await apiClient.put(`/users/${userId}/onboard`, data);
         return response.data;

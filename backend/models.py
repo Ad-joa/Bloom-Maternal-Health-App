@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import relationship
 import datetime
 from database import Base
@@ -14,6 +14,8 @@ class User(Base):
     # Onboarding details
     trimester = Column(Integer, nullable=True, index=True)
     due_date = Column(String, nullable=True, index=True)
+    is_first_pregnancy = Column(Boolean, nullable=True)
+    medical_conditions = Column(String, nullable=True)
 
     # Relationships
     logs = relationship("SymptomLog", back_populates="user")
