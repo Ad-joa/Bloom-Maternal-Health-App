@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: theme.spacing[4],
     paddingVertical: theme.spacing[2],
-    borderRadius: theme.radii.full,
+    borderRadius: theme.radii.pill,
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#e5e7eb',

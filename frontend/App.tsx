@@ -71,13 +71,30 @@ function MainTabs() {
           return null;
         },
         tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: 'gray',
-        headerStyle: { backgroundColor: theme.colors.primary },
-        headerTintColor: '#fff',
+        tabBarInactiveTintColor: theme.colors.textMedium,
+        tabBarStyle: {
+          backgroundColor: '#fff',
+          borderTopWidth: 0,
+          elevation: 10,
+          shadowColor: theme.colors.primaryDark,
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.05,
+          shadowRadius: 10,
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
+        },
+        tabBarLabelStyle: {
+          fontFamily: theme.typography.families.bodyMedium,
+          fontSize: 10,
+          marginTop: 4,
+        },
+        headerStyle: { backgroundColor: '#fff', shadowOpacity: 0, elevation: 0 },
+        headerTintColor: theme.colors.textHigh,
         headerTitleStyle: { fontFamily: theme.typography.families.headingBold },
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Home' }} />
+      <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Today', headerShown: false }} />
       <Tab.Screen name="Insights" component={InsightsScreen} options={{ title: 'Insights' }} />
       <Tab.Screen name="BloomAI" component={BloomAIScreen} options={{ title: 'Bloom AI' }} />
       <Tab.Screen name="Tracker" component={DailyLogScreen} options={{ title: 'Tracker' }} />
