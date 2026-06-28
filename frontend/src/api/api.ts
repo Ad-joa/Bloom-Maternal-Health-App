@@ -1,14 +1,21 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
 
-// For Android emulator, localhost is 10.0.2.2. For iOS emulator, it's 127.0.0.1 or localhost.
+// We rely on Expo's environment variables to prevent hardcoding server URLs in the codebase.
+// Define EXPO_PUBLIC_API_URL in a frontend/.env file.
 const getBaseUrl = () => {
-    if (__DEV__) {
-        // Use your computer's local IP address so your physical phone can connect to the backend
-        return 'http://172.20.10.3:8000';
+    if (process.env.EXPO_PUBLIC_API_URL) {
+        return process.env.EXPO_PUBLIC_API_URL;
     }
-    // Production URL here
-    return 'https://api.yourdomain.com';
+    
+    // Fallback for local development if .env is missing
+    if (__DEV__) {
+        // Typically 10.0.2.2 for Android emulator, or your local machine's IP (e.g., 172.20.10.3)
+        return 'http://127.0.0.1:8000';
+    }
+    
+    // Production fallback (should ideally be injected via EXPO_PUBLIC_API_URL in CI/CD)
+    return '';
 };
 
 const apiClient = axios.create({
