@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, SafeAreaView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, SafeAreaView } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { theme } from '../theme/theme';
 import { useAuth } from '../context/AuthContext';
+import { Button } from '../components/Button';
+import { TextInput } from '../components/TextInput';
+import { Typography } from '../components/Typography';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 
@@ -17,7 +20,7 @@ export default function LoginScreen({ navigation }: Props) {
   const { login } = useAuth();
 
   const handleLogin = () => {
-    // In a real app, you would validate and call an API here
+    // In a real app, validate and hit backend
     if (email && password) {
       login();
     }
@@ -30,37 +33,47 @@ export default function LoginScreen({ navigation }: Props) {
         style={styles.container}
       >
         <View style={styles.content}>
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Log in to continue your journey</Text>
+          <View style={styles.header}>
+            <Typography variant="largeTitle" color={theme.colors.primaryDark}>
+              Welcome Back
+            </Typography>
+            <Typography variant="body" color={theme.colors.textMedium} style={styles.subtitle}>
+              Sign in to continue your journey
+            </Typography>
+          </View>
           
           <View style={styles.form}>
             <TextInput
-              style={styles.input}
-              placeholder="Email"
-              placeholderTextColor={theme.colors.textMedium}
+              label="Email Address"
+              placeholder="jane@example.com"
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
             />
             <TextInput
-              style={styles.input}
-              placeholder="Password"
-              placeholderTextColor={theme.colors.textMedium}
+              label="Password"
+              placeholder="Enter your password"
               value={password}
               onChangeText={setPassword}
               secureTextEntry
             />
             
-            <TouchableOpacity style={styles.primaryButton} onPress={handleLogin}>
-              <Text style={styles.primaryButtonText}>Log In</Text>
-            </TouchableOpacity>
+            <Button 
+              title="Log In" 
+              onPress={handleLogin} 
+              style={styles.submitButton}
+            />
           </View>
           
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account? </Text>
+            <Typography variant="body" color={theme.colors.textMedium}>
+              Don't have an account?{' '}
+            </Typography>
             <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.footerLink}>Sign Up</Text>
+              <Typography variant="body" style={styles.linkText}>
+                Sign Up
+              </Typography>
             </TouchableOpacity>
           </View>
         </View>
@@ -79,57 +92,28 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: theme.spacing[4],
+    padding: theme.spacing[5],
     justifyContent: 'center',
   },
-  title: {
-    fontFamily: theme.typography.families.headingBold,
-    fontSize: theme.typography.sizes.largeTitle,
-    color: theme.colors.textHigh,
-    marginBottom: theme.spacing[1],
-  },
-  subtitle: {
-    fontFamily: theme.typography.families.bodyRegular,
-    fontSize: theme.typography.sizes.body,
-    color: theme.colors.textMedium,
+  header: {
     marginBottom: theme.spacing[6],
   },
+  subtitle: {
+    marginTop: theme.spacing[1],
+  },
   form: {
-    gap: theme.spacing[3],
+    gap: theme.spacing[2],
   },
-  input: {
-    backgroundColor: theme.colors.surfaceVariant,
-    padding: theme.spacing[3],
-    borderRadius: theme.radii.md,
-    fontFamily: theme.typography.families.bodyRegular,
-    fontSize: theme.typography.sizes.body,
-    color: theme.colors.textHigh,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  primaryButton: {
-    backgroundColor: theme.colors.primary,
-    paddingVertical: theme.spacing[3],
-    borderRadius: theme.radii.pill,
-    alignItems: 'center',
-    marginTop: theme.spacing[2],
-  },
-  primaryButtonText: {
-    fontFamily: theme.typography.families.bodyBold,
-    color: '#fff',
-    fontSize: theme.typography.sizes.body,
+  submitButton: {
+    marginTop: theme.spacing[4],
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: theme.spacing[6],
   },
-  footerText: {
-    fontFamily: theme.typography.families.bodyRegular,
-    color: theme.colors.textMedium,
-  },
-  footerLink: {
+  linkText: {
     fontFamily: theme.typography.families.bodyBold,
     color: theme.colors.primary,
-  },
+  }
 });

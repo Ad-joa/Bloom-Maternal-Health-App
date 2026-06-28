@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, SafeAreaView } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, Platform, SafeAreaView } from 'react-native';
 import { theme } from '../theme/theme';
 import { useAuth } from '../context/AuthContext';
+import { Button } from '../components/Button';
+import { TextInput } from '../components/TextInput';
+import { Typography } from '../components/Typography';
 
 export default function OnboardingScreen() {
   const [trimester, setTrimester] = useState('');
@@ -20,29 +23,35 @@ export default function OnboardingScreen() {
         style={styles.container}
       >
         <View style={styles.content}>
-          <Text style={styles.title}>Tell us about you</Text>
-          <Text style={styles.subtitle}>Help us personalize your Bloom experience</Text>
+          <View style={styles.header}>
+            <Typography variant="largeTitle" color={theme.colors.primaryDark}>
+              Personalize
+            </Typography>
+            <Typography variant="body" color={theme.colors.textMedium} style={styles.subtitle}>
+              Help us customize your Bloom experience
+            </Typography>
+          </View>
           
           <View style={styles.form}>
             <TextInput
-              style={styles.input}
-              placeholder="Current Trimester (e.g. 1, 2, or 3)"
-              placeholderTextColor={theme.colors.textMedium}
+              label="Current Trimester"
+              placeholder="e.g. 1, 2, or 3"
               value={trimester}
               onChangeText={setTrimester}
               keyboardType="number-pad"
             />
             <TextInput
-              style={styles.input}
-              placeholder="Expected Due Date (MM/DD/YYYY)"
-              placeholderTextColor={theme.colors.textMedium}
+              label="Expected Due Date"
+              placeholder="MM/DD/YYYY"
               value={dueDate}
               onChangeText={setDueDate}
             />
             
-            <TouchableOpacity style={styles.primaryButton} onPress={handleComplete}>
-              <Text style={styles.primaryButtonText}>Complete Setup</Text>
-            </TouchableOpacity>
+            <Button 
+              title="Complete Setup" 
+              onPress={handleComplete} 
+              style={styles.submitButton}
+            />
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -60,44 +69,19 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: theme.spacing[4],
+    padding: theme.spacing[5],
     justifyContent: 'center',
   },
-  title: {
-    fontFamily: theme.typography.families.headingBold,
-    fontSize: theme.typography.sizes.largeTitle,
-    color: theme.colors.textHigh,
-    marginBottom: theme.spacing[1],
-  },
-  subtitle: {
-    fontFamily: theme.typography.families.bodyRegular,
-    fontSize: theme.typography.sizes.body,
-    color: theme.colors.textMedium,
+  header: {
     marginBottom: theme.spacing[6],
   },
+  subtitle: {
+    marginTop: theme.spacing[1],
+  },
   form: {
-    gap: theme.spacing[3],
+    gap: theme.spacing[2],
   },
-  input: {
-    backgroundColor: theme.colors.surfaceVariant,
-    padding: theme.spacing[3],
-    borderRadius: theme.radii.md,
-    fontFamily: theme.typography.families.bodyRegular,
-    fontSize: theme.typography.sizes.body,
-    color: theme.colors.textHigh,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  primaryButton: {
-    backgroundColor: theme.colors.primary,
-    paddingVertical: theme.spacing[3],
-    borderRadius: theme.radii.pill,
-    alignItems: 'center',
-    marginTop: theme.spacing[2],
-  },
-  primaryButtonText: {
-    fontFamily: theme.typography.families.bodyBold,
-    color: '#fff',
-    fontSize: theme.typography.sizes.body,
+  submitButton: {
+    marginTop: theme.spacing[4],
   },
 });
