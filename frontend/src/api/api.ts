@@ -65,4 +65,14 @@ export const saveSymptomLog = async (userId: number, symptoms: string) => {
     }
 };
 
+export const getInsights = async (userId: number) => {
+    try {
+        const response = await apiClient.get(`/users/${userId}/insights`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching insights:", error);
+        throw error;
+    }
+};
+
 export default apiClient;
