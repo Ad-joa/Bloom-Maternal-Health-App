@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions, Alert, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../theme/theme';
 import { useAuth } from '../context/AuthContext';
@@ -34,6 +34,43 @@ export default function HomeScreen({ navigation }: Props) {
     };
   });
 
+  const [dailyQuote, setDailyQuote] = useState('');
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+
+  const motivations = [
+    "Your body is doing incredible things today.",
+    "Rest when you need to. You are growing a life.",
+    "Every day brings you closer to meeting your baby.",
+    "Trust your instincts; you are already a great mother.",
+    "It's okay to feel overwhelmed. Take it one breath at a time.",
+    "You are strong, resilient, and capable."
+  ];
+
+  useEffect(() => {
+    // Initial random quote
+    setDailyQuote(motivations[Math.floor(Math.random() * motivations.length)]);
+
+    const intervalId = setInterval(() => {
+      // Fade out
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }).start(() => {
+        // Change quote while invisible
+        setDailyQuote(motivations[Math.floor(Math.random() * motivations.length)]);
+        // Fade in
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }).start();
+      });
+    }, 10000); // 10 seconds
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   const actionButtons = [
     { id: 'tracker', label: 'Log', icon: <Droplet color="#fff" size={24} />, route: 'Tracker', color: theme.colors.primary },
     { id: 'symptoms', label: 'Symptoms', icon: <Heart color={theme.colors.textHigh} size={24} />, route: 'Advisory', color: '#fff' },
@@ -42,9 +79,9 @@ export default function HomeScreen({ navigation }: Props) {
   ];
 
   const insights = [
-    { id: '1', title: 'Today\'s chance\nof symptoms', subtitle: 'Updating ...', color: theme.colors.primaryLight },
-    { id: '2', title: 'What makes you\nfeel loved?', subtitle: 'QUIZ', color: theme.colors.primaryDark, textLight: true },
-    { id: '3', title: 'Nutrition Check', subtitle: 'Drink Water', color: '#F3E8FF' },
+    { id: '1', title: 'Today\'s chance\nof symptoms', subtitle: 'View Insights', color: theme.colors.primaryLight, route: 'Insights' },
+    { id: '2', title: 'What makes you\nfeel loved?', subtitle: 'QUIZ', color: theme.colors.primaryDark, textLight: true, route: 'BloomAI' },
+    { id: '3', title: 'Nutrition Check', subtitle: 'Drink Water', color: '#F3E8FF', route: 'Tracker' },
   ];
 
   return (
@@ -111,6 +148,13 @@ export default function HomeScreen({ navigation }: Props) {
             )}
           </TouchableOpacity>
 
+          {/* Daily Motivation Block */}
+          <Animated.View style={[styles.motivationBlock, { opacity: fadeAnim }]}>
+            <Typography variant="body" color={theme.colors.textMedium} style={{ fontStyle: 'italic', textAlign: 'center' }}>
+              "{dailyQuote}"
+            </Typography>
+          </Animated.View>
+
           {/* Circular Action Buttons */}
           <View style={styles.actionRow}>
             {actionButtons.map(btn => (
@@ -132,7 +176,11 @@ export default function HomeScreen({ navigation }: Props) {
             </Typography>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.insightsScroll}>
               {insights.map(item => (
-                <TouchableOpacity key={item.id} style={[styles.insightCard, { backgroundColor: item.color }]}>
+                <TouchableOpacity 
+                  key={item.id} 
+                  style={[styles.insightCard, { backgroundColor: item.color }]}
+                  onPress={() => navigation.navigate(item.route)}
+                >
                   <Typography variant="headline" color={item.textLight ? '#fff' : theme.colors.textHigh} style={styles.insightTitle}>
                     {item.title}
                   </Typography>
@@ -214,6 +262,10 @@ const styles = StyleSheet.create({
   },
   heroSubtitle: {
     textAlign: 'center',
+  },
+  motivationBlock: {
+    paddingHorizontal: theme.spacing[6],
+    marginBottom: theme.spacing[8],
   },
   actionRow: {
     flexDirection: 'row',
