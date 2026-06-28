@@ -8,6 +8,8 @@ import { Button } from '../components/Button';
 import { TextInput } from '../components/TextInput';
 import { Typography } from '../components/Typography';
 
+import { loginUser } from '../api/api';
+
 type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 
 type Props = {
@@ -17,12 +19,23 @@ type Props = {
 export default function LoginScreen({ navigation }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
 
-  const handleLogin = () => {
-    // In a real app, validate and hit backend
+  const handleLogin = async () => {
     if (email && password) {
-      login();
+      setLoading(true);
+      try {
+        const response = await loginUser({ email, password });
+        if (response.user) {
+          login(response.user);
+        }
+      } catch (error) {
+        console.error("Login failed", error);
+        // In a real app, show an alert here
+      } finally {
+        setLoading(false);
+      }
     }
   };
 

@@ -104,3 +104,11 @@ def get_trimester_info(trimester_id: int):
 def get_advisory(request: SymptomRequest):
     advice = evaluate_symptoms(request.symptoms)
     return {"advice": advice}
+
+@app.post("/users/{user_id}/logs", response_model=schemas.SymptomLogResponse)
+def log_symptoms(user_id: int, log: schemas.SymptomLogCreate, db: Session = Depends(get_db)):
+    user = crud.get_user_by_email(db, email=db.query(models.User).filter(models.User.id == user_id).first().email) if db.query(models.User).filter(models.User.id == user_id).first() else None
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    return crud.create_symptom_log(db=db, log=log, user_id=user_id)

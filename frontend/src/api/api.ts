@@ -45,4 +45,24 @@ export const getAdvisory = async (symptoms: string[]) => {
     }
 };
 
+export const loginUser = async (credentials: any) => {
+    try {
+        const response = await apiClient.post('/login', credentials);
+        return response.data;
+    } catch (error) {
+        console.error("Error logging in:", error);
+        throw error;
+    }
+};
+
+export const saveSymptomLog = async (userId: number, symptoms: string) => {
+    try {
+        const response = await apiClient.post(`/users/${userId}/logs`, { symptoms });
+        return response.data;
+    } catch (error) {
+        console.error("Error saving log:", error);
+        throw error;
+    }
+};
+
 export default apiClient;
