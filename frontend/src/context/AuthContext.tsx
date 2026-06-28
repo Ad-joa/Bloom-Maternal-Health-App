@@ -4,6 +4,16 @@ interface User {
   id: number;
   name: string;
   email: string;
+  trimester?: number;
+  due_date?: string;
+  is_first_pregnancy?: boolean;
+  medical_conditions?: string;
+  age?: number;
+  weight?: string;
+  primary_goal?: string;
+  dietary_preferences?: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
 }
 
 interface AuthContextType {
