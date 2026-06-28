@@ -1,15 +1,47 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
+import { useAuth } from '../context/AuthContext';
+import { getInsights } from '../api/api';
 
 export default function InsightsScreen() {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [insights, setInsights] = useState({ totalLogs: 0, overallVibe: 'Unknown' });
+
+  useEffect(() => {
+    const fetchInsights = async () => {
+      if (user) {
+        try {
+          const data = await getInsights(user.id);
+          setInsights(data);
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    };
+    fetchInsights();
+  }, [user]);
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
         <Typography variant="largeTitle" color={theme.colors.primaryDark}>
-          Your Insights
+          {user ? `${user.name}'s Insights` : 'Your Insights'}
         </Typography>
         <Typography variant="body" color={theme.colors.textMedium}>
           Track your symptoms and well-being over time.
@@ -45,11 +77,13 @@ export default function InsightsScreen() {
 
       <View style={styles.row}>
         <Card style={styles.statCard}>
-          <Typography variant="largeTitle" color={theme.colors.primaryDark}>12</Typography>
-          <Typography variant="subhead" color={theme.colors.textMedium}>Logs This Week</Typography>
+          <Typography variant="largeTitle" color={theme.colors.primaryDark}>{insights.totalLogs}</Typography>
+          <Typography variant="subhead" color={theme.colors.textMedium}>Total Logs</Typography>
         </Card>
         <Card style={styles.statCard}>
-          <Typography variant="largeTitle" color={theme.colors.success}>Good</Typography>
+          <Typography variant="largeTitle" color={insights.overallVibe === 'Good' ? theme.colors.success : theme.colors.warning}>
+            {insights.overallVibe}
+          </Typography>
           <Typography variant="subhead" color={theme.colors.textMedium}>Overall Vibe</Typography>
         </Card>
       </View>

@@ -7,6 +7,8 @@ import { Button } from '../components/Button';
 import { Send } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
+import { getAdvisory } from '../api/api';
+
 interface Message {
   id: string;
   text: string;
@@ -15,26 +17,41 @@ interface Message {
 
 export default function BloomAIScreen() {
   const [inputText, setInputText] = useState('');
+  const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { id: '1', text: 'Hi Sarah! I am Bloom AI. Do you have any questions about your pregnancy today?', sender: 'ai' },
+    { id: '1', text: 'Hi Sarah! I am Bloom AI. Do you have any questions about your pregnancy today? Describe what you are feeling.', sender: 'ai' },
   ]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!inputText.trim()) return;
     
     // Add user message
-    const newMsg: Message = { id: Date.now().toString(), text: inputText, sender: 'user' };
+    const userText = inputText.trim();
+    const newMsg: Message = { id: Date.now().toString(), text: userText, sender: 'user' };
     setMessages(prev => [...prev, newMsg]);
     setInputText('');
+    setLoading(true);
     
-    // Mock AI response
-    setTimeout(() => {
+    try {
+      // Call our rule-based backend engine!
+      const response = await getAdvisory([userText]);
+      const adviceStr = typeof response.advice === 'string' ? response.advice : response.advice.text;
+      
       setMessages(prev => [...prev, { 
         id: (Date.now() + 1).toString(), 
-        text: "That's completely normal for your second trimester! However, if the pain becomes sharp or continuous, please use our Symptom Check.", 
+        text: adviceStr || "I am having trouble processing that right now.", 
         sender: 'ai' 
       }]);
-    }, 1000);
+    } catch (error) {
+      console.error(error);
+      setMessages(prev => [...prev, { 
+        id: (Date.now() + 1).toString(), 
+        text: "I couldn't reach the server. Please try again later.", 
+        sender: 'ai' 
+      }]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

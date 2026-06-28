@@ -112,3 +112,17 @@ def log_symptoms(user_id: int, log: schemas.SymptomLogCreate, db: Session = Depe
         raise HTTPException(status_code=404, detail="User not found")
         
     return crud.create_symptom_log(db=db, log=log, user_id=user_id)
+
+@app.get("/users/{user_id}/insights")
+def get_insights(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Simple insight: Count total logs
+    log_count = db.query(models.SymptomLog).filter(models.SymptomLog.user_id == user_id).count()
+    
+    return {
+        "totalLogs": log_count,
+        "overallVibe": "Good" if log_count < 5 else "Needs Rest"
+    }
