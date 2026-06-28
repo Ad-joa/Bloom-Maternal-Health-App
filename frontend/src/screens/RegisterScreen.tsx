@@ -20,7 +20,7 @@ export default function RegisterScreen({ navigation }: Props) {
   const handleRegister = () => {
     // In a real app, you would validate and call an API to create the user here
     if (name && email && password) {
-      login();
+      navigation.navigate('Onboarding');
     }
   };
 
