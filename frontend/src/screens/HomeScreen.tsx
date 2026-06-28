@@ -8,6 +8,7 @@ import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Calendar, Stethoscope, ChevronRight, AlertTriangle } from 'lucide-react-native';
+import { getDaysUntilDue, getWeeksPregnant, getCurrentTrimester, getTrimesterName } from '../utils/dateUtils';
 
 // We have to ignore the strict type for navigating to a nested Tab for now, 
 // or define the composite type. For simplicity, we use `any` to navigate to tabs.
@@ -17,6 +18,12 @@ type Props = {
 
 export default function HomeScreen({ navigation }: Props) {
   const { user } = useAuth();
+  
+  const dueDate = user?.due_date || '';
+  const daysUntilDue = dueDate ? getDaysUntilDue(dueDate) : 0;
+  const weeksPregnant = dueDate ? getWeeksPregnant(dueDate) : 0;
+  const currentTrimester = dueDate ? getCurrentTrimester(dueDate) : (user?.trimester || 1);
+  const trimesterName = getTrimesterName(currentTrimester);
 
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
@@ -41,7 +48,7 @@ export default function HomeScreen({ navigation }: Props) {
       {/* Hero Card: Current Trimester */}
       <TouchableOpacity 
         activeOpacity={0.9} 
-        onPress={() => navigation.navigate('Trimester', { trimesterId: 2 })}
+        onPress={() => navigation.navigate('Trimester', { trimesterId: currentTrimester })}
       >
         <LinearGradient
           colors={[theme.colors.primary, theme.colors.primaryDark]}
@@ -55,10 +62,10 @@ export default function HomeScreen({ navigation }: Props) {
                 CURRENT STAGE
               </Typography>
               <Typography variant="title2" color="#fff" style={styles.heroTitle}>
-                Second Trimester
+                {trimesterName}
               </Typography>
               <Typography variant="body" color="#ffffffd0">
-                Week 18 • 154 days until due date
+                {dueDate ? `Week ${weeksPregnant} • ${daysUntilDue} days until due date` : 'No due date set'}
               </Typography>
             </View>
             <View style={styles.heroIconContainer}>

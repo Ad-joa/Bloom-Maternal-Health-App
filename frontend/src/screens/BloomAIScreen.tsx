@@ -8,6 +8,7 @@ import { Send } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { getAdvisory } from '../api/api';
+import { useAuth } from '../context/AuthContext';
 
 interface Message {
   id: string;
@@ -16,6 +17,7 @@ interface Message {
 }
 
 export default function BloomAIScreen() {
+  const { user } = useAuth();
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -34,7 +36,7 @@ export default function BloomAIScreen() {
     
     try {
       // Call our rule-based backend engine!
-      const response = await getAdvisory([userText]);
+      const response = await getAdvisory([userText], user?.id);
       const adviceStr = typeof response.advice === 'string' ? response.advice : response.advice.text;
       
       setMessages(prev => [...prev, { 

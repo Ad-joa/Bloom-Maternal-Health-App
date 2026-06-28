@@ -16,6 +16,7 @@ app = FastAPI(title="Smart Maternal Health Advisory API")
 
 class SymptomRequest(BaseModel):
     symptoms: List[str]
+    user_id: int = None
 
 @app.get("/")
 def read_root():
@@ -47,7 +48,15 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
             "name": user.name, 
             "email": user.email,
             "trimester": user.trimester,
-            "due_date": user.due_date
+            "due_date": user.due_date,
+            "is_first_pregnancy": user.is_first_pregnancy,
+            "medical_conditions": user.medical_conditions,
+            "age": user.age,
+            "weight": user.weight,
+            "primary_goal": user.primary_goal,
+            "dietary_preferences": user.dietary_preferences,
+            "emergency_contact_name": user.emergency_contact_name,
+            "emergency_contact_phone": user.emergency_contact_phone
         }
     }
 
@@ -103,8 +112,23 @@ def get_trimester_info(trimester_id: int):
     return info
 
 @app.post("/advisory")
-def get_advisory(request: SymptomRequest):
-    advice = evaluate_symptoms(request.symptoms)
+def get_advisory(request: SymptomRequest, db: Session = Depends(get_db)):
+    user_context = None
+    if request.user_id:
+        user = db.query(models.User).filter(models.User.id == request.user_id).first()
+        if user:
+            user_context = {
+                "trimester": user.trimester,
+                "due_date": user.due_date,
+                "is_first_pregnancy": user.is_first_pregnancy,
+                "medical_conditions": user.medical_conditions,
+                "age": user.age,
+                "weight": user.weight,
+                "primary_goal": user.primary_goal,
+                "dietary_preferences": user.dietary_preferences
+            }
+            
+    advice = evaluate_symptoms(request.symptoms, user_context)
     return {"advice": advice}
 
 @app.post("/users/{user_id}/logs", response_model=schemas.SymptomLogResponse)
@@ -142,6 +166,18 @@ def onboard_user(user_id: int, data: schemas.UserOnboarding, db: Session = Depen
         user.is_first_pregnancy = data.is_first_pregnancy
     if data.medical_conditions is not None:
         user.medical_conditions = data.medical_conditions
+    if data.age is not None:
+        user.age = data.age
+    if data.weight is not None:
+        user.weight = data.weight
+    if data.primary_goal is not None:
+        user.primary_goal = data.primary_goal
+    if data.dietary_preferences is not None:
+        user.dietary_preferences = data.dietary_preferences
+    if data.emergency_contact_name is not None:
+        user.emergency_contact_name = data.emergency_contact_name
+    if data.emergency_contact_phone is not None:
+        user.emergency_contact_phone = data.emergency_contact_phone
         
     db.commit()
     db.refresh(user)

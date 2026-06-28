@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native';
 import { getAdvisory } from '../api/api';
 import { theme } from '../theme/theme';
+import { useAuth } from '../context/AuthContext';
 import { Typography } from '../components/Typography';
 import { Button } from '../components/Button';
 import { TextInput } from '../components/TextInput';
@@ -14,6 +15,7 @@ const COMMON_SYMPTOMS = [
 ];
 
 export default function AdvisoryScreen() {
+  const { user } = useAuth();
   const [selectedChips, setSelectedChips] = useState<string[]>([]);
   const [additionalSymptoms, setAdditionalSymptoms] = useState('');
   const [advice, setAdvice] = useState<any>(null);
@@ -41,7 +43,7 @@ export default function AdvisoryScreen() {
     setLoading(true);
     setAdvice(null);
     try {
-      const response = await getAdvisory(allSymptoms);
+      const response = await getAdvisory(allSymptoms, user?.id);
       // Mocking a severity logic if the backend doesn't provide it yet
       // If the backend just returns a string, we map it into an object
       const adviceStr = typeof response.advice === 'string' ? response.advice : response.advice.text;
