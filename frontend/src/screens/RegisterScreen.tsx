@@ -7,6 +7,8 @@ import { Button } from '../components/Button';
 import { TextInput } from '../components/TextInput';
 import { Typography } from '../components/Typography';
 
+import { registerUser } from '../api/api';
+
 type RegisterScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Register'>;
 
 type Props = {
@@ -17,11 +19,23 @@ export default function RegisterScreen({ navigation }: Props) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleRegister = () => {
-    // In a real app, you would validate and call an API to create the user here
+  const handleRegister = async () => {
     if (name && email && password) {
-      navigation.navigate('Onboarding');
+      setLoading(true);
+      try {
+        const response = await registerUser({ name, email, password });
+        if (response && response.id) {
+          // Pass the created user to onboarding
+          navigation.navigate('Onboarding', { user: response });
+        }
+      } catch (error) {
+        console.error(error);
+        // show alert in real app
+      } finally {
+        setLoading(false);
+      }
     }
   };
 

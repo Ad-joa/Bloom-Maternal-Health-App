@@ -39,7 +39,7 @@ SplashScreen.preventAutoHideAsync();
 
 export type RootStackParamList = {
   Welcome: undefined;
-  Onboarding: undefined;
+  Onboarding: { user: any };
   Login: undefined;
   Register: undefined;
   MainTabs: undefined;

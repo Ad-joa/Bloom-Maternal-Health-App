@@ -126,3 +126,17 @@ def get_insights(user_id: int, db: Session = Depends(get_db)):
         "totalLogs": log_count,
         "overallVibe": "Good" if log_count < 5 else "Needs Rest"
     }
+@app.put("/users/{user_id}/onboard", response_model=schemas.UserResponse)
+def onboard_user(user_id: int, data: schemas.UserOnboarding, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if data.trimester is not None:
+        user.trimester = data.trimester
+    if data.due_date is not None:
+        user.due_date = data.due_date
+        
+    db.commit()
+    db.refresh(user)
+    return user
