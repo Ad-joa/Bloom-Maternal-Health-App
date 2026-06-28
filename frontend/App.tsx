@@ -5,6 +5,10 @@ import HomeScreen from './src/screens/HomeScreen';
 import TrimesterScreen from './src/screens/TrimesterScreen';
 import AdvisoryScreen from './src/screens/AdvisoryScreen';
 import DailyLogScreen from './src/screens/DailyLogScreen';
+import OnboardingScreen from './src/screens/OnboardingScreen';
+import LoginScreen from './src/screens/LoginScreen';
+import RegisterScreen from './src/screens/RegisterScreen';
+import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { theme } from './src/theme/theme';
 import * as Font from 'expo-font';
@@ -28,6 +32,9 @@ import {
 SplashScreen.preventAutoHideAsync();
 
 export type RootStackParamList = {
+  Onboarding: undefined;
+  Login: undefined;
+  Register: undefined;
   Home: undefined;
   Trimester: { trimesterId: number };
   Advisory: undefined;
@@ -35,6 +42,69 @@ export type RootStackParamList = {
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+function Navigation() {
+  const { isAuthenticated } = useAuth();
+  
+  return (
+    <NavigationContainer>
+      <Stack.Navigator 
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: theme.colors.primary,
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontFamily: theme.typography.families.headingBold,
+          },
+        }}
+      >
+        {!isAuthenticated ? (
+          <>
+            <Stack.Screen 
+              name="Onboarding" 
+              component={OnboardingScreen} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="Login" 
+              component={LoginScreen} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="Register" 
+              component={RegisterScreen} 
+              options={{ headerShown: false }} 
+            />
+          </>
+        ) : (
+          <>
+            <Stack.Screen 
+              name="Home" 
+              component={HomeScreen} 
+              options={{ title: 'Bloom' }} 
+            />
+            <Stack.Screen 
+              name="Trimester" 
+              component={TrimesterScreen} 
+              options={({ route }) => ({ title: `Trimester ${route.params.trimesterId}` })}
+            />
+            <Stack.Screen 
+              name="Advisory" 
+              component={AdvisoryScreen} 
+              options={{ title: 'Health Advisory' }} 
+            />
+            <Stack.Screen 
+              name="DailyLog" 
+              component={DailyLogScreen} 
+              options={{ title: 'Daily Log' }} 
+            />
+          </>
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
 
 export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
@@ -69,41 +139,9 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
-        <Stack.Navigator 
-          initialRouteName="Home"
-          screenOptions={{
-            headerStyle: {
-              backgroundColor: theme.colors.primary,
-            },
-            headerTintColor: '#fff',
-            headerTitleStyle: {
-              fontFamily: theme.typography.families.headingBold,
-            },
-          }}
-        >
-          <Stack.Screen 
-            name="Home" 
-            component={HomeScreen} 
-            options={{ title: 'Bloom' }} 
-          />
-          <Stack.Screen 
-            name="Trimester" 
-            component={TrimesterScreen} 
-            options={({ route }) => ({ title: `Trimester ${route.params.trimesterId}` })}
-          />
-          <Stack.Screen 
-            name="Advisory" 
-            component={AdvisoryScreen} 
-            options={{ title: 'Health Advisory' }} 
-          />
-          <Stack.Screen 
-            name="DailyLog" 
-            component={DailyLogScreen} 
-            options={{ title: 'Daily Log' }} 
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <AuthProvider>
+        <Navigation />
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }
