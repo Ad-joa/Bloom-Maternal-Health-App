@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, KeyboardAvoidingView, Platform, TouchableOpacity, Animated, UIManager } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, Platform, TouchableOpacity, Animated, UIManager, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
@@ -9,6 +9,8 @@ import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/Button';
 import { TextInput } from '../components/TextInput';
 import { Typography } from '../components/Typography';
+import { BounceButton } from '../components/BounceButton';
+import { LinearGradient } from 'expo-linear-gradient';
 import { onboardUser } from '../api/api';
 import { ChevronLeft } from 'lucide-react-native';
 
@@ -134,15 +136,16 @@ export default function OnboardingScreen({ navigation, route }: Props) {
             </Typography>
             <View style={styles.optionsContainer}>
               {[1, 2, 3].map(t => (
-                <TouchableOpacity 
+                <BounceButton 
                   key={t}
-                  style={[styles.optionCard, trimester === String(t) && styles.optionCardActive]}
                   onPress={() => setTrimester(String(t))}
                 >
-                  <Typography variant="headline" color={trimester === String(t) ? '#fff' : theme.colors.primaryDark}>
-                    Trimester {t}
-                  </Typography>
-                </TouchableOpacity>
+                  <View style={[styles.optionCard, trimester === String(t) && styles.optionCardActive]}>
+                    <Typography variant="headline" color={trimester === String(t) ? theme.colors.primaryDark : theme.colors.textHigh}>
+                      Trimester {t}
+                    </Typography>
+                  </View>
+                </BounceButton>
               ))}
             </View>
           </View>
@@ -157,18 +160,20 @@ export default function OnboardingScreen({ navigation, route }: Props) {
               We adapt our advice for first-time mothers.
             </Typography>
             <View style={styles.optionsContainer}>
-              <TouchableOpacity 
-                style={[styles.optionCard, isFirstPregnancy === true && styles.optionCardActive]}
+              <BounceButton 
                 onPress={() => setIsFirstPregnancy(true)}
               >
-                <Typography variant="headline" color={isFirstPregnancy === true ? '#fff' : theme.colors.primaryDark}>Yes, it is</Typography>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.optionCard, isFirstPregnancy === false && styles.optionCardActive]}
+                <View style={[styles.optionCard, isFirstPregnancy === true && styles.optionCardActive]}>
+                  <Typography variant="headline" color={isFirstPregnancy === true ? theme.colors.primaryDark : theme.colors.textHigh}>Yes, it is</Typography>
+                </View>
+              </BounceButton>
+              <BounceButton 
                 onPress={() => setIsFirstPregnancy(false)}
               >
-                <Typography variant="headline" color={isFirstPregnancy === false ? '#fff' : theme.colors.primaryDark}>No, I've had a baby before</Typography>
-              </TouchableOpacity>
+                <View style={[styles.optionCard, isFirstPregnancy === false && styles.optionCardActive]}>
+                  <Typography variant="headline" color={isFirstPregnancy === false ? theme.colors.primaryDark : theme.colors.textHigh}>No, I've had a baby before</Typography>
+                </View>
+              </BounceButton>
             </View>
           </View>
         );
@@ -197,13 +202,14 @@ export default function OnboardingScreen({ navigation, route }: Props) {
             </Typography>
             <View style={styles.optionsContainer}>
               {["Healthy Diet", "Manage Stress", "Stay Active", "Prepare for Birth"].map(goal => (
-                <TouchableOpacity 
+                <BounceButton 
                   key={goal}
-                  style={[styles.optionCard, primaryGoal === goal && styles.optionCardActive]}
                   onPress={() => setPrimaryGoal(goal)}
                 >
-                  <Typography variant="headline" color={primaryGoal === goal ? '#fff' : theme.colors.primaryDark}>{goal}</Typography>
-                </TouchableOpacity>
+                  <View style={[styles.optionCard, primaryGoal === goal && styles.optionCardActive]}>
+                    <Typography variant="headline" color={primaryGoal === goal ? theme.colors.primaryDark : theme.colors.textHigh}>{goal}</Typography>
+                  </View>
+                </BounceButton>
               ))}
             </View>
           </View>
@@ -260,37 +266,54 @@ export default function OnboardingScreen({ navigation, route }: Props) {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
-        <View style={styles.topNav}>
-          {step > 1 ? (
-            <TouchableOpacity onPress={handleBack} style={styles.backBtn}><ChevronLeft size={24} color={theme.colors.textMedium} /></TouchableOpacity>
-          ) : <View style={styles.backBtnPlaceholder} />}
-          {renderProgressDots()}
-          <View style={styles.backBtnPlaceholder} />
-        </View>
-        <Animated.View style={[styles.content, { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }]}>
-          {renderStepContent()}
-        </Animated.View>
-        <View style={styles.footer}>
-          <Button title={step === TOTAL_STEPS ? "Complete Setup" : "Next"} onPress={handleNext} disabled={isNextDisabled() || loading} />
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+    <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.container}
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={handleBack} disabled={step === 1} style={{ opacity: step === 1 ? 0.3 : 1 }}>
+              <ChevronLeft color={theme.colors.textHigh} size={28} />
+            </TouchableOpacity>
+            {renderProgressDots()}
+            <View style={{ width: 28 }} />
+          </View>
+
+          {/* Animated Content */}
+          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            <Animated.View style={{ opacity: fadeAnim, transform: [{ translateX: slideAnim }] }}>
+              {renderStepContent()}
+            </Animated.View>
+          </ScrollView>
+
+          {/* Footer */}
+          <View style={styles.footer}>
+            <Button 
+              title={step < TOTAL_STEPS ? "Continue" : "Complete Setup"} 
+              onPress={handleNext} 
+              loading={loading}
+              disabled={isNextDisabled() || loading}
+            />
+          </View>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: theme.colors.surfaceVariant },
+  safeArea: { flex: 1, backgroundColor: 'transparent' },
   container: { flex: 1 },
-  topNav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: theme.spacing[4], paddingTop: theme.spacing[2], height: 60 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: theme.spacing[4], paddingTop: theme.spacing[2], height: 60 },
   backBtn: { padding: theme.spacing[2] },
   backBtnPlaceholder: { width: 40 },
   progressContainer: { flexDirection: 'row', gap: theme.spacing[1] },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: theme.colors.border },
   activeDot: { backgroundColor: theme.colors.primary, width: 20 },
   completedDot: { backgroundColor: theme.colors.primaryLight },
-  content: { flex: 1, padding: theme.spacing[5], justifyContent: 'center' },
+  scrollContent: { flexGrow: 1, padding: theme.spacing[5], justifyContent: 'center' },
   stepContainer: { flex: 1, justifyContent: 'center' },
   questionTitle: { marginBottom: theme.spacing[2], textAlign: 'center' },
   questionSubtitle: { marginBottom: theme.spacing[8], textAlign: 'center' },
