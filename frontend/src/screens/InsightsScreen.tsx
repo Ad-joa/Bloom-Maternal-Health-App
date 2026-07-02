@@ -4,10 +4,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
+import { BounceButton } from '../components/BounceButton';
 import { useAuth } from '../context/AuthContext';
 import { getInsights } from '../api/api';
 import { getWeeksPregnant } from '../utils/dateUtils';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BookOpen, ChevronRight } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -39,14 +41,14 @@ export default function InsightsScreen() {
       title: 'Nutrition during pregnancy',
       category: 'Diet',
       color: theme.colors.primaryLight,
-      height: 200,
+      icon: <BookOpen color={theme.colors.primaryDark} size={20} />
     },
     {
       id: '2',
       title: 'What to expect in week ' + weeks,
       category: 'Weekly Guide',
       color: '#fff',
-      height: 160,
+      icon: <BookOpen color={theme.colors.textMedium} size={20} />
     },
     {
       id: '3',
@@ -54,14 +56,14 @@ export default function InsightsScreen() {
       category: 'Mental Health',
       color: theme.colors.primaryDark,
       textLight: true,
-      height: 160,
+      icon: <BookOpen color="#ffffffa0" size={20} />
     },
     {
       id: '4',
       title: 'Safe Exercises',
       category: 'Fitness',
       color: '#F3E8FF',
-      height: 200,
+      icon: <BookOpen color={theme.colors.primaryDark} size={20} />
     }
   ];
 
@@ -79,6 +81,16 @@ export default function InsightsScreen() {
             </Typography>
           </View>
 
+          {/* Section 1: Health Trends */}
+          <View style={styles.sectionHeader}>
+            <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
+              Your Health Trends
+            </Typography>
+            <Typography variant="caption1" color={theme.colors.textMedium}>
+              Based on your Daily Logs
+            </Typography>
+          </View>
+
           {/* Stats Row */}
           <View style={styles.statsRow}>
             <View style={[styles.statBox, { backgroundColor: '#fff' }]}>
@@ -91,32 +103,38 @@ export default function InsightsScreen() {
             </View>
           </View>
 
-          {/* Masonry Layout Mockup using two columns */}
-          <View style={styles.masonryContainer}>
-            <View style={styles.column}>
-              {articles.filter((_, i) => i % 2 === 0).map(item => (
-                <TouchableOpacity key={item.id} style={[styles.articleCard, { backgroundColor: item.color, height: item.height }]}>
-                  <Typography variant="caption1" color={item.textLight ? '#ffffffa0' : theme.colors.textMedium} style={styles.category}>
-                    {item.category.toUpperCase()}
-                  </Typography>
-                  <Typography variant="title3" color={item.textLight ? '#fff' : theme.colors.textHigh} style={styles.title}>
-                    {item.title}
-                  </Typography>
-                </TouchableOpacity>
-              ))}
-            </View>
-            <View style={styles.column}>
-              {articles.filter((_, i) => i % 2 !== 0).map(item => (
-                <TouchableOpacity key={item.id} style={[styles.articleCard, { backgroundColor: item.color, height: item.height }]}>
-                  <Typography variant="caption1" color={item.textLight ? '#ffffffa0' : theme.colors.textMedium} style={styles.category}>
-                    {item.category.toUpperCase()}
-                  </Typography>
-                  <Typography variant="title3" color={item.textLight ? '#fff' : theme.colors.textHigh} style={styles.title}>
-                    {item.title}
-                  </Typography>
-                </TouchableOpacity>
-              ))}
-            </View>
+          <View style={styles.divider} />
+
+          {/* Section 2: Educational Library */}
+          <View style={styles.sectionHeader}>
+            <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
+              Educational Library
+            </Typography>
+            <Typography variant="caption1" color={theme.colors.textMedium}>
+              Curated articles for Week {weeks}
+            </Typography>
+          </View>
+
+          {/* Vertical Article List */}
+          <View style={styles.articleList}>
+            {articles.map(item => (
+              <BounceButton key={item.id}>
+                <View style={[styles.articleCardHorizontal, { backgroundColor: item.color }]}>
+                  <View style={styles.articleIconBox}>
+                    {item.icon}
+                  </View>
+                  <View style={styles.articleContent}>
+                    <Typography variant="caption1" color={item.textLight ? '#ffffffa0' : theme.colors.textMedium} style={styles.category}>
+                      {item.category.toUpperCase()}
+                    </Typography>
+                    <Typography variant="title3" color={item.textLight ? '#fff' : theme.colors.textHigh} style={styles.title}>
+                      {item.title}
+                    </Typography>
+                  </View>
+                  <ChevronRight color={item.textLight ? '#fff' : theme.colors.textMedium} size={20} />
+                </View>
+              </BounceButton>
+            ))}
           </View>
 
         </ScrollView>
@@ -160,23 +178,43 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     height: 100,
   },
-  masonryContainer: {
+  sectionHeader: {
+    marginBottom: theme.spacing[4],
+  },
+  sectionTitle: {
+    fontFamily: theme.typography.families.headingBold,
+    marginBottom: theme.spacing[1],
+  },
+  divider: {
+    height: 1,
+    backgroundColor: theme.colors.border,
+    marginVertical: theme.spacing[6],
+  },
+  articleList: {
+    gap: theme.spacing[3],
+  },
+  articleCardHorizontal: {
     flexDirection: 'row',
-    gap: theme.spacing[3],
-  },
-  column: {
-    flex: 1,
-    gap: theme.spacing[3],
-  },
-  articleCard: {
+    alignItems: 'center',
     borderRadius: theme.radii.xl,
     padding: theme.spacing[4],
     shadowColor: theme.colors.primaryDark,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
-    shadowRadius: 8,
+    shadowRadius: 4,
     elevation: 2,
-    justifyContent: 'flex-end',
+  },
+  articleIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: theme.spacing[4],
+  },
+  articleContent: {
+    flex: 1,
   },
   category: {
     fontFamily: theme.typography.families.headingBold,
