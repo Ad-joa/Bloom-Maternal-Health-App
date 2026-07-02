@@ -10,8 +10,19 @@ import { useAuth } from '../context/AuthContext';
 import { saveSymptomLog } from '../api/api';
 import { LinearGradient } from 'expo-linear-gradient';
 
-const symptomsList = [
-  'Nausea', 'Fatigue', 'Headache', 'Back Pain', 'Cramps', 'Heartburn', 'Swelling', 'Dizziness', 'Mood Swings'
+const symptomCategories = [
+  {
+    title: 'Physical',
+    symptoms: ['Nausea', 'Fatigue', 'Headache', 'Back Pain', 'Cramps', 'Swelling', 'Dizziness']
+  },
+  {
+    title: 'Digestive',
+    symptoms: ['Heartburn', 'Constipation', 'Food Aversions', 'Cravings']
+  },
+  {
+    title: 'Emotional',
+    symptoms: ['Mood Swings', 'Anxiety', 'Stress', 'Tearful']
+  }
 ];
 
 export default function DailyLogScreen() {
@@ -79,31 +90,33 @@ export default function DailyLogScreen() {
             </Typography>
           </View>
 
-          <View style={styles.section}>
-            <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
-              Symptoms
-            </Typography>
-            <View style={styles.chipContainer}>
-              {symptomsList.map((symptom) => {
-                const isSelected = selectedSymptoms.includes(symptom);
-                return (
-                  <BounceButton 
-                    key={symptom} 
-                    onPress={() => toggleSymptom(symptom)}
-                    style={[styles.chip, isSelected && styles.chipSelected]}
-                  >
-                    {isSelected && <Check size={16} color="#fff" style={{ marginRight: 6 }} />}
-                    <Typography 
-                      variant="subhead" 
-                      color={isSelected ? '#fff' : theme.colors.textHigh}
+          {symptomCategories.map((category) => (
+            <View key={category.title} style={styles.section}>
+              <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
+                {category.title}
+              </Typography>
+              <View style={styles.chipContainer}>
+                {category.symptoms.map((symptom) => {
+                  const isSelected = selectedSymptoms.includes(symptom);
+                  return (
+                    <BounceButton 
+                      key={symptom} 
+                      onPress={() => toggleSymptom(symptom)}
+                      style={[styles.chip, isSelected && styles.chipSelected]}
                     >
-                      {symptom}
-                    </Typography>
-                  </BounceButton>
-                );
-              })}
+                      {isSelected && <Check size={16} color="#fff" style={{ marginRight: 6 }} />}
+                      <Typography 
+                        variant="subhead" 
+                        color={isSelected ? '#fff' : theme.colors.textHigh}
+                      >
+                        {symptom}
+                      </Typography>
+                    </BounceButton>
+                  );
+                })}
+              </View>
             </View>
-          </View>
+          ))}
 
           <View style={styles.footer}>
             <Button 
