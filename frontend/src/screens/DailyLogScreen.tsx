@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, StyleSheet, ScrollView, Alert, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
@@ -17,6 +17,9 @@ const symptomsList = [
 export default function DailyLogScreen() {
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
   const { user } = useAuth();
 
   const toggleSymptom = (symptom: string) => {
@@ -37,8 +40,23 @@ export default function DailyLogScreen() {
     setLoading(true);
     try {
       await saveSymptomLog(user.id, selectedSymptoms.join(', '));
-      Alert.alert("Success", "Your daily log has been saved!");
       setSelectedSymptoms([]); // Reset
+      
+      // Trigger Success Animation
+      setShowSuccess(true);
+      Animated.parallel([
+        Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, tension: 50, friction: 5 }),
+        Animated.timing(opacityAnim, { toValue: 1, duration: 200, useNativeDriver: true })
+      ]).start();
+
+      // Hide after 2 seconds
+      setTimeout(() => {
+        Animated.timing(opacityAnim, { toValue: 0, duration: 300, useNativeDriver: true }).start(() => {
+          setShowSuccess(false);
+          scaleAnim.setValue(0);
+        });
+      }, 2000);
+
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Failed to save log. Please try again.");
@@ -98,6 +116,24 @@ export default function DailyLogScreen() {
 
         </ScrollView>
       </SafeAreaView>
+
+      {/* Fullscreen Success Overlay */}
+      {showSuccess && (
+        <Animated.View style={[styles.successOverlay, { opacity: opacityAnim }]}>
+          <Animated.View style={[styles.successModal, { transform: [{ scale: scaleAnim }] }]}>
+            <View style={styles.successIcon}>
+              <Check size={48} color="#fff" strokeWidth={3} />
+            </View>
+            <Typography variant="title2" color={theme.colors.textHigh} style={{ marginTop: 16 }}>
+              Log Saved!
+            </Typography>
+            <Typography variant="body" color={theme.colors.textMedium} align="center" style={{ marginTop: 8 }}>
+              You're doing great. Keep up the consistency!
+            </Typography>
+          </Animated.View>
+        </Animated.View>
+      )}
+
     </LinearGradient>
   );
 }
@@ -153,5 +189,32 @@ const styles = StyleSheet.create({
   },
   footer: {
     marginTop: theme.spacing[4],
+  },
+  successOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255,255,255,0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  successModal: {
+    width: 250,
+    backgroundColor: '#fff',
+    borderRadius: theme.radii.xl,
+    padding: theme.spacing[6],
+    alignItems: 'center',
+    shadowColor: theme.colors.primaryDark,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  successIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: theme.colors.success,
+    alignItems: 'center',
+    justifyContent: 'center',
   }
 });

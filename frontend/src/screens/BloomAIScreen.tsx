@@ -5,7 +5,8 @@ import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
 import { TextInput } from '../components/TextInput';
 import { Button } from '../components/Button';
-import { Send } from 'lucide-react-native';
+import { BounceButton } from '../components/BounceButton';
+import { Send, Sparkles } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { getAdvisory } from '../api/api';
@@ -57,6 +58,17 @@ export default function BloomAIScreen() {
       setLoading(false);
     }
   };
+
+  const handlePromptPress = (prompt: string) => {
+    setInputText(prompt);
+  };
+
+  const SUGGESTED_PROMPTS = [
+    "Is it safe to eat sushi?",
+    "Why am I so tired?",
+    "What should I pack for the hospital?",
+    "How to manage morning sickness?"
+  ];
 
   return (
     <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.container}>
@@ -122,6 +134,20 @@ export default function BloomAIScreen() {
           </ScrollView>
           
           <View style={styles.inputArea}>
+            {/* Suggested Prompts */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.promptsContainer}>
+              {SUGGESTED_PROMPTS.map((prompt, index) => (
+                <BounceButton 
+                  key={index} 
+                  style={styles.promptChip} 
+                  onPress={() => handlePromptPress(prompt)}
+                >
+                  <Sparkles size={14} color={theme.colors.primaryDark} style={{ marginRight: 6 }} />
+                  <Typography variant="caption1" color={theme.colors.primaryDark}>{prompt}</Typography>
+                </BounceButton>
+              ))}
+            </ScrollView>
+
             <View style={styles.inputContainer}>
               <TextInput
                 placeholder="Ask anything..."
@@ -243,10 +269,27 @@ const styles = StyleSheet.create({
   sendButton: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    minHeight: 48,
+    minWidth: 48,
     paddingHorizontal: 0,
-    alignItems: 'center',
+    paddingVertical: 0,
+    borderRadius: 24,
     justifyContent: 'center',
-    marginBottom: 0,
+    alignItems: 'center',
+    marginLeft: theme.spacing[2],
+  },
+  promptsContainer: {
+    paddingHorizontal: theme.spacing[4],
+    paddingBottom: theme.spacing[3],
+    gap: theme.spacing[2],
+  },
+  promptChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.primaryLight,
+    paddingHorizontal: theme.spacing[3],
+    paddingVertical: theme.spacing[2],
+    borderRadius: theme.radii.pill,
+    marginRight: theme.spacing[2],
   }
 });

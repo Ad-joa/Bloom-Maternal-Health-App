@@ -1,18 +1,18 @@
 import React from 'react';
 import { 
-  TouchableOpacity, 
-  TouchableOpacityProps, 
   StyleSheet, 
   ActivityIndicator, 
   ViewStyle, 
-  TextStyle 
+  TextStyle,
+  PressableProps
 } from 'react-native';
 import { theme } from '../theme/theme';
 import { Typography } from './Typography';
+import { BounceButton } from './BounceButton';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'tertiary';
 
-export interface ButtonProps extends TouchableOpacityProps {
+export interface ButtonProps extends PressableProps {
   variant?: ButtonVariant;
   title: string;
   loading?: boolean;
@@ -45,10 +45,9 @@ export const Button: React.FC<ButtonProps> = ({
   if (isDisabled && !isPrimary) textColor = theme.colors.textMedium;
 
   return (
-    <TouchableOpacity
+    <BounceButton
       style={containerStyle}
       disabled={isDisabled}
-      activeOpacity={0.8}
       accessibilityRole="button"
       {...props}
     >
@@ -59,7 +58,7 @@ export const Button: React.FC<ButtonProps> = ({
           {title}
         </Typography>
       )}
-    </TouchableOpacity>
+    </BounceButton>
   );
 };
 

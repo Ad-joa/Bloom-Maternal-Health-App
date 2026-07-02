@@ -7,6 +7,7 @@ import { theme } from '../theme/theme';
 import { Button } from '../components/Button';
 import { TextInput } from '../components/TextInput';
 import { Typography } from '../components/Typography';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { registerUser } from '../api/api';
 
@@ -41,7 +42,8 @@ export default function RegisterScreen({ navigation }: Props) {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.gradient}>
+      <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.container}
@@ -99,13 +101,17 @@ export default function RegisterScreen({ navigation }: Props) {
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   safeArea: {
     flex: 1,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: 'transparent',
   },
   container: {
     flex: 1,

@@ -11,6 +11,47 @@ import { getDaysUntilDue, getWeeksPregnant, getCurrentTrimester } from '../utils
 
 const { width } = Dimensions.get('window');
 
+const getBabySize = (weeks: number) => {
+  if (weeks < 4) return { emoji: '🌱', name: 'a Poppy Seed' };
+  if (weeks === 4) return { emoji: '🌾', name: 'a Sesame Seed' };
+  if (weeks === 5) return { emoji: '🍏', name: 'an Apple Seed' };
+  if (weeks === 6) return { emoji: '🫐', name: 'a Sweet Pea' };
+  if (weeks === 7) return { emoji: '🫐', name: 'a Blueberry' };
+  if (weeks === 8) return { emoji: '🍓', name: 'a Raspberry' };
+  if (weeks === 9) return { emoji: '🫒', name: 'a Green Olive' };
+  if (weeks === 10) return { emoji: '🍓', name: 'a Strawberry' };
+  if (weeks === 11) return { emoji: '🍋', name: 'a Lime' };
+  if (weeks === 12) return { emoji: '🥝', name: 'a Plum' };
+  if (weeks === 13) return { emoji: '🍑', name: 'a Peach' };
+  if (weeks === 14) return { emoji: '🍋', name: 'a Lemon' };
+  if (weeks === 15) return { emoji: '🍎', name: 'an Apple' };
+  if (weeks === 16) return { emoji: '🥑', name: 'an Avocado' };
+  if (weeks === 17) return { emoji: '🧅', name: 'a Turnip' };
+  if (weeks === 18) return { emoji: '🫑', name: 'a Bell Pepper' };
+  if (weeks === 19) return { emoji: '🍅', name: 'a Tomato' };
+  if (weeks === 20) return { emoji: '🍌', name: 'a Banana' };
+  if (weeks === 21) return { emoji: '🥕', name: 'a Carrot' };
+  if (weeks === 22) return { emoji: '🥥', name: 'a Coconut' };
+  if (weeks === 23) return { emoji: '🥭', name: 'a Mango' };
+  if (weeks === 24) return { emoji: '🌽', name: 'an Ear of Corn' };
+  if (weeks === 25) return { emoji: '🥦', name: 'a Cauliflower' };
+  if (weeks === 26) return { emoji: '🥬', name: 'a Lettuce' };
+  if (weeks === 27) return { emoji: '🥬', name: 'a Cabbage' };
+  if (weeks === 28) return { emoji: '🍆', name: 'an Eggplant' };
+  if (weeks === 29) return { emoji: '🎃', name: 'a Butternut Squash' };
+  if (weeks === 30) return { emoji: '🥬', name: 'a Large Cabbage' };
+  if (weeks === 31) return { emoji: '🥥', name: 'a Coconut' };
+  if (weeks === 32) return { emoji: '🥔', name: 'a Jicama' };
+  if (weeks === 33) return { emoji: '🍍', name: 'a Pineapple' };
+  if (weeks === 34) return { emoji: '🍈', name: 'a Cantaloupe' };
+  if (weeks === 35) return { emoji: '🍈', name: 'a Honeydew Melon' };
+  if (weeks === 36) return { emoji: '🥬', name: 'a Romaine Lettuce' };
+  if (weeks === 37) return { emoji: '🥬', name: 'a Swiss Chard' };
+  if (weeks === 38) return { emoji: '🎃', name: 'a Winter Squash' };
+  if (weeks === 39) return { emoji: '🍉', name: 'a Mini Watermelon' };
+  return { emoji: '🍉', name: 'a Watermelon' };
+};
+
 type Props = {
   navigation: any; 
 };
@@ -22,6 +63,7 @@ export default function HomeScreen({ navigation }: Props) {
   const daysUntilDue = dueDate ? getDaysUntilDue(dueDate) : 0;
   const weeksPregnant = dueDate ? getWeeksPregnant(dueDate) : 0;
   const currentTrimester = dueDate ? getCurrentTrimester(dueDate) : (user?.trimester || 1);
+  const babySize = getBabySize(weeksPregnant);
 
   // Generate a mock calendar ribbon for the next 7 days
   const today = new Date();
@@ -136,14 +178,20 @@ export default function HomeScreen({ navigation }: Props) {
                 <Typography variant="body" color={theme.colors.textMedium} style={styles.heroSubtitle}>
                   {daysUntilDue} days until due date ⓘ
                 </Typography>
+                <View style={styles.babySizeChip}>
+                  <Typography variant="title3">{babySize.emoji}</Typography>
+                  <Typography variant="caption1" color={theme.colors.textHigh} style={{ marginLeft: 6 }}>
+                    Baby is the size of {babySize.name}
+                  </Typography>
+                </View>
               </>
             ) : (
               <>
                 <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.heroTitle}>
-                  No Due Date
+                  Welcome
                 </Typography>
                 <Typography variant="body" color={theme.colors.textMedium} style={styles.heroSubtitle}>
-                  Tap to set your due date ⓘ
+                  Set up your profile to track your pregnancy.
                 </Typography>
               </>
             )}
@@ -257,16 +305,30 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing[8],
   },
   heroTitle: {
-    fontSize: 42,
     fontFamily: theme.typography.families.headingBold,
-    textAlign: 'center',
-    marginBottom: theme.spacing[2],
+    fontSize: 48,
+    lineHeight: 56,
   },
   heroSubtitle: {
-    textAlign: 'center',
+    marginTop: theme.spacing[1],
+  },
+  babySizeChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.6)',
+    paddingHorizontal: theme.spacing[3],
+    paddingVertical: theme.spacing[1],
+    borderRadius: theme.radii.pill,
+    alignSelf: 'center',
+    marginTop: theme.spacing[3],
   },
   motivationBlock: {
     paddingHorizontal: theme.spacing[6],
+    marginBottom: theme.spacing[8],
+  },
+  motivationSection: {
+    backgroundColor: '#fff',
+    padding: theme.spacing[4],
     marginBottom: theme.spacing[8],
   },
   actionRow: {
