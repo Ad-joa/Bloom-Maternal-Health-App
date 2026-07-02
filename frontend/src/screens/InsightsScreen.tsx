@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
 import { useAuth } from '../context/AuthContext';
@@ -14,19 +15,21 @@ export default function InsightsScreen() {
   const { user } = useAuth();
   const [insights, setInsights] = useState({ totalLogs: 0, overallVibe: '...' });
 
-  useEffect(() => {
-    const fetchInsights = async () => {
-      if (user) {
-        try {
-          const data = await getInsights(user.id);
-          setInsights(data);
-        } catch (error) {
-          console.error(error);
+  useFocusEffect(
+    useCallback(() => {
+      const fetchInsights = async () => {
+        if (user) {
+          try {
+            const data = await getInsights(user.id);
+            setInsights(data);
+          } catch (error) {
+            console.error(error);
+          }
         }
-      }
-    };
-    fetchInsights();
-  }, [user]);
+      };
+      fetchInsights();
+    }, [user])
+  );
 
   const weeks = user?.due_date ? getWeeksPregnant(user.due_date) : 0;
 
