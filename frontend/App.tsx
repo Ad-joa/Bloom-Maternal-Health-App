@@ -19,6 +19,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { theme } from './src/theme/theme';
 import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
+import { registerForPushNotificationsAsync } from './src/utils/notifications';
 
 import {
   Montserrat_400Regular,
@@ -180,6 +181,10 @@ export default function App() {
           Poppins_600SemiBold,
           Poppins_700Bold,
         });
+        
+        // Request notification permissions
+        await registerForPushNotificationsAsync();
+        
       } catch (e) {
         console.warn(e);
       } finally {
