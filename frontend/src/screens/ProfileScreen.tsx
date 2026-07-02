@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../theme/theme';
@@ -7,13 +7,29 @@ import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { useAuth } from '../context/AuthContext';
 import { Settings, Bell, CircleHelp, LogOut, ChevronRight } from 'lucide-react-native';
+import { scheduleDailyReminder } from '../utils/notifications';
+import * as Notifications from 'expo-notifications';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+
+  const toggleNotifications = async (value: boolean) => {
+    setNotificationsEnabled(value);
+    if (value) {
+      await scheduleDailyReminder();
+    } else {
+      await Notifications.cancelAllScheduledNotificationsAsync();
+    }
+  };
 
   const menuItems = [
     { title: 'Personal Information', icon: <Settings size={20} color={theme.colors.textMedium} /> },
-    { title: 'Notifications', icon: <Bell size={20} color={theme.colors.textMedium} /> },
+    { 
+      title: 'Daily Reminders', 
+      icon: <Bell size={20} color={theme.colors.textMedium} />,
+      isToggle: true
+    },
     { title: 'Help & Support', icon: <CircleHelp size={20} color={theme.colors.textMedium} /> },
   ];
 
@@ -50,7 +66,16 @@ export default function ProfileScreen() {
                 {item.icon}
                 <Typography variant="body" style={styles.menuItemText}>{item.title}</Typography>
               </View>
-              <ChevronRight size={20} color={theme.colors.textMedium} />
+              {item.isToggle ? (
+                <Switch 
+                  value={notificationsEnabled} 
+                  onValueChange={toggleNotifications}
+                  trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+                  thumbColor="#fff"
+                />
+              ) : (
+                <ChevronRight size={20} color={theme.colors.textMedium} />
+              )}
             </TouchableOpacity>
           ))}
         </Card>
