@@ -37,11 +37,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
   },
   elevated: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 3,
+    ...theme.shadows.soft,
   },
   outlined: {
     borderWidth: 1,

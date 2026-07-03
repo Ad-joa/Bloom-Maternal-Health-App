@@ -18,6 +18,8 @@ import { BiometricGate } from './src/components/BiometricGate';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Home, LineChart, MessageCircle, Calendar, Users } from 'lucide-react-native';
+import { BlurView } from 'expo-blur';
+import { StyleSheet } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { theme } from './src/theme/theme';
 import * as Font from 'expo-font';
@@ -78,15 +80,21 @@ function MainTabs() {
         },
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textMedium,
+        tabBarBackground: () => (
+          <BlurView tint="light" intensity={80} style={StyleSheet.absoluteFill} />
+        ),
         tabBarStyle: {
-          backgroundColor: '#fff',
+          position: 'absolute',
+          backgroundColor: 'rgba(255, 255, 255, 0.65)',
           borderTopWidth: 0,
-          elevation: 10,
+          elevation: 0, // Remove elevation to let BlurView shine
           shadowColor: theme.colors.primaryDark,
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.05,
-          shadowRadius: 10,
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 15,
           paddingTop: 8,
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
         },
         tabBarLabelStyle: {
           fontFamily: theme.typography.families.bodyMedium,

@@ -48,19 +48,22 @@ const styles = StyleSheet.create({
     marginLeft: theme.spacing[1],
   },
   inputContainer: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radii.sm,
+    backgroundColor: '#F9F9F9',
+    borderRadius: theme.radii.md,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    paddingHorizontal: theme.spacing[3],
+    borderColor: 'transparent',
+    paddingHorizontal: theme.spacing[4],
     paddingVertical: theme.spacing[3],
-    minHeight: 44,
+    minHeight: 52,
+    justifyContent: 'center',
   },
   inputError: {
     borderColor: theme.colors.danger,
+    backgroundColor: '#FFF0F0',
   },
   input: {
     fontSize: theme.typography.sizes.body,
+    fontFamily: theme.typography.families.bodyMedium,
     color: theme.colors.textHigh,
   },
   errorText: {
