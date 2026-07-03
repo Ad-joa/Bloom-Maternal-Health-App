@@ -68,6 +68,7 @@ export const theme = {
     md: parseInt(tokens.radii.md.value, 10),
     lg: parseInt(tokens.radii.lg.value, 10),
     xl: parseInt(tokens.radii.xl.value, 10),
+    pill: 9999,
   },
   shadows: {
     soft: {

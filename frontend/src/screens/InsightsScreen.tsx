@@ -8,8 +8,10 @@ import { BounceButton } from '../components/BounceButton';
 import { useAuth } from '../context/AuthContext';
 import { getInsights } from '../api/api';
 import { getWeeksPregnant } from '../utils/dateUtils';
+import { getWeeksPregnant } from '../utils/dateUtils';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BookOpen, ChevronRight } from 'lucide-react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
 
@@ -76,36 +78,38 @@ export default function InsightsScreen({ navigation }: Props) {
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          <View style={styles.header}>
+          <Animated.View entering={FadeInDown.duration(600).springify()} style={styles.header}>
             <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.headerTitle}>
               For you
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium}>
               Personalized insights & articles
             </Typography>
-          </View>
+          </Animated.View>
 
           {/* Section 1: Health Trends */}
-          <View style={styles.sectionHeader}>
-            <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
-              Your Health Trends
-            </Typography>
-            <Typography variant="caption1" color={theme.colors.textMedium}>
-              Based on your Daily Logs
-            </Typography>
-          </View>
+          <Animated.View entering={FadeInDown.duration(600).delay(100).springify()}>
+            <View style={styles.sectionHeader}>
+              <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
+                Your Health Trends
+              </Typography>
+              <Typography variant="caption1" color={theme.colors.textMedium}>
+                Based on your Daily Logs
+              </Typography>
+            </View>
 
-          {/* Stats Row */}
-          <View style={styles.statsRow}>
-            <View style={[styles.statBox, { backgroundColor: '#fff' }]}>
-              <Typography variant="headline" color={theme.colors.textMedium}>Symptom Logs</Typography>
-              <Typography variant="largeTitle" color={theme.colors.primaryDark}>{insights.totalLogs}</Typography>
+            {/* Stats Row */}
+            <View style={styles.statsRow}>
+              <View style={[styles.statBox, { backgroundColor: '#fff' }]}>
+                <Typography variant="headline" color={theme.colors.textMedium}>Symptom Logs</Typography>
+                <Typography variant="largeTitle" color={theme.colors.primaryDark}>{insights.totalLogs}</Typography>
+              </View>
+              <View style={[styles.statBox, { backgroundColor: theme.colors.primary }]}>
+                <Typography variant="headline" color="#ffffffa0">Vibe Check</Typography>
+                <Typography variant="largeTitle" color="#fff">{insights.overallVibe}</Typography>
+              </View>
             </View>
-            <View style={[styles.statBox, { backgroundColor: theme.colors.primary }]}>
-              <Typography variant="headline" color="#ffffffa0">Vibe Check</Typography>
-              <Typography variant="largeTitle" color="#fff">{insights.overallVibe}</Typography>
-            </View>
-          </View>
+          </Animated.View>
 
           <View style={styles.divider} />
 
@@ -121,30 +125,31 @@ export default function InsightsScreen({ navigation }: Props) {
 
           {/* Vertical Article List */}
           <View style={styles.articleList}>
-            {articles.map(item => (
-              <BounceButton 
-                key={item.id}
-                onPress={() => navigation.navigate('Article', { 
-                  articleId: item.id, 
-                  title: item.title,
-                  content: "Your baby is currently experiencing rapid growth this week. You might notice some extra fatigue. Taking short walks, eating small frequent meals, and staying hydrated will help alleviate the common symptoms associated with this developmental leap."
-                })}
-              >
-                <View style={[styles.articleCardHorizontal, { backgroundColor: item.color }]}>
-                  <View style={styles.articleIconBox}>
-                    {item.icon}
+            {articles.map((item, index) => (
+              <Animated.View key={item.id} entering={FadeInDown.duration(600).delay(200 + (index * 100)).springify()}>
+                <BounceButton 
+                  onPress={() => navigation.navigate('Article', { 
+                    articleId: item.id, 
+                    title: item.title,
+                    content: "Your baby is currently experiencing rapid growth this week. You might notice some extra fatigue. Taking short walks, eating small frequent meals, and staying hydrated will help alleviate the common symptoms associated with this developmental leap."
+                  })}
+                >
+                  <View style={[styles.articleCardHorizontal, { backgroundColor: item.color }]}>
+                    <View style={styles.articleIconBox}>
+                      {item.icon}
+                    </View>
+                    <View style={styles.articleContent}>
+                      <Typography variant="caption1" color={item.textLight ? '#ffffffa0' : theme.colors.textMedium} style={styles.category}>
+                        {item.category.toUpperCase()}
+                      </Typography>
+                      <Typography variant="headline" color={item.textLight ? '#fff' : theme.colors.textHigh} style={styles.articleTitle}>
+                        {item.title}
+                      </Typography>
+                    </View>
+                    <ChevronRight size={20} color={item.textLight ? '#ffffffa0' : theme.colors.primaryDark} />
                   </View>
-                  <View style={styles.articleContent}>
-                    <Typography variant="caption1" color={item.textLight ? '#ffffffa0' : theme.colors.textMedium} style={styles.category}>
-                      {item.category.toUpperCase()}
-                    </Typography>
-                    <Typography variant="title3" color={item.textLight ? '#fff' : theme.colors.textHigh} style={styles.title}>
-                      {item.title}
-                    </Typography>
-                  </View>
-                  <ChevronRight color={item.textLight ? '#fff' : theme.colors.textMedium} size={20} />
-                </View>
-              </BounceButton>
+                </BounceButton>
+              </Animated.View>
             ))}
           </View>
 
