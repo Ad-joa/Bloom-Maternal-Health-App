@@ -6,6 +6,7 @@ import { theme } from '../theme/theme';
 import { Typography } from './Typography';
 import { BounceButton } from './BounceButton';
 import { Lock } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const BIOMETRICS_KEY = '@app_biometrics_enabled';
 
@@ -76,7 +77,7 @@ export const BiometricGate: React.FC<Props> = ({ children }) => {
 
   if (isLocked) {
     return (
-      <View style={styles.lockedContainer}>
+      <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.lockedContainer}>
         <Lock size={64} color={theme.colors.primaryDark} style={{ marginBottom: 24 }} />
         <Typography variant="title2" color={theme.colors.primaryDark} style={{ marginBottom: 8 }}>
           App is Locked
@@ -88,7 +89,7 @@ export const BiometricGate: React.FC<Props> = ({ children }) => {
         <BounceButton style={styles.unlockButton} onPress={authenticate}>
           <Typography variant="headline" color="#fff">Unlock App</Typography>
         </BounceButton>
-      </View>
+      </LinearGradient>
     );
   }
 
