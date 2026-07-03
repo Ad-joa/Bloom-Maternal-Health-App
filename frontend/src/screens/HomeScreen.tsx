@@ -143,11 +143,11 @@ export default function HomeScreen({ navigation }: Props) {
           
           {/* Header Row */}
           <View style={styles.header}>
-            <View style={styles.avatar}>
+            <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={styles.avatar}>
               <Typography variant="headline" color="#fff">
                 {user?.name ? user.name[0].toUpperCase() : 'B'}
               </Typography>
-            </View>
+            </TouchableOpacity>
             <View style={styles.dateSelector}>
               <Typography variant="headline" color={theme.colors.textHigh} style={{ marginRight: 8 }}>
                 {today.toLocaleDateString('en-US', { day: 'numeric', month: 'long' })}

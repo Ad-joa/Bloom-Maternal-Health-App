@@ -12,9 +12,11 @@ import RegisterScreen from './src/screens/RegisterScreen';
 import InsightsScreen from './src/screens/InsightsScreen';
 import BloomAIScreen from './src/screens/BloomAIScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import CommunityScreen from './src/screens/CommunityScreen';
+import ArticleScreen from './src/screens/ArticleScreen';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Home, LineChart, MessageCircle, Calendar, User } from 'lucide-react-native';
+import { Home, LineChart, MessageCircle, Calendar, Users } from 'lucide-react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { theme } from './src/theme/theme';
 import * as Font from 'expo-font';
@@ -46,14 +48,16 @@ export type RootStackParamList = {
   MainTabs: undefined;
   Trimester: { trimesterId: number };
   Advisory: undefined;
+  Profile: undefined;
+  Article: { articleId: string, title: string, content: string };
 };
 
 export type MainTabParamList = {
   Home: undefined;
   Insights: undefined;
+  Community: undefined;
   BloomAI: undefined;
   Tracker: undefined;
-  Profile: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -66,9 +70,9 @@ function MainTabs() {
         tabBarIcon: ({ focused, color, size }) => {
           if (route.name === 'Home') return <Home size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
           if (route.name === 'Insights') return <LineChart size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
+          if (route.name === 'Community') return <Users size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
           if (route.name === 'BloomAI') return <MessageCircle size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
           if (route.name === 'Tracker') return <Calendar size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
-          if (route.name === 'Profile') return <User size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
           return null;
         },
         tabBarActiveTintColor: theme.colors.primary,
@@ -95,9 +99,9 @@ function MainTabs() {
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Today', headerShown: false }} />
       <Tab.Screen name="Insights" component={InsightsScreen} options={{ title: 'Insights' }} />
+      <Tab.Screen name="Community" component={CommunityScreen} options={{ title: 'Community' }} />
       <Tab.Screen name="BloomAI" component={BloomAIScreen} options={{ title: 'Bloom AI' }} />
       <Tab.Screen name="Tracker" component={DailyLogScreen} options={{ title: 'Tracker' }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
     </Tab.Navigator>
   );
 }
@@ -157,6 +161,16 @@ function Navigation() {
               name="Advisory" 
               component={AdvisoryScreen} 
               options={{ title: 'Health Advisory' }} 
+            />
+            <Stack.Screen 
+              name="Profile" 
+              component={ProfileScreen} 
+              options={{ title: 'Profile' }} 
+            />
+            <Stack.Screen 
+              name="Article" 
+              component={ArticleScreen} 
+              options={{ headerShown: false }} 
             />
           </>
         )}
