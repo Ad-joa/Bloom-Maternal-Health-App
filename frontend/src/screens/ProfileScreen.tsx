@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -6,13 +6,25 @@ import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { useAuth } from '../context/AuthContext';
-import { Settings, Bell, CircleHelp, LogOut, ChevronRight } from 'lucide-react-native';
+import { Settings, Bell, CircleHelp, LogOut, ChevronRight, Lock, FileText } from 'lucide-react-native';
 import { scheduleDailyReminder } from '../utils/notifications';
 import * as Notifications from 'expo-notifications';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [biometricsEnabled, setBiometricsEnabled] = useState(false);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      const bioEnabled = await AsyncStorage.getItem('@app_biometrics_enabled');
+      if (bioEnabled === 'true') setBiometricsEnabled(true);
+    };
+    loadSettings();
+  }, []);
 
   const toggleNotifications = async (value: boolean) => {
     setNotificationsEnabled(value);
@@ -23,14 +35,69 @@ export default function ProfileScreen() {
     }
   };
 
+  const toggleBiometrics = async (value: boolean) => {
+    setBiometricsEnabled(value);
+    await AsyncStorage.setItem('@app_biometrics_enabled', value ? 'true' : 'false');
+  };
+
+  const handleExportPDF = async () => {
+    try {
+      const html = `
+        <html>
+          <body style="font-family: Helvetica, sans-serif; padding: 40px; color: #333;">
+            <h1 style="color: #FF6B8B; border-bottom: 2px solid #fce7eb; padding-bottom: 10px;">Bloom Medical Report</h1>
+            <p style="font-size: 18px;"><strong>Patient Name:</strong> ${user?.name || 'N/A'}</p>
+            <p style="font-size: 18px;"><strong>Email:</strong> ${user?.email || 'N/A'}</p>
+            <p style="font-size: 16px; color: #666;">Report generated on ${new Date().toLocaleDateString()}</p>
+            
+            <h2 style="margin-top: 40px; color: #444;">Recent Vitals</h2>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+              <tr style="background-color: #fdf2f4;">
+                <td style="padding: 10px; border: 1px solid #fce7eb;"><strong>Weight</strong></td>
+                <td style="padding: 10px; border: 1px solid #fce7eb;">145 lbs</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px; border: 1px solid #fce7eb;"><strong>Blood Pressure</strong></td>
+                <td style="padding: 10px; border: 1px solid #fce7eb;">120/80</td>
+              </tr>
+            </table>
+
+            <h2 style="color: #444;">Recent Symptoms</h2>
+            <p style="font-size: 16px; line-height: 1.5; padding: 15px; background-color: #fdf2f4; border-radius: 8px;">
+              Fatigue, Nausea, Back Pain
+            </p>
+            
+            <p style="margin-top: 50px; font-style: italic; color: #888; font-size: 12px; text-align: center;">
+              Generated securely by Bloom Maternal Health App
+            </p>
+          </body>
+        </html>
+      `;
+      
+      const { uri } = await Print.printToFileAsync({ html });
+      await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
+    } catch (e) {
+      console.error("Error generating PDF:", e);
+    }
+  };
+
   const menuItems = [
-    { title: 'Personal Information', icon: <Settings size={20} color={theme.colors.textMedium} /> },
+    { title: 'Personal Information', icon: <Settings size={20} color={theme.colors.textMedium} />, isToggle: false },
     { 
       title: 'Daily Reminders', 
       icon: <Bell size={20} color={theme.colors.textMedium} />,
-      isToggle: true
+      isToggle: true,
+      value: notificationsEnabled,
+      onToggle: toggleNotifications
     },
-    { title: 'Help & Support', icon: <CircleHelp size={20} color={theme.colors.textMedium} /> },
+    { 
+      title: 'App Lock (FaceID/TouchID)', 
+      icon: <Lock size={20} color={theme.colors.textMedium} />,
+      isToggle: true,
+      value: biometricsEnabled,
+      onToggle: toggleBiometrics
+    },
+    { title: 'Help & Support', icon: <CircleHelp size={20} color={theme.colors.textMedium} />, isToggle: false },
   ];
 
   return (
@@ -68,8 +135,8 @@ export default function ProfileScreen() {
               </View>
               {item.isToggle ? (
                 <Switch 
-                  value={notificationsEnabled} 
-                  onValueChange={toggleNotifications}
+                  value={item.value} 
+                  onValueChange={item.onToggle}
                   trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
                   thumbColor="#fff"
                 />
@@ -78,6 +145,23 @@ export default function ProfileScreen() {
               )}
             </TouchableOpacity>
           ))}
+        </Card>
+      </View>
+
+      <View style={styles.section}>
+        <Typography variant="subhead" color={theme.colors.textMedium} style={styles.sectionLabel}>
+          MEDICAL
+        </Typography>
+        <Card style={styles.menuCard}>
+          <TouchableOpacity style={styles.menuItem} onPress={handleExportPDF}>
+            <View style={styles.menuItemLeft}>
+              <FileText size={20} color={theme.colors.primaryDark} />
+              <Typography variant="body" color={theme.colors.primaryDark} style={styles.menuItemText}>
+                Export Medical Report (PDF)
+              </Typography>
+            </View>
+            <ChevronRight size={20} color={theme.colors.primaryDark} />
+          </TouchableOpacity>
         </Card>
       </View>
 

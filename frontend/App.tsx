@@ -14,6 +14,7 @@ import BloomAIScreen from './src/screens/BloomAIScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import CommunityScreen from './src/screens/CommunityScreen';
 import ArticleScreen from './src/screens/ArticleScreen';
+import { BiometricGate } from './src/components/BiometricGate';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Home, LineChart, MessageCircle, Calendar, Users } from 'lucide-react-native';
@@ -217,7 +218,9 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <Navigation />
+        <BiometricGate>
+          <Navigation />
+        </BiometricGate>
       </AuthProvider>
     </SafeAreaProvider>
   );
