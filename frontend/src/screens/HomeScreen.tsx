@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions, Alert, Animated as RNAnimated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 import { theme } from '../theme/theme';
 import { useAuth } from '../context/AuthContext';
 import { Typography } from '../components/Typography';
@@ -60,6 +61,7 @@ type Props = {
 
 export default function HomeScreen({ navigation }: Props) {
   const { user } = useAuth();
+  const { t } = useTranslation();
   
   const dueDate = user?.due_date || '';
   const daysUntilDue = dueDate ? getDaysUntilDue(dueDate) : 0;
@@ -122,10 +124,10 @@ export default function HomeScreen({ navigation }: Props) {
   }, []);
 
   const actionButtons = [
-    { id: 'tracker', label: 'Log', icon: <Droplet color="#fff" size={24} />, route: 'Tracker', color: theme.colors.primary },
-    { id: 'symptoms', label: 'Symptoms', icon: <Heart color={theme.colors.textHigh} size={24} />, route: 'Advisory', color: '#fff' },
-    { id: 'ai', label: 'Bloom AI', icon: <MessageCircle color={theme.colors.textHigh} size={24} />, route: 'BloomAI', color: '#fff' },
-    { id: 'checkin', label: 'Check-in', icon: <CheckCircle color={theme.colors.textHigh} size={24} />, route: 'Tracker', color: '#fff' },
+    { id: 'tracker', label: t('actions.log'), icon: <Droplet color="#fff" size={24} />, route: 'Tracker', color: theme.colors.primary },
+    { id: 'symptoms', label: t('actions.symptoms'), icon: <Heart color={theme.colors.textHigh} size={24} />, route: 'Advisory', color: '#fff' },
+    { id: 'ai', label: t('actions.ai'), icon: <MessageCircle color={theme.colors.textHigh} size={24} />, route: 'BloomAI', color: '#fff' },
+    { id: 'checkin', label: t('actions.checkin'), icon: <CheckCircle color={theme.colors.textHigh} size={24} />, route: 'Tracker', color: '#fff' },
   ];
 
   const insights = [
@@ -179,7 +181,7 @@ export default function HomeScreen({ navigation }: Props) {
               <Card style={styles.statusCard}>
                 <View style={styles.statusHeader}>
                   <Typography variant="headline" color={theme.colors.primaryDark}>
-                    TRIMESTER {currentTrimester}
+                    {t('home.trimester')} {currentTrimester}
                   </Typography>
                   <ChevronRight size={20} color={theme.colors.primaryDark} />
                 </View>
@@ -187,10 +189,10 @@ export default function HomeScreen({ navigation }: Props) {
                 {dueDate ? (
                   <>
                     <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.heroTitle}>
-                      Week {weeksPregnant}
+                      {t('home.week')} {weeksPregnant}
                     </Typography>
                     <Typography variant="body" color={theme.colors.textMedium} style={styles.heroSubtitle}>
-                      {daysUntilDue} days until due date
+                      {daysUntilDue} {t('home.untilDue')}
                     </Typography>
                     
                     {/* Progress Bar */}
@@ -201,17 +203,17 @@ export default function HomeScreen({ navigation }: Props) {
                     <View style={styles.babySizeChip}>
                       <Typography variant="title3">{babySize.emoji}</Typography>
                       <Typography variant="caption1" color={theme.colors.textHigh} style={{ marginLeft: 6 }}>
-                        Baby is the size of {babySize.name}
+                        {t('home.babySize')} {babySize.name}
                       </Typography>
                     </View>
                   </>
                 ) : (
                   <>
                     <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.heroTitle}>
-                      Welcome
+                      {t('home.welcome')}
                     </Typography>
                     <Typography variant="body" color={theme.colors.textMedium} style={styles.heroSubtitle}>
-                      Set up your profile to track your pregnancy.
+                      {t('home.setupProfile')}
                     </Typography>
                   </>
                 )}
@@ -221,11 +223,17 @@ export default function HomeScreen({ navigation }: Props) {
             {/* 2. Quick Actions Grid Card */}
             <Card style={styles.actionsCard}>
               <Typography variant="headline" color={theme.colors.textHigh} style={{ marginBottom: theme.spacing[4] }}>
-                Quick Actions
+                {t('home.quickActions')}
               </Typography>
               <View style={styles.actionGrid}>
                 {actionButtons.map(btn => (
-                  <BounceButton key={btn.id} style={styles.actionGridItem} onPress={() => navigation.navigate(btn.route)}>
+                  <BounceButton 
+                    key={btn.id} 
+                    style={styles.actionGridItem} 
+                    onPress={() => navigation.navigate(btn.route)}
+                    accessibilityLabel={`Navigate to ${btn.label}`}
+                    accessibilityRole="button"
+                  >
                     <View style={[styles.circleButton, { backgroundColor: btn.color }]}>
                       {btn.icon}
                     </View>
@@ -240,7 +248,7 @@ export default function HomeScreen({ navigation }: Props) {
             {/* 3. Daily Reflection Card */}
             <Card style={styles.reflectionCard}>
               <Typography variant="headline" color={theme.colors.primaryDark} style={{ marginBottom: theme.spacing[2] }}>
-                Daily Reflection
+                {t('home.dailyReflection')}
               </Typography>
               <Animated.View style={{ opacity: fadeAnim }}>
                 <Typography variant="body" color={theme.colors.textMedium} style={{ fontStyle: 'italic' }}>
@@ -254,7 +262,7 @@ export default function HomeScreen({ navigation }: Props) {
           {/* Daily Insights */}
           <Animated.View entering={FadeInDown.duration(600).delay(300).springify()} style={styles.insightsSection}>
             <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
-              My daily insights • Today
+              {t('home.insightsTitle')}
             </Typography>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.insightsScroll}>
               {insights.map(item => (

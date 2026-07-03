@@ -51,6 +51,8 @@ export const BounceButton: React.FC<BounceButtonProps> = ({
   return (
     <Animated.View style={[{ transform: [{ scale: scaleValue }] }, style]}>
       <Pressable
+        accessible={true}
+        accessibilityRole={props.accessibilityRole || 'button'}
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
