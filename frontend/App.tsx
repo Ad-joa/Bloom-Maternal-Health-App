@@ -14,6 +14,7 @@ import BloomAIScreen from './src/screens/BloomAIScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import CommunityScreen from './src/screens/CommunityScreen';
 import ArticleScreen from './src/screens/ArticleScreen';
+import RemindersScreen from './src/screens/RemindersScreen';
 import { BiometricGate } from './src/components/BiometricGate';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -23,6 +24,7 @@ import { StyleSheet } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { theme } from './src/theme/theme';
 import * as Font from 'expo-font';
+import './src/i18n';
 import * as SplashScreen from 'expo-splash-screen';
 import { registerForPushNotificationsAsync } from './src/utils/notifications';
 
@@ -53,6 +55,7 @@ export type RootStackParamList = {
   Advisory: undefined;
   Profile: undefined;
   Article: { articleId: string, title: string, content: string };
+  Reminders: undefined;
 };
 
 export type MainTabParamList = {
@@ -180,6 +183,11 @@ function Navigation() {
               name="Article" 
               component={ArticleScreen} 
               options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="Reminders" 
+              component={RemindersScreen} 
+              options={{ title: 'Reminders' }} 
             />
           </>
         )}
