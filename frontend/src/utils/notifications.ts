@@ -52,3 +52,31 @@ export async function scheduleDailyReminder() {
     },
   });
 }
+
+export async function scheduleHydrationReminder(hour: number, minute: number) {
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: "Time to hydrate! 💧",
+      body: "Drinking water is essential for you and your baby.",
+    },
+    trigger: {
+      hour,
+      minute,
+      repeats: true,
+    },
+  });
+}
+
+export async function scheduleMedicationReminder(hour: number, minute: number) {
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: "Medication / Vitamin Reminder 💊",
+      body: "Don't forget to take your daily vitamins!",
+    },
+    trigger: {
+      hour,
+      minute,
+      repeats: true,
+    },
+  });
+}
