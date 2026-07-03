@@ -158,7 +158,7 @@ export default function HomeScreen({ navigation }: Props) {
           </View>
 
           {/* Calendar Ribbon */}
-          <Animated.View entering={FadeInDown.duration(600).delay(100).springify()} style={styles.calendarContainer}>
+          <Animated.View entering={FadeInDown.duration(600).delay(100).springify()} style={styles.calendarRibbon}>
             {calendarDays.map((day, idx) => (
               <View key={idx} style={[styles.dayColumn, day.isToday && styles.todayColumn]}>
                 <Typography variant="caption1" color={theme.colors.textMedium} style={styles.dayStr}>

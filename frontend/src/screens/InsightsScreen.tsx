@@ -8,7 +8,6 @@ import { BounceButton } from '../components/BounceButton';
 import { useAuth } from '../context/AuthContext';
 import { getInsights } from '../api/api';
 import { getWeeksPregnant } from '../utils/dateUtils';
-import { getWeeksPregnant } from '../utils/dateUtils';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BookOpen, ChevronRight } from 'lucide-react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -142,7 +141,7 @@ export default function InsightsScreen({ navigation }: Props) {
                       <Typography variant="caption1" color={item.textLight ? '#ffffffa0' : theme.colors.textMedium} style={styles.category}>
                         {item.category.toUpperCase()}
                       </Typography>
-                      <Typography variant="headline" color={item.textLight ? '#fff' : theme.colors.textHigh} style={styles.articleTitle}>
+                      <Typography variant="headline" color={item.textLight ? '#fff' : theme.colors.textHigh} style={styles.title}>
                         {item.title}
                       </Typography>
                     </View>
