@@ -32,6 +32,7 @@ export const Typography: React.FC<TypographyProps> = ({
 }) => {
   return (
     <Text
+      allowFontScaling={true}
       style={[
         styles.base,
         styles[variant],

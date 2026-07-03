@@ -13,9 +13,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 
-export default function ProfileScreen() {
+export default function ProfileScreen({ navigation }: any) {
   const { user, logout } = useAuth();
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [biometricsEnabled, setBiometricsEnabled] = useState(false);
 
   useEffect(() => {
@@ -26,14 +25,6 @@ export default function ProfileScreen() {
     loadSettings();
   }, []);
 
-  const toggleNotifications = async (value: boolean) => {
-    setNotificationsEnabled(value);
-    if (value) {
-      await scheduleDailyReminder();
-    } else {
-      await Notifications.cancelAllScheduledNotificationsAsync();
-    }
-  };
 
   const toggleBiometrics = async (value: boolean) => {
     setBiometricsEnabled(value);
@@ -86,9 +77,8 @@ export default function ProfileScreen() {
     { 
       title: 'Daily Reminders', 
       icon: <Bell size={20} color={theme.colors.textMedium} />,
-      isToggle: true,
-      value: notificationsEnabled,
-      onToggle: toggleNotifications
+      isToggle: false,
+      onPress: () => navigation.navigate('Reminders')
     },
     { 
       title: 'App Lock (FaceID/TouchID)', 
@@ -128,6 +118,7 @@ export default function ProfileScreen() {
                 styles.menuItem,
                 index !== menuItems.length - 1 && styles.menuItemBorder
               ]}
+              onPress={item.onPress}
             >
               <View style={styles.menuItemLeft}>
                 {item.icon}
