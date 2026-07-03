@@ -13,7 +13,11 @@ import { BookOpen, ChevronRight } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
 
-export default function InsightsScreen() {
+type Props = {
+  navigation: any;
+};
+
+export default function InsightsScreen({ navigation }: Props) {
   const { user } = useAuth();
   const [insights, setInsights] = useState({ totalLogs: 0, overallVibe: '...' });
 
@@ -118,7 +122,14 @@ export default function InsightsScreen() {
           {/* Vertical Article List */}
           <View style={styles.articleList}>
             {articles.map(item => (
-              <BounceButton key={item.id}>
+              <BounceButton 
+                key={item.id}
+                onPress={() => navigation.navigate('Article', { 
+                  articleId: item.id, 
+                  title: item.title,
+                  content: "Your baby is currently experiencing rapid growth this week. You might notice some extra fatigue. Taking short walks, eating small frequent meals, and staying hydrated will help alleviate the common symptoms associated with this developmental leap."
+                })}
+              >
                 <View style={[styles.articleCardHorizontal, { backgroundColor: item.color }]}>
                   <View style={styles.articleIconBox}>
                     {item.icon}

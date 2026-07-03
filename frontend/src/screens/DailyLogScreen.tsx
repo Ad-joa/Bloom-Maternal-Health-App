@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, StyleSheet, ScrollView, Alert, Animated } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, Animated, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
@@ -27,6 +27,9 @@ const symptomCategories = [
 
 export default function DailyLogScreen() {
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
+  const [weight, setWeight] = useState('');
+  const [systolic, setSystolic] = useState('');
+  const [diastolic, setDiastolic] = useState('');
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const scaleAnim = useRef(new Animated.Value(0)).current;
@@ -42,7 +45,7 @@ export default function DailyLogScreen() {
   };
 
   const handleSave = async () => {
-    if (selectedSymptoms.length === 0) return;
+    if (selectedSymptoms.length === 0 && !weight && !systolic) return;
     if (!user) {
       Alert.alert("Error", "You must be logged in to save a log.");
       return;
@@ -50,8 +53,16 @@ export default function DailyLogScreen() {
 
     setLoading(true);
     try {
-      await saveSymptomLog(user.id, selectedSymptoms.join(', '));
+      // In a real app, we would send vitals to the backend here as well
+      let logText = selectedSymptoms.join(', ');
+      if (weight) logText += ` | Weight: ${weight} lbs`;
+      if (systolic && diastolic) logText += ` | BP: ${systolic}/${diastolic}`;
+
+      await saveSymptomLog(user.id, logText);
       setSelectedSymptoms([]); // Reset
+      setWeight('');
+      setSystolic('');
+      setDiastolic('');
       
       // Trigger Success Animation
       setShowSuccess(true);
@@ -90,6 +101,50 @@ export default function DailyLogScreen() {
             </Typography>
           </View>
 
+          {/* Vitals Section */}
+          <View style={styles.section}>
+            <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
+              Vitals
+            </Typography>
+            
+            <View style={styles.vitalsRow}>
+              <View style={styles.vitalInputBox}>
+                <Typography variant="caption1" color={theme.colors.textMedium} style={{ marginBottom: 4 }}>Weight (lbs)</Typography>
+                <TextInput
+                  style={styles.vitalInput}
+                  keyboardType="numeric"
+                  placeholder="e.g. 145"
+                  value={weight}
+                  onChangeText={setWeight}
+                  placeholderTextColor={theme.colors.textMedium}
+                />
+              </View>
+
+              <View style={[styles.vitalInputBox, { flex: 1.5 }]}>
+                <Typography variant="caption1" color={theme.colors.textMedium} style={{ marginBottom: 4 }}>Blood Pressure</Typography>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <TextInput
+                    style={[styles.vitalInput, { flex: 1 }]}
+                    keyboardType="numeric"
+                    placeholder="120"
+                    value={systolic}
+                    onChangeText={setSystolic}
+                    placeholderTextColor={theme.colors.textMedium}
+                  />
+                  <Typography variant="title3" color={theme.colors.textMedium} style={{ marginHorizontal: 8 }}>/</Typography>
+                  <TextInput
+                    style={[styles.vitalInput, { flex: 1 }]}
+                    keyboardType="numeric"
+                    placeholder="80"
+                    value={diastolic}
+                    onChangeText={setDiastolic}
+                    placeholderTextColor={theme.colors.textMedium}
+                  />
+                </View>
+              </View>
+            </View>
+          </View>
+
           {symptomCategories.map((category) => (
             <View key={category.title} style={styles.section}>
               <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
@@ -123,7 +178,7 @@ export default function DailyLogScreen() {
               title="Save Log" 
               onPress={handleSave}
               loading={loading}
-              disabled={selectedSymptoms.length === 0}
+              disabled={selectedSymptoms.length === 0 && !weight && !systolic}
             />
           </View>
 
@@ -197,18 +252,35 @@ const styles = StyleSheet.create({
     borderColor: '#f5f5f5',
   },
   chipSelected: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.primaryDark,
+    borderColor: theme.colors.primaryDark,
   },
   footer: {
     marginTop: theme.spacing[4],
   },
+  vitalsRow: {
+    flexDirection: 'row',
+    gap: theme.spacing[4],
+  },
+  vitalInputBox: {
+    flex: 1,
+  },
+  vitalInput: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radii.lg,
+    padding: theme.spacing[3],
+    fontFamily: theme.typography.families.body,
+    fontSize: 16,
+    color: theme.colors.textHigh,
+  },
   successOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255,255,255,0.85)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1000,
+    zIndex: 999,
   },
   successModal: {
     width: 250,
