@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions, Alert, Animated } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions, Alert, Animated as RNAnimated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { theme } from '../theme/theme';
 import { useAuth } from '../context/AuthContext';
 import { Typography } from '../components/Typography';
@@ -84,7 +85,7 @@ export default function HomeScreen({ navigation }: Props) {
   });
 
   const [dailyQuote, setDailyQuote] = useState('');
-  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const fadeAnim = useRef(new RNAnimated.Value(1)).current;
 
   const motivations = [
     "Your body is doing incredible things today.",
@@ -101,7 +102,7 @@ export default function HomeScreen({ navigation }: Props) {
 
     const intervalId = setInterval(() => {
       // Fade out
-      Animated.timing(fadeAnim, {
+      RNAnimated.timing(fadeAnim, {
         toValue: 0,
         duration: 500,
         useNativeDriver: true,
@@ -109,7 +110,7 @@ export default function HomeScreen({ navigation }: Props) {
         // Change quote while invisible
         setDailyQuote(motivations[Math.floor(Math.random() * motivations.length)]);
         // Fade in
-        Animated.timing(fadeAnim, {
+        RNAnimated.timing(fadeAnim, {
           toValue: 1,
           duration: 500,
           useNativeDriver: true,
@@ -157,7 +158,7 @@ export default function HomeScreen({ navigation }: Props) {
           </View>
 
           {/* Calendar Ribbon */}
-          <View style={styles.calendarRibbon}>
+          <Animated.View entering={FadeInDown.duration(600).delay(100).springify()} style={styles.calendarContainer}>
             {calendarDays.map((day, idx) => (
               <View key={idx} style={[styles.dayColumn, day.isToday && styles.todayColumn]}>
                 <Typography variant="caption1" color={theme.colors.textMedium} style={styles.dayStr}>
@@ -168,10 +169,10 @@ export default function HomeScreen({ navigation }: Props) {
                 </Typography>
               </View>
             ))}
-          </View>
+          </Animated.View>
 
           {/* Main Content Layout */}
-          <View style={styles.contentLayout}>
+          <Animated.View entering={FadeInDown.duration(600).delay(200).springify()} style={styles.contentLayout}>
             
             {/* 1. Pregnancy Status Card */}
             <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate('Trimester', { trimesterId: currentTrimester })}>
@@ -248,10 +249,10 @@ export default function HomeScreen({ navigation }: Props) {
               </Animated.View>
             </Card>
 
-          </View>
+          </Animated.View>
 
           {/* Daily Insights */}
-          <View style={styles.insightsSection}>
+          <Animated.View entering={FadeInDown.duration(600).delay(300).springify()} style={styles.insightsSection}>
             <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
               My daily insights • Today
             </Typography>
@@ -272,7 +273,7 @@ export default function HomeScreen({ navigation }: Props) {
                 </BounceButton>
               ))}
             </ScrollView>
-          </View>
+          </Animated.View>
 
         </ScrollView>
       </SafeAreaView>

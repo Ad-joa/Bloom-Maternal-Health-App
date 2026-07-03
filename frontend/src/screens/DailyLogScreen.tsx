@@ -9,6 +9,7 @@ import { Check } from 'lucide-react-native';
 import { useAuth } from '../context/AuthContext';
 import { saveSymptomLog } from '../api/api';
 import { LinearGradient } from 'expo-linear-gradient';
+import AnimatedReanimated, { FadeInDown } from 'react-native-reanimated';
 
 const symptomCategories = [
   {
@@ -92,17 +93,17 @@ export default function DailyLogScreen() {
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          <View style={styles.header}>
+          <AnimatedReanimated.View entering={FadeInDown.duration(600).springify()} style={styles.header}>
             <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.headerTitle}>
               Log period
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium}>
               Or any symptoms you're feeling today
             </Typography>
-          </View>
+          </AnimatedReanimated.View>
 
           {/* Vitals Section */}
-          <View style={styles.section}>
+          <AnimatedReanimated.View entering={FadeInDown.duration(600).delay(100).springify()} style={styles.section}>
             <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
               Vitals
             </Typography>
@@ -143,10 +144,10 @@ export default function DailyLogScreen() {
                 </View>
               </View>
             </View>
-          </View>
+          </AnimatedReanimated.View>
 
-          {symptomCategories.map((category) => (
-            <View key={category.title} style={styles.section}>
+          {symptomCategories.map((category, catIndex) => (
+            <AnimatedReanimated.View key={category.title} entering={FadeInDown.duration(600).delay(200 + (catIndex * 100)).springify()} style={styles.section}>
               <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
                 {category.title}
               </Typography>
@@ -170,17 +171,17 @@ export default function DailyLogScreen() {
                   );
                 })}
               </View>
-            </View>
+            </AnimatedReanimated.View>
           ))}
 
-          <View style={styles.footer}>
+          <AnimatedReanimated.View entering={FadeInDown.duration(600).delay(500).springify()} style={styles.footer}>
             <Button 
               title="Save Log" 
               onPress={handleSave}
               loading={loading}
               disabled={selectedSymptoms.length === 0 && !weight && !systolic}
             />
-          </View>
+          </AnimatedReanimated.View>
 
         </ScrollView>
       </SafeAreaView>
@@ -271,7 +272,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
     borderRadius: theme.radii.lg,
     padding: theme.spacing[3],
-    fontFamily: theme.typography.families.body,
+    fontFamily: theme.typography.families.bodyMedium,
     fontSize: 16,
     color: theme.colors.textHigh,
   },
