@@ -1,11 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, TextInput as RNTextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
-import { TextInput } from '../components/TextInput';
-import { Button } from '../components/Button';
-import { Send } from 'lucide-react-native';
+import { BounceButton } from '../components/BounceButton';
+import { Send, Sparkles } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { getAdvisory } from '../api/api';
@@ -58,6 +57,17 @@ export default function BloomAIScreen() {
     }
   };
 
+  const handlePromptPress = (prompt: string) => {
+    setInputText(prompt);
+  };
+
+  const SUGGESTED_PROMPTS = [
+    "Is it safe to eat sushi?",
+    "Why am I so tired?",
+    "What should I pack for the hospital?",
+    "How to manage morning sickness?"
+  ];
+
   return (
     <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.container}>
       <SafeAreaView edges={['top']} style={styles.safeArea}>
@@ -77,6 +87,7 @@ export default function BloomAIScreen() {
 
           <ScrollView 
             ref={scrollViewRef}
+            style={styles.scrollView}
             contentContainerStyle={styles.chatContainer}
             onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
             showsVerticalScrollIndicator={false}
@@ -122,21 +133,39 @@ export default function BloomAIScreen() {
           </ScrollView>
           
           <View style={styles.inputArea}>
+            {/* Suggested Prompts */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.promptsContainer}>
+              {SUGGESTED_PROMPTS.map((prompt, index) => (
+                <BounceButton 
+                  key={index} 
+                  style={styles.promptChip} 
+                  onPress={() => handlePromptPress(prompt)}
+                >
+                  <Sparkles size={14} color={theme.colors.primaryDark} style={{ marginRight: 6 }} />
+                  <Typography variant="caption1" color={theme.colors.primaryDark}>{prompt}</Typography>
+                </BounceButton>
+              ))}
+            </ScrollView>
+
             <View style={styles.inputContainer}>
-              <TextInput
-                placeholder="Ask anything..."
-                value={inputText}
-                onChangeText={setInputText}
-                style={styles.input}
-                containerStyle={{ marginBottom: 0, flex: 1 }}
-              />
-              <Button 
-                title="" 
+              <View style={styles.inputWrapper}>
+                <RNTextInput
+                  placeholder="Ask anything..."
+                  placeholderTextColor={theme.colors.textMedium}
+                  value={inputText}
+                  onChangeText={setInputText}
+                  style={styles.input}
+                  multiline
+                  maxLength={500}
+                />
+              </View>
+              <BounceButton 
                 onPress={handleSend}
-                style={styles.sendButton}
+                style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
+                disabled={!inputText.trim()}
               >
-                <Send color="#fff" size={20} />
-              </Button>
+                <Send color="#fff" size={20} style={styles.sendIcon} />
+              </BounceButton>
             </View>
           </View>
         </KeyboardAvoidingView>
@@ -161,6 +190,9 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontFamily: theme.typography.families.headingBold,
+  },
+  scrollView: {
+    flex: 1,
   },
   chatContainer: {
     padding: theme.spacing[4],
@@ -225,28 +257,65 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     gap: theme.spacing[2],
   },
-  input: {
+  inputWrapper: {
+    flex: 1,
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#f0f0f0',
+    borderColor: theme.colors.border,
     borderRadius: 24,
-    paddingHorizontal: theme.spacing[4],
+    minHeight: 48,
+    maxHeight: 120,
+    justifyContent: 'center',
     shadowColor: theme.colors.primaryDark,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
   },
+  input: {
+    paddingHorizontal: theme.spacing[4],
+    paddingTop: 12,
+    paddingBottom: 12,
+    fontSize: 16,
+    color: theme.colors.textHigh,
+    fontFamily: theme.typography.families.bodyRegular,
+  },
   sendButton: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    paddingHorizontal: 0,
-    alignItems: 'center',
+    backgroundColor: theme.colors.primary,
     justifyContent: 'center',
-    marginBottom: 0,
+    alignItems: 'center',
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  sendButtonDisabled: {
+    backgroundColor: theme.colors.border,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  sendIcon: {
+    marginLeft: 2, // optical alignment
+  },
+  promptsContainer: {
+    paddingHorizontal: theme.spacing[4],
+    paddingBottom: theme.spacing[3],
+    gap: theme.spacing[2],
+  },
+  promptChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.primaryLight,
+    paddingHorizontal: theme.spacing[3],
+    paddingVertical: theme.spacing[2],
+    borderRadius: theme.radii.pill,
+    marginRight: theme.spacing[2],
   }
 });
