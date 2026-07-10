@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, Dimensions } from 'react-native';
+import { , Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
@@ -7,7 +7,7 @@ import { Card } from '../components/Card';
 import { BounceButton } from '../components/BounceButton';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Heart, MessageSquare, Plus } from 'lucide-react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+
 
 const MOCK_POSTS = [
   {
@@ -56,7 +56,7 @@ export default function CommunityScreen() {
   };
 
   const renderPost = ({ item, index }: { item: typeof MOCK_POSTS[0], index: number }) => (
-    <Animated.View entering={FadeInDown.duration(600).delay(200 + (index * 100)).springify()}>
+    <View >
       <Card style={styles.postCard}>
       <View style={styles.postHeader}>
         <View style={styles.avatar}>
@@ -87,21 +87,21 @@ export default function CommunityScreen() {
         </BounceButton>
       </View>
     </Card>
-    </Animated.View>
+    </View>
   );
 
   return (
     <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.container}>
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         
-        <Animated.View entering={FadeInDown.duration(600).springify()} style={styles.header}>
+        <View  style={styles.header}>
           <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.headerTitle}>
             Community
           </Typography>
           <Typography variant="body" color={theme.colors.textMedium}>
             Connect with other expecting mothers
           </Typography>
-        </Animated.View>
+        </View>
 
         <FlatList
           data={posts}

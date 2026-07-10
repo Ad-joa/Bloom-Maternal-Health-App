@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, TextInput as RNTextInput } from 'react-native';
+import { , Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';

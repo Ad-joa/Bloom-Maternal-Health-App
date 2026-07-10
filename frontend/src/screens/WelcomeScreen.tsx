@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import { , Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
@@ -8,7 +8,7 @@ import { Button } from '../components/Button';
 import { Typography } from '../components/Typography';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Heart } from 'lucide-react-native';
-import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
+
 
 type WelcomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Welcome'>;
 
@@ -30,7 +30,7 @@ export default function WelcomeScreen({ navigation }: Props) {
         <SafeAreaView style={styles.safeArea}>
           <View style={styles.content}>
             
-            <Animated.View entering={FadeInDown.duration(800).springify()} style={styles.heroSection}>
+            <View  style={styles.heroSection}>
               <View style={styles.iconContainer}>
                 <Heart size={64} color={theme.colors.primary} strokeWidth={2} />
               </View>
@@ -40,9 +40,9 @@ export default function WelcomeScreen({ navigation }: Props) {
               <Typography variant="body" color={theme.colors.textMedium} align="center" style={styles.subtitle}>
                 Your maternal health journey, supported every step of the way with AI.
               </Typography>
-            </Animated.View>
+            </View>
             
-            <Animated.View entering={FadeInDown.duration(800).delay(300).springify()} style={styles.buttonContainer}>
+            <View  style={styles.buttonContainer}>
               <Button 
                 title="Get Started" 
                 variant="primary" 
@@ -55,7 +55,7 @@ export default function WelcomeScreen({ navigation }: Props) {
                 onPress={() => navigation.navigate('Login')} 
                 style={styles.button}
               />
-            </Animated.View>
+            </View>
 
           </View>
         </SafeAreaView>

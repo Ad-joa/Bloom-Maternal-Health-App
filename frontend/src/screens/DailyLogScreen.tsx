@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, StyleSheet, ScrollView, Alert, Animated, TextInput } from 'react-native';
+import { , Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
@@ -9,7 +9,7 @@ import { Check } from 'lucide-react-native';
 import { useAuth } from '../context/AuthContext';
 import { saveSymptomLog } from '../api/api';
 import { LinearGradient } from 'expo-linear-gradient';
-import AnimatedReanimated, { FadeInDown } from 'react-native-reanimated';
+
 
 const symptomCategories = [
   {
@@ -93,7 +93,7 @@ export default function DailyLogScreen() {
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          <AnimatedReanimated.View entering={FadeInDown.duration(600).springify()} style={styles.header}>
+          <AnimatedReanimated.View  style={styles.header}>
             <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.headerTitle}>
               Log period
             </Typography>
@@ -103,7 +103,7 @@ export default function DailyLogScreen() {
           </AnimatedReanimated.View>
 
           {/* Vitals Section */}
-          <AnimatedReanimated.View entering={FadeInDown.duration(600).delay(100).springify()} style={styles.section}>
+          <AnimatedReanimated.View  style={styles.section}>
             <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
               Vitals
             </Typography>
@@ -147,7 +147,7 @@ export default function DailyLogScreen() {
           </AnimatedReanimated.View>
 
           {symptomCategories.map((category, catIndex) => (
-            <AnimatedReanimated.View key={category.title} entering={FadeInDown.duration(600).delay(200 + (catIndex * 100)).springify()} style={styles.section}>
+            <AnimatedReanimated.View key={category.title}  style={styles.section}>
               <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
                 {category.title}
               </Typography>
@@ -174,7 +174,7 @@ export default function DailyLogScreen() {
             </AnimatedReanimated.View>
           ))}
 
-          <AnimatedReanimated.View entering={FadeInDown.duration(600).delay(500).springify()} style={styles.footer}>
+          <AnimatedReanimated.View  style={styles.footer}>
             <Button 
               title="Save Log" 
               onPress={handleSave}
@@ -188,8 +188,8 @@ export default function DailyLogScreen() {
 
       {/* Fullscreen Success Overlay */}
       {showSuccess && (
-        <Animated.View style={[styles.successOverlay, { opacity: opacityAnim }]}>
-          <Animated.View style={[styles.successModal, { transform: [{ scale: scaleAnim }] }]}>
+        <View style={[styles.successOverlay, { opacity: opacityAnim }]}>
+          <View style={[styles.successModal, { transform: [{ scale: scaleAnim }] }]}>
             <View style={styles.successIcon}>
               <Check size={48} color="#fff" strokeWidth={3} />
             </View>
@@ -199,8 +199,8 @@ export default function DailyLogScreen() {
             <Typography variant="body" color={theme.colors.textMedium} align="center" style={{ marginTop: 8 }}>
               You're doing great. Keep up the consistency!
             </Typography>
-          </Animated.View>
-        </Animated.View>
+          </View>
+        </View>
       )}
 
     </LinearGradient>
