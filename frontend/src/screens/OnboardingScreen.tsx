@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, KeyboardAvoidingView, Platform, TouchableOpacity, Animated, UIManager, ScrollView } from 'react-native';
+import { , Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
@@ -283,9 +283,9 @@ export default function OnboardingScreen({ navigation, route }: Props) {
 
           {/* Animated Content */}
           <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-            <Animated.View style={{ opacity: fadeAnim, transform: [{ translateX: slideAnim }] }}>
+            <View style={{ opacity: fadeAnim, transform: [{ translateX: slideAnim }] }}>
               {renderStepContent()}
-            </Animated.View>
+            </View>
           </ScrollView>
 
           {/* Footer */}

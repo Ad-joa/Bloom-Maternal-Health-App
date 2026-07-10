@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { , Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { theme } from '../theme/theme';
@@ -10,7 +10,7 @@ import { getInsights } from '../api/api';
 import { getWeeksPregnant } from '../utils/dateUtils';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BookOpen, ChevronRight } from 'lucide-react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+
 
 const { width } = Dimensions.get('window');
 
@@ -77,17 +77,17 @@ export default function InsightsScreen({ navigation }: Props) {
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          <Animated.View entering={FadeInDown.duration(600).springify()} style={styles.header}>
+          <View  style={styles.header}>
             <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.headerTitle}>
               For you
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium}>
               Personalized insights & articles
             </Typography>
-          </Animated.View>
+          </View>
 
           {/* Section 1: Health Trends */}
-          <Animated.View entering={FadeInDown.duration(600).delay(100).springify()}>
+          <View >
             <View style={styles.sectionHeader}>
               <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
                 Your Health Trends
@@ -108,7 +108,7 @@ export default function InsightsScreen({ navigation }: Props) {
                 <Typography variant="largeTitle" color="#fff">{insights.overallVibe}</Typography>
               </View>
             </View>
-          </Animated.View>
+          </View>
 
           <View style={styles.divider} />
 
@@ -125,7 +125,7 @@ export default function InsightsScreen({ navigation }: Props) {
           {/* Vertical Article List */}
           <View style={styles.articleList}>
             {articles.map((item, index) => (
-              <Animated.View key={item.id} entering={FadeInDown.duration(600).delay(200 + (index * 100)).springify()}>
+              <View key={item.id} >
                 <BounceButton 
                   onPress={() => navigation.navigate('Article', { 
                     articleId: item.id, 
@@ -148,7 +148,7 @@ export default function InsightsScreen({ navigation }: Props) {
                     <ChevronRight size={20} color={item.textLight ? '#ffffffa0' : theme.colors.primaryDark} />
                   </View>
                 </BounceButton>
-              </Animated.View>
+              </View>
             ))}
           </View>
 

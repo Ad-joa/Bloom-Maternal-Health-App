@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Animated, Dimensions } from 'react-native';
+import { , Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
@@ -37,13 +37,13 @@ export default function ArticleScreen({ route, navigation }: Props) {
     <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Placeholder for an article header image */}
-        <Animated.View style={[styles.headerImagePlaceholder, { opacity: fadeAnim }]}>
+        <View style={[styles.headerImagePlaceholder, { opacity: fadeAnim }]}>
           <Typography variant="title2" color="#fff" style={styles.imageText}>
             Bloom Guide
           </Typography>
-        </Animated.View>
+        </View>
 
-        <Animated.View style={[
+        <View style={[
           styles.contentContainer, 
           { 
             opacity: fadeAnim,
@@ -85,7 +85,7 @@ export default function ArticleScreen({ route, navigation }: Props) {
           <Typography variant="body" color={theme.colors.textMedium} style={styles.paragraph}>
             {content}
           </Typography>
-        </Animated.View>
+        </View>
       </ScrollView>
     </LinearGradient>
   );

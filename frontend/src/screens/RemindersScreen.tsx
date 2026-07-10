@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Switch, ScrollView } from 'react-native';
+import { , Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
@@ -7,7 +7,7 @@ import { theme } from '../theme/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 import { scheduleHydrationReminder, scheduleMedicationReminder, registerForPushNotificationsAsync } from '../utils/notifications';
 import * as Notifications from 'expo-notifications';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+
 import { Bell, Droplet, Pill } from 'lucide-react-native';
 
 export default function RemindersScreen() {
@@ -51,16 +51,16 @@ export default function RemindersScreen() {
     <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.container}>
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <Animated.View entering={FadeInDown.duration(600).springify()} style={styles.header}>
+          <View  style={styles.header}>
             <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.title}>
               Reminders
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium}>
               Manage your daily health alerts.
             </Typography>
-          </Animated.View>
+          </View>
 
-          <Animated.View entering={FadeInDown.duration(600).delay(100).springify()}>
+          <View >
             <Card style={styles.reminderCard}>
               <View style={styles.reminderInfo}>
                 <View style={[styles.iconBox, { backgroundColor: '#E0F2FE' }]}>
@@ -77,9 +77,9 @@ export default function RemindersScreen() {
                 trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
               />
             </Card>
-          </Animated.View>
+          </View>
 
-          <Animated.View entering={FadeInDown.duration(600).delay(200).springify()}>
+          <View >
             <Card style={styles.reminderCard}>
               <View style={styles.reminderInfo}>
                 <View style={[styles.iconBox, { backgroundColor: '#FCE7F3' }]}>
@@ -96,9 +96,9 @@ export default function RemindersScreen() {
                 trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
               />
             </Card>
-          </Animated.View>
+          </View>
 
-          <Animated.View entering={FadeInDown.duration(600).delay(300).springify()}>
+          <View >
             <Card style={styles.reminderCard}>
               <View style={styles.reminderInfo}>
                 <View style={[styles.iconBox, { backgroundColor: '#FEF3C7' }]}>
@@ -115,7 +115,7 @@ export default function RemindersScreen() {
                 trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
               />
             </Card>
-          </Animated.View>
+          </View>
 
         </ScrollView>
       </SafeAreaView>

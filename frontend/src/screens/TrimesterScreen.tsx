@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, ActivityIndicator, StyleSheet, ScrollView, TouchableOpacity, LayoutAnimation, Platform, UIManager, Animated } from 'react-native';
+import { , Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp } from '@react-navigation/native';
 import { getTrimesterInfo } from '../api/api';
@@ -100,7 +100,7 @@ export default function TrimesterScreen({ route }: Props) {
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }}>
+          <View style={{ opacity: fadeAnim, transform: [{ translateY: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }}>
             {/* Hero Header */}
             <LinearGradient
               colors={[theme.colors.primaryLight, theme.colors.primary]}
@@ -153,7 +153,7 @@ export default function TrimesterScreen({ route }: Props) {
                 ))}
               </AccordionItem>
             </View>
-          </Animated.View>
+          </View>
 
         </ScrollView>
       </SafeAreaView>

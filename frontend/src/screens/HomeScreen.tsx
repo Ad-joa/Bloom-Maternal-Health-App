@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions, Alert, Animated as RNAnimated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+
 import { useTranslation } from 'react-i18next';
 import { theme } from '../theme/theme';
 import { useAuth } from '../context/AuthContext';
@@ -160,7 +160,7 @@ export default function HomeScreen({ navigation }: Props) {
           </View>
 
           {/* Calendar Ribbon */}
-          <Animated.View entering={FadeInDown.duration(600).delay(100).springify()} style={styles.calendarRibbon}>
+          <View  style={styles.calendarRibbon}>
             {calendarDays.map((day, idx) => (
               <View key={idx} style={[styles.dayColumn, day.isToday && styles.todayColumn]}>
                 <Typography variant="caption1" color={theme.colors.textMedium} style={styles.dayStr}>
@@ -171,10 +171,10 @@ export default function HomeScreen({ navigation }: Props) {
                 </Typography>
               </View>
             ))}
-          </Animated.View>
+          </View>
 
           {/* Main Content Layout */}
-          <Animated.View entering={FadeInDown.duration(600).delay(200).springify()} style={styles.contentLayout}>
+          <View  style={styles.contentLayout}>
             
             {/* 1. Pregnancy Status Card */}
             <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate('Trimester', { trimesterId: currentTrimester })}>
@@ -250,17 +250,17 @@ export default function HomeScreen({ navigation }: Props) {
               <Typography variant="headline" color={theme.colors.primaryDark} style={{ marginBottom: theme.spacing[2] }}>
                 {t('home.dailyReflection')}
               </Typography>
-              <Animated.View style={{ opacity: fadeAnim }}>
+              <View style={{ opacity: fadeAnim }}>
                 <Typography variant="body" color={theme.colors.textMedium} style={{ fontStyle: 'italic' }}>
                   "{dailyQuote}"
                 </Typography>
-              </Animated.View>
+              </View>
             </Card>
 
-          </Animated.View>
+          </View>
 
           {/* Daily Insights */}
-          <Animated.View entering={FadeInDown.duration(600).delay(300).springify()} style={styles.insightsSection}>
+          <View  style={styles.insightsSection}>
             <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
               {t('home.insightsTitle')}
             </Typography>
@@ -281,7 +281,7 @@ export default function HomeScreen({ navigation }: Props) {
                 </BounceButton>
               ))}
             </ScrollView>
-          </Animated.View>
+          </View>
 
         </ScrollView>
       </SafeAreaView>

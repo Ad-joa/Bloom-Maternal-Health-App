@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { , Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
@@ -8,7 +8,7 @@ import { Button } from '../components/Button';
 import { TextInput } from '../components/TextInput';
 import { Typography } from '../components/Typography';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+
 
 import { registerUser } from '../api/api';
 
@@ -50,16 +50,16 @@ export default function RegisterScreen({ navigation }: Props) {
         style={styles.container}
       >
         <View style={styles.content}>
-          <Animated.View entering={FadeInDown.duration(600).springify()} style={styles.header}>
+          <View  style={styles.header}>
             <Typography variant="largeTitle" color={theme.colors.primaryDark}>
               Create Account
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium} style={styles.subtitle}>
               Start your maternal health journey today
             </Typography>
-          </Animated.View>
+          </View>
           
-          <Animated.View entering={FadeInDown.duration(600).delay(200).springify()} style={styles.form}>
+          <View  style={styles.form}>
             <TextInput
               label="Full Name"
               placeholder="Jane Doe"
@@ -87,7 +87,7 @@ export default function RegisterScreen({ navigation }: Props) {
               onPress={handleRegister} 
               style={styles.submitButton}
             />
-          </Animated.View>
+          </View>
           
           <View style={styles.footer}>
             <Typography variant="body" color={theme.colors.textMedium}>
