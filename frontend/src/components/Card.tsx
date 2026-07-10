@@ -17,10 +17,10 @@ export const Card: React.FC<CardProps> = ({
 }) => {
   const containerStyle: ViewStyle[] = [
     styles.base,
-    variant === 'elevated' && styles.elevated,
-    variant === 'outlined' && styles.outlined,
-    variant === 'filled' && styles.filled,
-    style as ViewStyle,
+    variant === 'elevated' ? styles.elevated : undefined,
+    variant === 'outlined' ? styles.outlined : undefined,
+    variant === 'filled' ? styles.filled : undefined,
+    style,
   ];
 
   return (

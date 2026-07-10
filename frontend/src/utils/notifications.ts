@@ -4,6 +4,8 @@ import { Platform } from 'react-native';
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
   }),
@@ -46,10 +48,11 @@ export async function scheduleDailyReminder() {
       body: "Take a moment to log your symptoms and track your pregnancy journey.",
     },
     trigger: {
+      type: 'calendar',
       hour: 9,
       minute: 0,
       repeats: true,
-    },
+    } as Notifications.CalendarTriggerInput,
   });
 }
 
@@ -60,10 +63,11 @@ export async function scheduleHydrationReminder(hour: number, minute: number) {
       body: "Drinking water is essential for you and your baby.",
     },
     trigger: {
+      type: 'calendar',
       hour,
       minute,
       repeats: true,
-    },
+    } as Notifications.CalendarTriggerInput,
   });
 }
 
@@ -74,9 +78,10 @@ export async function scheduleMedicationReminder(hour: number, minute: number) {
       body: "Don't forget to take your daily vitamins!",
     },
     trigger: {
+      type: 'calendar',
       hour,
       minute,
       repeats: true,
-    },
+    } as Notifications.CalendarTriggerInput,
   });
 }
