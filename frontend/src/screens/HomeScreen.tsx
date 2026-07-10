@@ -250,11 +250,11 @@ export default function HomeScreen({ navigation }: Props) {
               <Typography variant="headline" color={theme.colors.primaryDark} style={{ marginBottom: theme.spacing[2] }}>
                 {t('home.dailyReflection')}
               </Typography>
-              <View style={{ opacity: fadeAnim }}>
+              <Animated.View style={{ opacity: fadeAnim }}>
                 <Typography variant="body" color={theme.colors.textMedium} style={{ fontStyle: 'italic' }}>
                   "{dailyQuote}"
                 </Typography>
-              </View>
+              </Animated.View>
             </Card>
 
           </View>
