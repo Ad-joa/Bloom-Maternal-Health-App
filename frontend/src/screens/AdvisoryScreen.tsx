@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { , Animated } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Animated, Platform, TextInput, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getAdvisory } from '../api/api';
 import { theme } from '../theme/theme';
