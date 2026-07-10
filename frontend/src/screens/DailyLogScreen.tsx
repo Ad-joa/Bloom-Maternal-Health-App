@@ -93,17 +93,17 @@ export default function DailyLogScreen() {
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          <AnimatedReanimated.View  style={styles.header}>
+          <Animated.View  style={styles.header}>
             <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.headerTitle}>
               Log period
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium}>
               Or any symptoms you're feeling today
             </Typography>
-          </AnimatedReanimated.View>
+          </RNAnimated.View>
 
           {/* Vitals Section */}
-          <AnimatedReanimated.View  style={styles.section}>
+          <Animated.View  style={styles.section}>
             <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
               Vitals
             </Typography>
@@ -144,10 +144,10 @@ export default function DailyLogScreen() {
                 </View>
               </View>
             </View>
-          </AnimatedReanimated.View>
+          </RNAnimated.View>
 
           {symptomCategories.map((category, catIndex) => (
-            <AnimatedReanimated.View key={category.title}  style={styles.section}>
+            <Animated.View key={category.title}  style={styles.section}>
               <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
                 {category.title}
               </Typography>
@@ -171,17 +171,17 @@ export default function DailyLogScreen() {
                   );
                 })}
               </View>
-            </AnimatedReanimated.View>
+            </RNAnimated.View>
           ))}
 
-          <AnimatedReanimated.View  style={styles.footer}>
+          <Animated.View  style={styles.footer}>
             <Button 
               title="Save Log" 
               onPress={handleSave}
               loading={loading}
               disabled={selectedSymptoms.length === 0 && !weight && !systolic}
             />
-          </AnimatedReanimated.View>
+          </RNAnimated.View>
 
         </ScrollView>
       </SafeAreaView>
