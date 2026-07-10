@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // We rely on Expo's environment variables to prevent hardcoding server URLs in the codebase.
 // Define EXPO_PUBLIC_API_URL in a frontend/.env file.
@@ -63,17 +64,37 @@ export const saveSymptomLog = async (userId: number, symptoms: string) => {
         const response = await apiClient.post(`/users/${userId}/logs`, { symptoms });
         return response.data;
     } catch (error) {
-        console.error("Error saving log:", error);
-        throw error;
+        console.error("Error saving log, attempting to save offline:", error);
+        // Fallback: save to offline queue
+        try {
+            const queueStr = await AsyncStorage.getItem(`@offline_logs_${userId}`);
+            const queue = queueStr ? JSON.parse(queueStr) : [];
+            queue.push({ symptoms, timestamp: new Date().toISOString() });
+            await AsyncStorage.setItem(`@offline_logs_${userId}`, JSON.stringify(queue));
+            return { message: "Saved offline. Will sync when connection is restored." };
+        } catch (storageError) {
+            console.error("Offline save failed too:", storageError);
+            throw error;
+        }
     }
 };
 
 export const getInsights = async (userId: number) => {
     try {
         const response = await apiClient.get(`/users/${userId}/insights`);
+        // Cache the successful response
+        await AsyncStorage.setItem(`@insights_${userId}`, JSON.stringify(response.data));
         return response.data;
     } catch (error) {
-        console.error("Error fetching insights:", error);
+        console.warn("API failed, attempting to load cached insights:", error);
+        try {
+            const cached = await AsyncStorage.getItem(`@insights_${userId}`);
+            if (cached) {
+                return JSON.parse(cached);
+            }
+        } catch (storageError) {
+            console.error("Failed to load cached insights:", storageError);
+        }
         throw error;
     }
 };

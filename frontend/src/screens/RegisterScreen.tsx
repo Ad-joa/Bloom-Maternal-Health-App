@@ -7,6 +7,8 @@ import { theme } from '../theme/theme';
 import { Button } from '../components/Button';
 import { TextInput } from '../components/TextInput';
 import { Typography } from '../components/Typography';
+import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { registerUser } from '../api/api';
 
@@ -41,22 +43,23 @@ export default function RegisterScreen({ navigation }: Props) {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.gradient}>
+      <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.container}
       >
         <View style={styles.content}>
-          <View style={styles.header}>
+          <Animated.View entering={FadeInDown.duration(600).springify()} style={styles.header}>
             <Typography variant="largeTitle" color={theme.colors.primaryDark}>
               Create Account
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium} style={styles.subtitle}>
               Start your maternal health journey today
             </Typography>
-          </View>
+          </Animated.View>
           
-          <View style={styles.form}>
+          <Animated.View entering={FadeInDown.duration(600).delay(200).springify()} style={styles.form}>
             <TextInput
               label="Full Name"
               placeholder="Jane Doe"
@@ -84,7 +87,7 @@ export default function RegisterScreen({ navigation }: Props) {
               onPress={handleRegister} 
               style={styles.submitButton}
             />
-          </View>
+          </Animated.View>
           
           <View style={styles.footer}>
             <Typography variant="body" color={theme.colors.textMedium}>
@@ -99,13 +102,17 @@ export default function RegisterScreen({ navigation }: Props) {
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   safeArea: {
     flex: 1,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: 'transparent',
   },
   container: {
     flex: 1,

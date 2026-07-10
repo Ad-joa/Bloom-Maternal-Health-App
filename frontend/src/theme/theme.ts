@@ -68,6 +68,22 @@ export const theme = {
     md: parseInt(tokens.radii.md.value, 10),
     lg: parseInt(tokens.radii.lg.value, 10),
     xl: parseInt(tokens.radii.xl.value, 10),
-    pill: parseInt(tokens.radii.pill.value, 10),
+    pill: 9999,
+  },
+  shadows: {
+    soft: {
+      shadowColor: tokens.colors.primary["700"].value,
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.08,
+      shadowRadius: 24,
+      elevation: 4,
+    },
+    medium: {
+      shadowColor: tokens.colors.primary["700"].value,
+      shadowOffset: { width: 0, height: 12 },
+      shadowOpacity: 0.12,
+      shadowRadius: 32,
+      elevation: 8,
+    }
   }
 };

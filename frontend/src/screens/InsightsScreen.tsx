@@ -1,32 +1,42 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
+import { BounceButton } from '../components/BounceButton';
 import { useAuth } from '../context/AuthContext';
 import { getInsights } from '../api/api';
 import { getWeeksPregnant } from '../utils/dateUtils';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BookOpen, ChevronRight } from 'lucide-react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
 
-export default function InsightsScreen() {
+type Props = {
+  navigation: any;
+};
+
+export default function InsightsScreen({ navigation }: Props) {
   const { user } = useAuth();
   const [insights, setInsights] = useState({ totalLogs: 0, overallVibe: '...' });
 
-  useEffect(() => {
-    const fetchInsights = async () => {
-      if (user) {
-        try {
-          const data = await getInsights(user.id);
-          setInsights(data);
-        } catch (error) {
-          console.error(error);
+  useFocusEffect(
+    useCallback(() => {
+      const fetchInsights = async () => {
+        if (user) {
+          try {
+            const data = await getInsights(user.id);
+            setInsights(data);
+          } catch (error) {
+            console.error(error);
+          }
         }
-      }
-    };
-    fetchInsights();
-  }, [user]);
+      };
+      fetchInsights();
+    }, [user])
+  );
 
   const weeks = user?.due_date ? getWeeksPregnant(user.due_date) : 0;
 
@@ -36,14 +46,14 @@ export default function InsightsScreen() {
       title: 'Nutrition during pregnancy',
       category: 'Diet',
       color: theme.colors.primaryLight,
-      height: 200,
+      icon: <BookOpen color={theme.colors.primaryDark} size={20} />
     },
     {
       id: '2',
       title: 'What to expect in week ' + weeks,
       category: 'Weekly Guide',
       color: '#fff',
-      height: 160,
+      icon: <BookOpen color={theme.colors.textMedium} size={20} />
     },
     {
       id: '3',
@@ -51,14 +61,14 @@ export default function InsightsScreen() {
       category: 'Mental Health',
       color: theme.colors.primaryDark,
       textLight: true,
-      height: 160,
+      icon: <BookOpen color="#ffffffa0" size={20} />
     },
     {
       id: '4',
       title: 'Safe Exercises',
       category: 'Fitness',
       color: '#F3E8FF',
-      height: 200,
+      icon: <BookOpen color={theme.colors.primaryDark} size={20} />
     }
   ];
 
@@ -67,53 +77,79 @@ export default function InsightsScreen() {
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          <View style={styles.header}>
+          <Animated.View entering={FadeInDown.duration(600).springify()} style={styles.header}>
             <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.headerTitle}>
               For you
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium}>
               Personalized insights & articles
             </Typography>
+          </Animated.View>
+
+          {/* Section 1: Health Trends */}
+          <Animated.View entering={FadeInDown.duration(600).delay(100).springify()}>
+            <View style={styles.sectionHeader}>
+              <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
+                Your Health Trends
+              </Typography>
+              <Typography variant="caption1" color={theme.colors.textMedium}>
+                Based on your Daily Logs
+              </Typography>
+            </View>
+
+            {/* Stats Row */}
+            <View style={styles.statsRow}>
+              <View style={[styles.statBox, { backgroundColor: '#fff' }]}>
+                <Typography variant="headline" color={theme.colors.textMedium}>Symptom Logs</Typography>
+                <Typography variant="largeTitle" color={theme.colors.primaryDark}>{insights.totalLogs}</Typography>
+              </View>
+              <View style={[styles.statBox, { backgroundColor: theme.colors.primary }]}>
+                <Typography variant="headline" color="#ffffffa0">Vibe Check</Typography>
+                <Typography variant="largeTitle" color="#fff">{insights.overallVibe}</Typography>
+              </View>
+            </View>
+          </Animated.View>
+
+          <View style={styles.divider} />
+
+          {/* Section 2: Educational Library */}
+          <View style={styles.sectionHeader}>
+            <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
+              Educational Library
+            </Typography>
+            <Typography variant="caption1" color={theme.colors.textMedium}>
+              Curated articles for Week {weeks}
+            </Typography>
           </View>
 
-          {/* Stats Row */}
-          <View style={styles.statsRow}>
-            <View style={[styles.statBox, { backgroundColor: '#fff' }]}>
-              <Typography variant="headline" color={theme.colors.textMedium}>Symptom Logs</Typography>
-              <Typography variant="largeTitle" color={theme.colors.primaryDark}>{insights.totalLogs}</Typography>
-            </View>
-            <View style={[styles.statBox, { backgroundColor: theme.colors.primary }]}>
-              <Typography variant="headline" color="#ffffffa0">Vibe Check</Typography>
-              <Typography variant="largeTitle" color="#fff">{insights.overallVibe}</Typography>
-            </View>
-          </View>
-
-          {/* Masonry Layout Mockup using two columns */}
-          <View style={styles.masonryContainer}>
-            <View style={styles.column}>
-              {articles.filter((_, i) => i % 2 === 0).map(item => (
-                <TouchableOpacity key={item.id} style={[styles.articleCard, { backgroundColor: item.color, height: item.height }]}>
-                  <Typography variant="caption1" color={item.textLight ? '#ffffffa0' : theme.colors.textMedium} style={styles.category}>
-                    {item.category.toUpperCase()}
-                  </Typography>
-                  <Typography variant="title3" color={item.textLight ? '#fff' : theme.colors.textHigh} style={styles.title}>
-                    {item.title}
-                  </Typography>
-                </TouchableOpacity>
-              ))}
-            </View>
-            <View style={styles.column}>
-              {articles.filter((_, i) => i % 2 !== 0).map(item => (
-                <TouchableOpacity key={item.id} style={[styles.articleCard, { backgroundColor: item.color, height: item.height }]}>
-                  <Typography variant="caption1" color={item.textLight ? '#ffffffa0' : theme.colors.textMedium} style={styles.category}>
-                    {item.category.toUpperCase()}
-                  </Typography>
-                  <Typography variant="title3" color={item.textLight ? '#fff' : theme.colors.textHigh} style={styles.title}>
-                    {item.title}
-                  </Typography>
-                </TouchableOpacity>
-              ))}
-            </View>
+          {/* Vertical Article List */}
+          <View style={styles.articleList}>
+            {articles.map((item, index) => (
+              <Animated.View key={item.id} entering={FadeInDown.duration(600).delay(200 + (index * 100)).springify()}>
+                <BounceButton 
+                  onPress={() => navigation.navigate('Article', { 
+                    articleId: item.id, 
+                    title: item.title,
+                    content: "Your baby is currently experiencing rapid growth this week. You might notice some extra fatigue. Taking short walks, eating small frequent meals, and staying hydrated will help alleviate the common symptoms associated with this developmental leap."
+                  })}
+                >
+                  <View style={[styles.articleCardHorizontal, { backgroundColor: item.color }]}>
+                    <View style={styles.articleIconBox}>
+                      {item.icon}
+                    </View>
+                    <View style={styles.articleContent}>
+                      <Typography variant="caption1" color={item.textLight ? '#ffffffa0' : theme.colors.textMedium} style={styles.category}>
+                        {item.category.toUpperCase()}
+                      </Typography>
+                      <Typography variant="headline" color={item.textLight ? '#fff' : theme.colors.textHigh} style={styles.title}>
+                        {item.title}
+                      </Typography>
+                    </View>
+                    <ChevronRight size={20} color={item.textLight ? '#ffffffa0' : theme.colors.primaryDark} />
+                  </View>
+                </BounceButton>
+              </Animated.View>
+            ))}
           </View>
 
         </ScrollView>
@@ -157,23 +193,43 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     height: 100,
   },
-  masonryContainer: {
+  sectionHeader: {
+    marginBottom: theme.spacing[4],
+  },
+  sectionTitle: {
+    fontFamily: theme.typography.families.headingBold,
+    marginBottom: theme.spacing[1],
+  },
+  divider: {
+    height: 1,
+    backgroundColor: theme.colors.border,
+    marginVertical: theme.spacing[6],
+  },
+  articleList: {
+    gap: theme.spacing[3],
+  },
+  articleCardHorizontal: {
     flexDirection: 'row',
-    gap: theme.spacing[3],
-  },
-  column: {
-    flex: 1,
-    gap: theme.spacing[3],
-  },
-  articleCard: {
+    alignItems: 'center',
     borderRadius: theme.radii.xl,
     padding: theme.spacing[4],
     shadowColor: theme.colors.primaryDark,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
-    shadowRadius: 8,
+    shadowRadius: 4,
     elevation: 2,
-    justifyContent: 'flex-end',
+  },
+  articleIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: theme.spacing[4],
+  },
+  articleContent: {
+    flex: 1,
   },
   category: {
     fontFamily: theme.typography.families.headingBold,

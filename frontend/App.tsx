@@ -12,13 +12,21 @@ import RegisterScreen from './src/screens/RegisterScreen';
 import InsightsScreen from './src/screens/InsightsScreen';
 import BloomAIScreen from './src/screens/BloomAIScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import CommunityScreen from './src/screens/CommunityScreen';
+import ArticleScreen from './src/screens/ArticleScreen';
+import RemindersScreen from './src/screens/RemindersScreen';
+import { BiometricGate } from './src/components/BiometricGate';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Home, LineChart, MessageCircle, Calendar, User } from 'lucide-react-native';
+import { Home, LineChart, MessageCircle, Calendar, Users } from 'lucide-react-native';
+import { BlurView } from 'expo-blur';
+import { StyleSheet } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { theme } from './src/theme/theme';
 import * as Font from 'expo-font';
+import './src/i18n';
 import * as SplashScreen from 'expo-splash-screen';
+import { registerForPushNotificationsAsync } from './src/utils/notifications';
 
 import {
   Montserrat_400Regular,
@@ -45,14 +53,17 @@ export type RootStackParamList = {
   MainTabs: undefined;
   Trimester: { trimesterId: number };
   Advisory: undefined;
+  Profile: undefined;
+  Article: { articleId: string, title: string, content: string };
+  Reminders: undefined;
 };
 
 export type MainTabParamList = {
   Home: undefined;
   Insights: undefined;
+  Community: undefined;
   BloomAI: undefined;
   Tracker: undefined;
-  Profile: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -65,22 +76,28 @@ function MainTabs() {
         tabBarIcon: ({ focused, color, size }) => {
           if (route.name === 'Home') return <Home size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
           if (route.name === 'Insights') return <LineChart size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
+          if (route.name === 'Community') return <Users size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
           if (route.name === 'BloomAI') return <MessageCircle size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
           if (route.name === 'Tracker') return <Calendar size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
-          if (route.name === 'Profile') return <User size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
           return null;
         },
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textMedium,
+        tabBarBackground: () => (
+          <BlurView tint="light" intensity={80} style={StyleSheet.absoluteFill} />
+        ),
         tabBarStyle: {
-          backgroundColor: '#fff',
+          position: 'absolute',
+          backgroundColor: 'rgba(255, 255, 255, 0.65)',
           borderTopWidth: 0,
-          elevation: 10,
+          elevation: 0, // Remove elevation to let BlurView shine
           shadowColor: theme.colors.primaryDark,
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.05,
-          shadowRadius: 10,
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 15,
           paddingTop: 8,
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
         },
         tabBarLabelStyle: {
           fontFamily: theme.typography.families.bodyMedium,
@@ -94,9 +111,9 @@ function MainTabs() {
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Today', headerShown: false }} />
       <Tab.Screen name="Insights" component={InsightsScreen} options={{ title: 'Insights' }} />
+      <Tab.Screen name="Community" component={CommunityScreen} options={{ title: 'Community' }} />
       <Tab.Screen name="BloomAI" component={BloomAIScreen} options={{ title: 'Bloom AI' }} />
       <Tab.Screen name="Tracker" component={DailyLogScreen} options={{ title: 'Tracker' }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
     </Tab.Navigator>
   );
 }
@@ -157,6 +174,21 @@ function Navigation() {
               component={AdvisoryScreen} 
               options={{ title: 'Health Advisory' }} 
             />
+            <Stack.Screen 
+              name="Profile" 
+              component={ProfileScreen} 
+              options={{ title: 'Profile' }} 
+            />
+            <Stack.Screen 
+              name="Article" 
+              component={ArticleScreen} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="Reminders" 
+              component={RemindersScreen} 
+              options={{ title: 'Reminders' }} 
+            />
           </>
         )}
       </Stack.Navigator>
@@ -180,6 +212,10 @@ export default function App() {
           Poppins_600SemiBold,
           Poppins_700Bold,
         });
+        
+        // Request notification permissions
+        await registerForPushNotificationsAsync();
+        
       } catch (e) {
         console.warn(e);
       } finally {
@@ -198,7 +234,9 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <Navigation />
+        <BiometricGate>
+          <Navigation />
+        </BiometricGate>
       </AuthProvider>
     </SafeAreaProvider>
   );
