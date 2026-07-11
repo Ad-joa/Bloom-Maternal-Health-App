@@ -93,7 +93,7 @@ export default function DailyLogScreen() {
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          <Animated.View  style={styles.header}>
+          <RNAnimated.View  style={styles.header}>
             <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.headerTitle}>
               Log period
             </Typography>
@@ -103,7 +103,7 @@ export default function DailyLogScreen() {
           </RNAnimated.View>
 
           {/* Vitals Section */}
-          <Animated.View  style={styles.section}>
+          <RNAnimated.View  style={styles.section}>
             <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
               Vitals
             </Typography>
@@ -147,7 +147,7 @@ export default function DailyLogScreen() {
           </RNAnimated.View>
 
           {symptomCategories.map((category, catIndex) => (
-            <Animated.View key={category.title}  style={styles.section}>
+            <RNAnimated.View key={category.title}  style={styles.section}>
               <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
                 {category.title}
               </Typography>
@@ -174,7 +174,7 @@ export default function DailyLogScreen() {
             </RNAnimated.View>
           ))}
 
-          <Animated.View  style={styles.footer}>
+          <RNAnimated.View  style={styles.footer}>
             <Button 
               title="Save Log" 
               onPress={handleSave}
