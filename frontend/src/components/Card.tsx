@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ViewProps, StyleSheet, ViewStyle } from 'react-native';
+import { View, ViewProps, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { theme } from '../theme/theme';
 
 export type CardVariant = 'elevated' | 'outlined' | 'filled';
@@ -15,7 +15,7 @@ export const Card: React.FC<CardProps> = ({
   children,
   ...props
 }) => {
-  const containerStyle: ViewStyle[] = [
+  const containerStyle: StyleProp<ViewStyle> = [
     styles.base,
     variant === 'elevated' ? styles.elevated : undefined,
     variant === 'outlined' ? styles.outlined : undefined,
