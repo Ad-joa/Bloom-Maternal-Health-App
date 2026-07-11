@@ -11,9 +11,10 @@ const getBaseUrl = () => {
     
     // Fallback for local development if .env is missing
     if (__DEV__) {
-        // Typically 10.0.2.2 for Android emulator, or your local machine's IP (e.g., 172.20.10.3)
-        // Since we know your IP is 172.20.10.3, we'll hardcode the fallback here so it works instantly
-        return 'http://172.20.10.3:8000';
+        if (Platform.OS === 'android') {
+            return 'http://10.0.2.2:8000';
+        }
+        return 'http://127.0.0.1:8000';
     }
     
     // Production fallback (should ideally be injected via EXPO_PUBLIC_API_URL in CI/CD)

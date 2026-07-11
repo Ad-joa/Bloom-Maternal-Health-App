@@ -86,6 +86,7 @@ export default function RegisterScreen({ navigation }: Props) {
               title="Sign Up" 
               onPress={handleRegister} 
               style={styles.submitButton}
+              loading={loading}
             />
           </View>
           

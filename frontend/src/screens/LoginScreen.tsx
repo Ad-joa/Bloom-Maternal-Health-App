@@ -85,6 +85,7 @@ export default function LoginScreen({ navigation }: Props) {
               title="Log In" 
               onPress={handleLogin} 
               style={styles.submitButton}
+              loading={loading}
             />
           </View>
           
