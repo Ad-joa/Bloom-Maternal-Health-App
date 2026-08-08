@@ -4,47 +4,38 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Defs, LinearGradient, Stop, Circle } from 'react-native-svg';
 import { theme } from '../theme/theme';
 import { Typography } from './Typography';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 const { width, height } = Dimensions.get('window');
 
-// Topographic wavy SVG
 const WavyHeader = () => {
   return (
     <View style={styles.svgContainer}>
-      <Svg height={height * 0.55} width={width} viewBox={`0 0 1440 320`} preserveAspectRatio="none">
+      <Svg height={height * 0.52} width={width} viewBox="0 0 1440 320" preserveAspectRatio="none">
         <Defs>
-          <LinearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+          <LinearGradient id="grad" x1="0" y1="0" x2="0.5" y2="1">
             <Stop offset="0" stopColor="#FF9A9E" stopOpacity="1" />
-            <Stop offset="1" stopColor={theme.colors.accentPink} stopOpacity="1" />
+            <Stop offset="0.5" stopColor="#F4C1BE" stopOpacity="1" />
+            <Stop offset="1" stopColor="#E8B5DB" stopOpacity="0.8" />
           </LinearGradient>
         </Defs>
+        {/* Main fill */}
         <Path 
           fill="url(#grad)" 
           d="M0,160L48,181.3C96,203,192,245,288,245.3C384,245,480,203,576,170.7C672,139,768,117,864,128C960,139,1056,181,1152,202.7C1248,224,1344,224,1392,224L1440,224L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z" 
         />
-        {/* Decorative topo lines */}
-        <Path 
-          fill="none" 
-          stroke="rgba(255,255,255,0.2)"
-          strokeWidth="3"
-          d="M0,120L48,141.3C96,163,192,205,288,205.3C384,205,480,163,576,130.7C672,99,768,77,864,88C960,99,1056,141,1152,162.7C1248,184,1344,184,1392,184L1440,184" 
-        />
-        <Path 
-          fill="none" 
-          stroke="rgba(255,255,255,0.15)"
-          strokeWidth="2"
-          d="M0,80L48,101.3C96,123,192,165,288,165.3C384,165,480,123,576,90.7C672,59,768,37,864,48C960,59,1056,101,1152,122.7C1248,144,1344,144,1392,144L1440,144" 
-        />
-        <Path 
-          fill="none" 
-          stroke="rgba(255,255,255,0.1)"
-          strokeWidth="1"
-          d="M0,40L48,61.3C96,83,192,125,288,125.3C384,125,480,83,576,50.7C672,19,768,-3,864,8C960,19,1056,61,1152,82.7C1248,104,1344,104,1392,104L1440,104" 
-        />
-        {/* Decorative Floating Bubbles */}
-        <Circle cx="120" cy="50" r="40" fill="rgba(255,255,255,0.15)" />
-        <Circle cx="850" cy="110" r="80" fill="rgba(255,255,255,0.1)" />
-        <Circle cx="1300" cy="40" r="60" fill="rgba(255,255,255,0.15)" />
+        {/* Topo lines */}
+        <Path fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5"
+          d="M0,120L48,141.3C96,163,192,205,288,205.3C384,205,480,163,576,130.7C672,99,768,77,864,88C960,99,1056,141,1152,162.7C1248,184,1344,184,1392,184L1440,184" />
+        <Path fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5"
+          d="M0,80L48,101.3C96,123,192,165,288,165.3C384,165,480,123,576,90.7C672,59,768,37,864,48C960,59,1056,101,1152,122.7C1248,144,1344,144,1392,144L1440,144" />
+        <Path fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1"
+          d="M0,40L48,61.3C96,83,192,125,288,125.3C384,125,480,83,576,50.7C672,19,768,-3,864,8C960,19,1056,61,1152,82.7C1248,104,1344,104,1392,104L1440,104" />
+        {/* Decorative Circles */}
+        <Circle cx="200" cy="60" r="50" fill="rgba(255,255,255,0.12)" />
+        <Circle cx="900" cy="120" r="90" fill="rgba(255,255,255,0.08)" />
+        <Circle cx="1250" cy="30" r="45" fill="rgba(255,255,255,0.12)" />
+        <Circle cx="600" cy="40" r="25" fill="rgba(255,255,255,0.18)" />
       </Svg>
     </View>
   );
@@ -71,12 +62,11 @@ export const AuthLayout = ({ children, title, subtitle, showWavyHeader = true }:
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Empty space to push content down below the wave */}
-            {showWavyHeader && <View style={{ height: height * 0.35 }} />}
+            {showWavyHeader && <View style={{ height: height * 0.32 }} />}
             
             <View style={styles.contentCard}>
-              <View style={styles.header}>
-                <Typography variant="largeTitle" color={theme.colors.textHigh}>
+              <Animated.View entering={FadeInDown.delay(100).duration(500).springify().damping(15)} style={styles.header}>
+                <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.titleText}>
                   {title}
                 </Typography>
                 {subtitle && (
@@ -84,8 +74,10 @@ export const AuthLayout = ({ children, title, subtitle, showWavyHeader = true }:
                     {subtitle}
                   </Typography>
                 )}
-              </View>
-              {children}
+              </Animated.View>
+              <Animated.View entering={FadeInDown.delay(250).duration(500).springify().damping(15)}>
+                {children}
+              </Animated.View>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -97,7 +89,7 @@ export const AuthLayout = ({ children, title, subtitle, showWavyHeader = true }:
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FDFBFA',
   },
   svgContainer: {
     position: 'absolute',
@@ -115,24 +107,31 @@ const styles = StyleSheet.create({
   },
   contentCard: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 40,
-    borderTopRightRadius: 40,
-    padding: theme.spacing[6],
-    paddingTop: theme.spacing[8],
+    backgroundColor: '#FDFBFA',
+    borderTopLeftRadius: 36,
+    borderTopRightRadius: 36,
+    paddingHorizontal: 28,
+    paddingTop: 36,
+    paddingBottom: 24,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -10 },
-    shadowOpacity: 0.05,
-    shadowRadius: 20,
-    elevation: 20,
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.04,
+    shadowRadius: 16,
+    elevation: 16,
   },
   header: {
-    marginBottom: theme.spacing[8],
-    alignItems: 'center',
+    marginBottom: 32,
+  },
+  titleText: {
+    fontSize: 30,
+    letterSpacing: -0.5,
+    fontFamily: theme.typography.families.headingBold,
   },
   subtitle: {
-    marginTop: theme.spacing[2],
+    marginTop: 8,
     lineHeight: 22,
-    textAlign: 'center',
+    letterSpacing: 0.1,
+    fontSize: 15,
+    color: '#8E8E93',
   },
 });
