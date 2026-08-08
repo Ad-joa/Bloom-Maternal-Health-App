@@ -100,7 +100,7 @@ export default function TrimesterScreen({ route }: Props) {
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          <View style={{ opacity: fadeAnim, transform: [{ translateY: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }}>
+          <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }}>
             {/* Hero Header */}
             <LinearGradient
               colors={[theme.colors.primaryLight, theme.colors.primary]}
@@ -153,7 +153,7 @@ export default function TrimesterScreen({ route }: Props) {
                 ))}
               </AccordionItem>
             </View>
-          </View>
+          </Animated.View>
 
         </ScrollView>
       </SafeAreaView>
