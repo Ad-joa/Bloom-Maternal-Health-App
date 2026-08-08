@@ -1,101 +1,73 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Path, Defs, LinearGradient, Stop, Circle } from 'react-native-svg';
+import { BlurView } from 'expo-blur';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
-import { Card } from '../components/Card';
-import { BounceButton } from '../components/BounceButton';
+import { BackgroundMesh } from '../components/BackgroundMesh';
 import { X, Heart, Calendar, Droplets, Moon, Baby, Stethoscope } from 'lucide-react-native';
 import { FadeSlideIn } from '../components/FadeSlideIn';
-
-const { width, height } = Dimensions.get('window');
-
-// Softer gradient header tailored for the partner/family context
-const PartnerHeader = () => (
-  <View style={styles.svgContainer}>
-    <Svg height={height * 0.38} width={width} viewBox="0 0 1440 320" preserveAspectRatio="none">
-      <Defs>
-        <LinearGradient id="partnerGrad" x1="0" y1="0" x2="0.6" y2="1">
-          <Stop offset="0" stopColor="#C8EAEB" stopOpacity="1" />
-          <Stop offset="0.5" stopColor="#8DD3C1" stopOpacity="1" />
-          <Stop offset="1" stopColor="#E8B5DB" stopOpacity="0.6" />
-        </LinearGradient>
-      </Defs>
-      <Path
-        fill="url(#partnerGrad)"
-        d="M0,160L48,181.3C96,203,192,245,288,245.3C384,245,480,203,576,170.7C672,139,768,117,864,128C960,139,1056,181,1152,202.7C1248,224,1344,224,1392,224L1440,224L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
-      />
-      {/* Topo lines */}
-      <Path fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2"
-        d="M0,120L48,141.3C96,163,192,205,288,205.3C384,205,480,163,576,130.7C672,99,768,77,864,88C960,99,1056,141,1152,162.7C1248,184,1344,184,1392,184L1440,184" />
-      <Path fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5"
-        d="M0,80L48,101.3C96,123,192,165,288,165.3C384,165,480,123,576,90.7C672,59,768,37,864,48C960,59,1056,101,1152,122.7C1248,144,1344,144,1392,144L1440,144" />
-      {/* Decorative circles */}
-      <Circle cx="180" cy="50" r="40" fill="rgba(255,255,255,0.12)" />
-      <Circle cx="850" cy="100" r="70" fill="rgba(255,255,255,0.08)" />
-      <Circle cx="1200" cy="35" r="30" fill="rgba(255,255,255,0.14)" />
-    </Svg>
-  </View>
-);
 
 export default function PartnerModeScreen({ navigation }: any) {
   return (
     <View style={styles.container}>
-      <PartnerHeader />
+      <BackgroundMesh />
       <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Spacer for wavy header */}
-          <View style={{ height: height * 0.22 }} />
+          {/* Header Row */}
+          <FadeSlideIn delay={100} duration={500} direction="down" style={styles.headerRow}>
+            <View style={styles.headerText}>
+              <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.titleText}>
+                Family Dashboard
+              </Typography>
+              <Typography variant="body" style={styles.subtitle}>
+                A read-only summary of her pregnancy journey.
+              </Typography>
+            </View>
+            <TouchableOpacity onPress={() => navigation.goBack()} activeOpacity={0.7} style={styles.closeBtn}>
+              <BlurView intensity={80} tint="light" style={styles.closeBlur}>
+                <X color="#000" size={24} strokeWidth={2} />
+              </BlurView>
+            </TouchableOpacity>
+          </FadeSlideIn>
 
-          <View style={styles.contentCard}>
-            {/* Header Row */}
-            <FadeSlideIn delay={100} duration={500} direction="down" style={styles.headerRow}>
-              <View style={styles.headerText}>
-                <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.titleText}>
-                  Family Dashboard
-                </Typography>
-                <Typography variant="body" style={styles.subtitle}>
-                  A read-only summary of your loved one's pregnancy journey.
-                </Typography>
+          {/* Stats Grid */}
+          <FadeSlideIn delay={200} duration={500} direction="down">
+            <View style={styles.grid}>
+              <View style={styles.gridCardWrapper}>
+                <BlurView intensity={80} tint="light" style={styles.gridCard}>
+                  <View style={[styles.cardIcon, { backgroundColor: 'rgba(232, 248, 242, 0.8)' }]}>
+                    <Calendar size={20} color={theme.colors.primaryDark} strokeWidth={2.5} />
+                  </View>
+                  <Typography variant="caption1" color="#636366" style={styles.cardLabel}>WEEK</Typography>
+                  <Typography style={styles.cardValue}>24</Typography>
+                  <Typography variant="caption2" color="#8E8E93">Trimester 2</Typography>
+                </BlurView>
               </View>
-              <BounceButton onPress={() => navigation.goBack()} scaleTo={0.85} style={styles.closeBtn}>
-                <X color={theme.colors.textMedium} size={20} strokeWidth={2} />
-              </BounceButton>
-            </FadeSlideIn>
 
-            {/* Stats Grid */}
-            <FadeSlideIn delay={200} duration={500} direction="down">
-              <View style={styles.grid}>
-                <Card style={styles.gridCard} variant="filled">
-                  <View style={[styles.cardIcon, { backgroundColor: '#E8F8F2' }]}>
-                    <Calendar size={18} color={theme.colors.primary} strokeWidth={2} />
+              <View style={styles.gridCardWrapper}>
+                <BlurView intensity={80} tint="light" style={styles.gridCard}>
+                  <View style={[styles.cardIcon, { backgroundColor: 'rgba(255, 240, 239, 0.8)' }]}>
+                    <Baby size={20} color="#E07A5F" strokeWidth={2.5} />
                   </View>
-                  <Typography variant="caption1" color="#8E8E93" style={styles.cardLabel}>WEEK</Typography>
-                  <Typography variant="largeTitle" color={theme.colors.primaryDark} style={styles.cardValue}>24</Typography>
-                  <Typography variant="caption2" color="#AEAEB2">Trimester 2</Typography>
-                </Card>
-
-                <Card style={styles.gridCard} variant="filled">
-                  <View style={[styles.cardIcon, { backgroundColor: '#FFF0EF' }]}>
-                    <Baby size={18} color={theme.colors.accentPink} strokeWidth={2} />
-                  </View>
-                  <Typography variant="caption1" color="#8E8E93" style={styles.cardLabel}>BABY SIZE</Typography>
+                  <Typography variant="caption1" color="#636366" style={styles.cardLabel}>BABY SIZE</Typography>
                   <Typography style={styles.babyEmoji}>🌽</Typography>
-                  <Typography variant="caption2" color="#AEAEB2">Ear of Corn</Typography>
-                </Card>
+                  <Typography variant="caption2" color="#8E8E93">Ear of Corn</Typography>
+                </BlurView>
               </View>
-            </FadeSlideIn>
+            </View>
+          </FadeSlideIn>
 
-            {/* Vibe Card */}
-            <FadeSlideIn delay={300} duration={500} direction="down">
-              <Card style={styles.vibeCard} variant="elevated">
+          {/* Vibe Card */}
+          <FadeSlideIn delay={300} duration={500} direction="down">
+            <View style={styles.cardWrapper}>
+              <BlurView intensity={80} tint="light" style={styles.glassCard}>
                 <View style={styles.vibeHeader}>
-                  <View style={[styles.cardIcon, { backgroundColor: '#FFF8E1' }]}>
-                    <Heart size={18} color="#FF9500" strokeWidth={2} />
+                  <View style={[styles.cardIcon, { backgroundColor: 'rgba(255, 248, 225, 0.8)' }]}>
+                    <Heart size={20} color="#FF9500" strokeWidth={2.5} />
                   </View>
                   <Typography variant="headline" color={theme.colors.textHigh} style={styles.vibeTitle}>
                     General Vibe Today
@@ -104,54 +76,58 @@ export default function PartnerModeScreen({ navigation }: any) {
                 <View style={styles.vibeBody}>
                   <Typography style={styles.vibeEmoji}>🙂</Typography>
                   <View style={styles.vibeTextWrap}>
-                    <Typography variant="body" color="#636366" style={styles.vibeDesc}>
+                    <Typography variant="body" color="#3A3A3C" style={styles.vibeDesc}>
                       She is feeling generally good today, though slightly fatigued.
                     </Typography>
                     <View style={styles.moodPillRow}>
-                      <View style={[styles.moodPill, { backgroundColor: '#E8F8F2' }]}>
-                        <Typography variant="caption2" color={theme.colors.primary}>Calm</Typography>
+                      <View style={[styles.moodPill, { backgroundColor: 'rgba(232, 248, 242, 0.8)' }]}>
+                        <Typography variant="caption2" color={theme.colors.primaryDark}>Calm</Typography>
                       </View>
-                      <View style={[styles.moodPill, { backgroundColor: '#FFF0EF' }]}>
-                        <Typography variant="caption2" color={theme.colors.accentPink}>Tired</Typography>
+                      <View style={[styles.moodPill, { backgroundColor: 'rgba(255, 240, 239, 0.8)' }]}>
+                        <Typography variant="caption2" color="#E07A5F">Tired</Typography>
                       </View>
                     </View>
                   </View>
                 </View>
-              </Card>
-            </FadeSlideIn>
+              </BlurView>
+            </View>
+          </FadeSlideIn>
 
-            {/* How to Support Section */}
-            <FadeSlideIn delay={400} duration={500} direction="up">
-              <Typography variant="footnote" color="#8E8E93" style={styles.sectionLabel}>HOW TO SUPPORT HER TODAY</Typography>
-              <Card style={styles.supportCard} variant="elevated">
-                <SupportItem icon={<Droplets size={16} color="#007AFF" strokeWidth={2} />} bg="#EBF5FF" text="Make sure she is drinking plenty of water." />
+          {/* How to Support Section */}
+          <FadeSlideIn delay={400} duration={500} direction="up">
+            <Typography variant="caption1" color="#8E8E93" style={styles.sectionLabel}>HOW TO SUPPORT HER TODAY</Typography>
+            <View style={styles.cardWrapper}>
+              <BlurView intensity={80} tint="light" style={styles.supportCard}>
+                <SupportItem icon={<Droplets size={18} color="#007AFF" strokeWidth={2.5} />} bg="rgba(235, 245, 255, 0.8)" text="Make sure she is drinking plenty of water." />
                 <View style={styles.supportDivider} />
-                <SupportItem icon={<Moon size={16} color="#AF52DE" strokeWidth={2} />} bg="#F3EFFC" text="Offer a gentle lower-back massage before bed." />
+                <SupportItem icon={<Moon size={18} color="#AF52DE" strokeWidth={2.5} />} bg="rgba(243, 239, 252, 0.8)" text="Offer a gentle lower-back massage before bed." />
                 <View style={styles.supportDivider} />
-                <SupportItem icon={<Stethoscope size={16} color={theme.colors.primary} strokeWidth={2} />} bg="#E8F8F2" text="Remind her about the ANC visit next week." />
-              </Card>
-            </FadeSlideIn>
+                <SupportItem icon={<Stethoscope size={18} color={theme.colors.primaryDark} strokeWidth={2.5} />} bg="rgba(232, 248, 242, 0.8)" text="Remind her about the ANC visit next week." />
+              </BlurView>
+            </View>
+          </FadeSlideIn>
 
-            {/* Next Visit Card */}
-            <FadeSlideIn delay={500} duration={500} direction="up">
-              <Typography variant="footnote" color="#8E8E93" style={styles.sectionLabel}>NEXT HOSPITAL VISIT</Typography>
-              <Card style={styles.visitCard} variant="elevated">
+          {/* Next Visit Card */}
+          <FadeSlideIn delay={500} duration={500} direction="up">
+            <Typography variant="caption1" color="#8E8E93" style={styles.sectionLabel}>NEXT HOSPITAL VISIT</Typography>
+            <View style={styles.cardWrapper}>
+              <BlurView intensity={80} tint="light" style={styles.visitCard}>
                 <View style={styles.visitRow}>
                   <View style={styles.visitDateBadge}>
                     <Typography variant="title3" color="#FFF" style={styles.visitDay}>20</Typography>
                     <Typography variant="caption2" color="rgba(255,255,255,0.8)">OCT</Typography>
                   </View>
                   <View style={styles.visitInfo}>
-                    <Typography variant="headline" color={theme.colors.textHigh}>October 20th, 10:00 AM</Typography>
-                    <Typography variant="footnote" color="#8E8E93" style={{ marginTop: 4 }}>Dr. Mensah at General Hospital</Typography>
+                    <Typography variant="headline" color={theme.colors.textHigh} style={{ fontSize: 17 }}>October 20th, 10:00 AM</Typography>
+                    <Typography variant="footnote" color="#636366" style={{ marginTop: 4 }}>Dr. Mensah at General Hospital</Typography>
                   </View>
                 </View>
-              </Card>
-            </FadeSlideIn>
+              </BlurView>
+            </View>
+          </FadeSlideIn>
 
-            {/* Bottom spacer */}
-            <View style={{ height: 40 }} />
-          </View>
+          {/* Bottom spacer */}
+          <View style={{ height: 40 }} />
         </ScrollView>
       </SafeAreaView>
     </View>
@@ -170,188 +146,187 @@ const SupportItem = ({ icon, bg, text }: { icon: React.ReactNode; bg: string; te
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FDFBFA',
-  },
-  svgContainer: {
-    position: 'absolute',
-    top: 0,
-    width: '100%',
+    backgroundColor: '#000',
   },
   safeArea: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-  },
-  contentCard: {
-    flex: 1,
-    backgroundColor: '#FDFBFA',
-    borderTopLeftRadius: 36,
-    borderTopRightRadius: 36,
-    paddingHorizontal: 24,
-    paddingTop: 32,
-    paddingBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -8 },
-    shadowOpacity: 0.04,
-    shadowRadius: 16,
-    elevation: 16,
+    paddingHorizontal: 20,
+    paddingTop: 20,
   },
   // ── Header
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 28,
+    marginBottom: 36,
   },
   headerText: {
     flex: 1,
     paddingRight: 16,
   },
   titleText: {
-    fontSize: 28,
-    letterSpacing: -0.5,
+    fontSize: 34,
+    letterSpacing: -1,
     fontFamily: theme.typography.families.headingBold,
   },
   subtitle: {
-    marginTop: 6,
+    marginTop: 8,
     lineHeight: 22,
-    letterSpacing: 0.1,
-    fontSize: 15,
-    color: '#8E8E93',
+    letterSpacing: 0.2,
+    fontSize: 16,
+    color: '#636366',
   },
   closeBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F5F5F7',
+    borderRadius: 24,
+    overflow: 'hidden',
+  },
+  closeBlur: {
+    width: 48,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E5E5EA',
+    backgroundColor: 'rgba(255,255,255,0.4)',
+  },
+  // ── Base Glass Wrappers
+  cardWrapper: {
+    borderRadius: 24,
+    overflow: 'hidden',
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 4,
+  },
+  glassCard: {
+    padding: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.65)',
   },
   // ── Stats Grid
   grid: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
+    gap: 16,
+    marginBottom: 24,
+  },
+  gridCardWrapper: {
+    flex: 1,
+    borderRadius: 24,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
   },
   gridCard: {
-    flex: 1,
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: 24,
     paddingHorizontal: 16,
-    borderRadius: 20,
-    backgroundColor: '#F5F5F7',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E5E5EA',
+    backgroundColor: 'rgba(255, 255, 255, 0.65)',
   },
   cardIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 44,
+    height: 44,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   cardLabel: {
     fontFamily: theme.typography.families.bodySemibold,
     letterSpacing: 1,
-    fontSize: 10,
-    marginBottom: 4,
+    fontSize: 11,
+    marginBottom: 8,
   },
   cardValue: {
-    fontSize: 36,
+    fontSize: 40,
     fontFamily: theme.typography.families.headingBold,
-    lineHeight: 42,
+    lineHeight: 46,
+    color: '#000',
   },
   babyEmoji: {
-    fontSize: 36,
-    lineHeight: 42,
+    fontSize: 40,
+    lineHeight: 46,
   },
   // ── Vibe Card
-  vibeCard: {
-    marginBottom: 24,
-    borderRadius: 20,
-  },
   vibeHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginBottom: 14,
+    gap: 12,
+    marginBottom: 16,
   },
   vibeTitle: {
-    fontFamily: theme.typography.families.headingSemibold,
+    fontSize: 18,
     letterSpacing: -0.2,
   },
   vibeBody: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 14,
+    gap: 16,
   },
   vibeEmoji: {
-    fontSize: 44,
-    lineHeight: 52,
+    fontSize: 48,
+    lineHeight: 56,
   },
   vibeTextWrap: {
     flex: 1,
   },
   vibeDesc: {
-    lineHeight: 22,
-    letterSpacing: 0.1,
+    lineHeight: 24,
+    fontSize: 16,
   },
   moodPillRow: {
     flexDirection: 'row',
     gap: 8,
-    marginTop: 10,
+    marginTop: 12,
   },
   moodPill: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
   // ── Section Label
   sectionLabel: {
     fontFamily: theme.typography.families.bodySemibold,
     letterSpacing: 1,
-    fontSize: 11,
-    marginBottom: 10,
-    marginLeft: 4,
+    marginBottom: 12,
+    marginLeft: 8,
   },
   // ── Support Section
   supportCard: {
-    marginBottom: 24,
-    borderRadius: 20,
     paddingVertical: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.65)',
   },
   supportItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 4,
+    gap: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
   },
   supportIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
+    width: 38,
+    height: 38,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   supportText: {
     flex: 1,
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 16,
+    lineHeight: 24,
   },
   supportDivider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: '#E5E5EA',
-    marginLeft: 52,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    marginLeft: 70,
   },
   // ── Visit Card
   visitCard: {
-    marginBottom: 16,
-    borderRadius: 20,
+    padding: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.65)',
   },
   visitRow: {
     flexDirection: 'row',
@@ -359,21 +334,16 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   visitDateBadge: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: theme.colors.primary,
+    width: 60,
+    height: 60,
+    borderRadius: 18,
+    backgroundColor: '#000',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
   },
   visitDay: {
     fontFamily: theme.typography.families.headingBold,
-    lineHeight: 26,
+    lineHeight: 28,
   },
   visitInfo: {
     flex: 1,

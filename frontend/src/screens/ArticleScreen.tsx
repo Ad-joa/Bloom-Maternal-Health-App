@@ -70,7 +70,7 @@ export default function ArticleScreen({ route, navigation }: Props) {
           </Typography>
 
           <View style={styles.pullQuote}>
-            <Typography variant="bodyBold" color={theme.colors.primaryDark} style={{ fontStyle: 'italic' }}>
+            <Typography variant="headline" color={theme.colors.primaryDark} style={{ fontStyle: 'italic' }}>
               "The most important thing she'd learned over the years was that there was no way to be a perfect mother and a million ways to be a good one."
             </Typography>
           </View>
