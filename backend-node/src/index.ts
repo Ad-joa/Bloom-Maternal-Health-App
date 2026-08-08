@@ -104,6 +104,33 @@ app.post('/advisory', async (req, res) => {
   }
 });
 
+app.post('/sync/symptoms', async (req, res) => {
+  try {
+    const { logs } = req.body;
+    if (!logs || !Array.isArray(logs)) {
+      return res.status(400).json({ success: false, detail: "Invalid logs payload" });
+    }
+
+    const mappedLogs = logs.map(log => ({
+      user_id: parseInt(log.user_id),
+      symptoms: log.symptoms,
+      severity: log.severity || 'unknown',
+      notes: log.notes || '',
+      created_at: new Date(log.created_at)
+    }));
+
+    await prisma.symptom_logs.createMany({
+      data: mappedLogs,
+      skipDuplicates: true
+    });
+
+    res.json({ success: true, count: mappedLogs.length });
+  } catch (error) {
+    console.error('Sync Error:', error);
+    res.status(500).json({ success: false, detail: "Server error during sync" });
+  }
+});
+
 app.post('/users/:user_id/logs', async (req, res) => {
   try {
     const user_id = parseInt(req.params.user_id);

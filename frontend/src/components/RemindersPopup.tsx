@@ -23,7 +23,7 @@ const TIPS = [
     type: 'diet',
     icon: <Apple color={theme.colors.danger} size={32} />,
     title: 'Nutrition Fact',
-    fact: 'Iron is crucial right now! Pairing iron-rich foods (like spinach) with Vitamin C (like oranges) helps your body absorb it much better.'
+    fact: 'Iron is crucial right now! Pairing iron-rich local foods (like Kontomire stew or Dawadawa) with Vitamin C (like oranges) helps your body absorb it much better.'
   },
   {
     type: 'swelling',

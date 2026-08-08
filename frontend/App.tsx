@@ -30,6 +30,8 @@ import * as Font from 'expo-font';
 import './src/i18n';
 import * as SplashScreen from 'expo-splash-screen';
 import { registerForPushNotificationsAsync } from './src/utils/notifications';
+import { initDatabase } from './src/utils/database';
+import { startSyncEngine } from './src/utils/SyncEngine';
 
 import {
   Inter_400Regular,
@@ -231,6 +233,9 @@ export default function App() {
           Inter_700Bold,
         });
         
+        // Initialize SQLite Offline Database
+        await initDatabase();
+        
         // Request notification permissions
         await registerForPushNotificationsAsync();
         
@@ -243,6 +248,13 @@ export default function App() {
     }
 
     prepare();
+    
+    // Start the Offline-First Sync Engine
+    const unsubscribeSync = startSyncEngine();
+
+    return () => {
+      if (unsubscribeSync) unsubscribeSync();
+    };
   }, []);
 
   if (!appIsReady) {
