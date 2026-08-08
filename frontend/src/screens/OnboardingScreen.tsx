@@ -283,9 +283,9 @@ export default function OnboardingScreen({ navigation, route }: Props) {
 
           {/* Animated Content */}
           <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-            <View style={{ opacity: fadeAnim, transform: [{ translateX: slideAnim }] }}>
+            <Animated.View style={{ opacity: fadeAnim, transform: [{ translateX: slideAnim }] }}>
               {renderStepContent()}
-            </View>
+            </Animated.View>
           </ScrollView>
 
           {/* Footer */}
