@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Animated, Platform, FlatList, KeyboardAvoidingView, Switch, UIManager, LayoutAnimation, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { theme } from '../theme/theme';
@@ -8,9 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/Button';
 import { TextInput } from '../components/TextInput';
 import { Typography } from '../components/Typography';
-import { LinearGradient } from 'expo-linear-gradient';
-
-
+import { AuthLayout } from '../components/AuthLayout';
 import { loginUser } from '../api/api';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
@@ -32,7 +29,6 @@ export default function LoginScreen({ navigation }: Props) {
         const response = await loginUser({ email, password });
         if (response.user) {
           if (!response.user.trimester || !response.user.due_date) {
-            // User hasn't finished onboarding
             navigation.navigate('Onboarding', { user: response.user });
           } else {
             login(response.user);
@@ -40,7 +36,6 @@ export default function LoginScreen({ navigation }: Props) {
         }
       } catch (error) {
         console.error("Login failed", error);
-        // In a real app, show an alert here
       } finally {
         setLoading(false);
       }
@@ -48,99 +43,92 @@ export default function LoginScreen({ navigation }: Props) {
   };
 
   return (
-    <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.gradient}>
-      <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.container}
-      >
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <View  style={styles.header}>
-            <Typography variant="largeTitle" color={theme.colors.primaryDark}>
-              Welcome Back
-            </Typography>
-            <Typography variant="body" color={theme.colors.textMedium} style={styles.subtitle}>
-              Sign in to continue your journey
-            </Typography>
-          </View>
-          
-          <View  style={styles.form}>
-            <TextInput
-              label="Email Address"
-              placeholder="jane@example.com"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-            <TextInput
-              label="Password"
-              placeholder="Enter your password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
-            
-            <Button 
-              title="Log In" 
-              onPress={handleLogin} 
-              style={styles.submitButton}
-              loading={loading}
-            />
-          </View>
-          
-          <View style={styles.footer}>
-            <Typography variant="body" color={theme.colors.textMedium}>
-              Don't have an account?{' '}
-            </Typography>
-            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-              <Typography variant="body" style={styles.linkText}>
-                Sign Up
-              </Typography>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-    </LinearGradient>
+    <AuthLayout title="Sign in">
+      <View style={styles.form}>
+        <TextInput
+          label="Email"
+          placeholder="demo@email.com"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+        <TextInput
+          label="Password"
+          placeholder="enter your password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+        
+        <View style={styles.optionsRow}>
+          <TouchableOpacity style={styles.checkboxRow}>
+            <View style={styles.checkbox} />
+            <Typography variant="caption1" color={theme.colors.textHigh}>Remember Me</Typography>
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <Typography variant="caption1" color={theme.colors.accentPink}>Forgot Password?</Typography>
+          </TouchableOpacity>
+        </View>
+        
+        <Button 
+          title="Login" 
+          onPress={handleLogin} 
+          style={styles.submitButton}
+          loading={loading}
+        />
+      </View>
+      
+      <View style={styles.footer}>
+        <Typography variant="caption1" color={theme.colors.textMedium}>
+          Don't have an Account?{' '}
+        </Typography>
+        <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+          <Typography variant="caption1" style={styles.linkText}>
+            Sign up
+          </Typography>
+        </TouchableOpacity>
+      </View>
+    </AuthLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
-  container: {
-    flex: 1,
-  },
-  content: {
-    flexGrow: 1,
-    padding: theme.spacing[5],
-    justifyContent: 'center',
-  },
-  header: {
-    marginBottom: theme.spacing[6],
-  },
-  subtitle: {
-    marginTop: theme.spacing[1],
-  },
   form: {
-    gap: theme.spacing[2],
+    gap: theme.spacing[4],
+  },
+  optionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: -8,
+    marginBottom: 8,
+  },
+  checkboxRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  checkbox: {
+    width: 14,
+    height: 14,
+    borderRadius: 3,
+    borderWidth: 1,
+    borderColor: theme.colors.accentPink,
+    backgroundColor: theme.colors.surfaceVariant,
   },
   submitButton: {
-    marginTop: theme.spacing[4],
+    marginTop: theme.spacing[2],
+    backgroundColor: theme.colors.accentPink,
+    borderRadius: 24,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: theme.spacing[6],
+    marginTop: theme.spacing[8],
   },
   linkText: {
     fontFamily: theme.typography.families.bodyBold,
-    color: theme.colors.primary,
+    color: theme.colors.accentPink,
   }
 });
