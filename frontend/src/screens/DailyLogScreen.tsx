@@ -1,306 +1,282 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Animated, Platform, FlatList, KeyboardAvoidingView, Switch, UIManager, LayoutAnimation, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useState } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, LayoutAnimation, Platform, UIManager } from 'react-native';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
+import { Card } from '../components/Card';
 import { Button } from '../components/Button';
-import { BounceButton } from '../components/BounceButton';
-import { Check } from 'lucide-react-native';
-import { useAuth } from '../context/AuthContext';
-import { saveSymptomLog } from '../api/api';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Check, ChevronDown, ChevronUp, Clock, AlertCircle } from 'lucide-react-native';
 
+// Enable LayoutAnimation for Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
-const symptomCategories = [
+const SYMPTOMS = [
   {
-    title: 'Physical',
-    symptoms: ['Nausea', 'Fatigue', 'Headache', 'Back Pain', 'Cramps', 'Swelling', 'Dizziness']
+    id: 'headache',
+    name: 'Headache',
+    question: 'How would you describe your headache?',
+    options: [
+      { id: 'h1', label: 'Mild and manageable', level: 1 },
+      { id: 'h2', label: 'Persistent and not going away', level: 2 },
+      { id: 'h3', label: 'Severe or sudden', level: 3 },
+    ]
   },
   {
-    title: 'Digestive',
-    symptoms: ['Heartburn', 'Constipation', 'Food Aversions', 'Cravings']
+    id: 'nausea',
+    name: 'Nausea / Morning Sickness',
+    question: 'How intense is your nausea today?',
+    options: [
+      { id: 'n1', label: 'Mild, just passing', level: 1 },
+      { id: 'n2', label: 'Moderate, affecting meals', level: 2 },
+      { id: 'n3', label: 'Severe, unable to keep food down', level: 3 },
+    ]
   },
   {
-    title: 'Emotional',
-    symptoms: ['Mood Swings', 'Anxiety', 'Stress', 'Tearful']
+    id: 'cramps',
+    name: 'Abdominal Cramping',
+    question: 'Describe the cramping you are experiencing:',
+    options: [
+      { id: 'c1', label: 'Mild, similar to a dull ache', level: 1 },
+      { id: 'c2', label: 'Moderate, causing discomfort', level: 2 },
+      { id: 'c3', label: 'Severe, sharp or accompanied by bleeding', level: 3 },
+    ]
   }
 ];
 
 export default function DailyLogScreen() {
-  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
-  const [weight, setWeight] = useState('');
-  const [systolic, setSystolic] = useState('');
-  const [diastolic, setDiastolic] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const scaleAnim = useRef(new Animated.Value(0)).current;
-  const opacityAnim = useRef(new Animated.Value(0)).current;
-  const { user } = useAuth();
+  // Track expanded accordion state
+  const [expandedSymptom, setExpandedSymptom] = useState<string | null>(null);
+  // Track selected intensities: { symptomId: optionId }
+  const [selections, setSelections] = useState<Record<string, string>>({});
+  // Mock last logged date to show the 7-day nudge
+  const [daysSinceLastLog] = useState(8); 
 
-  const toggleSymptom = (symptom: string) => {
-    if (selectedSymptoms.includes(symptom)) {
-      setSelectedSymptoms(prev => prev.filter(s => s !== symptom));
-    } else {
-      setSelectedSymptoms(prev => [...prev, symptom]);
-    }
+  const toggleExpand = (id: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpandedSymptom(prev => prev === id ? null : id);
   };
 
-  const handleSave = async () => {
-    if (selectedSymptoms.length === 0 && !weight && !systolic) return;
-    if (!user) {
-      Alert.alert("Error", "You must be logged in to save a log.");
-      return;
-    }
+  const selectIntensity = (symptomId: string, optionId: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setSelections(prev => ({
+      ...prev,
+      [symptomId]: optionId
+    }));
+    // Auto-close after selection
+    setTimeout(() => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setExpandedSymptom(null);
+    }, 300);
+  };
 
-    setLoading(true);
-    try {
-      // In a real app, we would send vitals to the backend here as well
-      let logText = selectedSymptoms.join(', ');
-      if (weight) logText += ` | Weight: ${weight} lbs`;
-      if (systolic && diastolic) logText += ` | BP: ${systolic}/${diastolic}`;
-
-      await saveSymptomLog(user.id, logText);
-      setSelectedSymptoms([]); // Reset
-      setWeight('');
-      setSystolic('');
-      setDiastolic('');
-      
-      // Trigger Success Animation
-      setShowSuccess(true);
-      Animated.parallel([
-        Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, tension: 50, friction: 5 }),
-        Animated.timing(opacityAnim, { toValue: 1, duration: 200, useNativeDriver: true })
-      ]).start();
-
-      // Hide after 2 seconds
-      setTimeout(() => {
-        Animated.timing(opacityAnim, { toValue: 0, duration: 300, useNativeDriver: true }).start(() => {
-          setShowSuccess(false);
-          scaleAnim.setValue(0);
-        });
-      }, 2000);
-
-    } catch (error) {
-      console.error(error);
-      Alert.alert("Error", "Failed to save log. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+  const handleSave = () => {
+    // In a real app, we would save this to the DB with a timestamp
+    const logData = {
+      timestamp: new Date().toISOString(),
+      symptoms: selections
+    };
+    console.log("Saving log:", logData);
   };
 
   return (
-    <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.container}>
-      <SafeAreaView edges={['top']} style={styles.safeArea}>
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          
-          <RNAnimated.View  style={styles.header}>
-            <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.headerTitle}>
-              Log period
-            </Typography>
-            <Typography variant="body" color={theme.colors.textMedium}>
-              Or any symptoms you're feeling today
-            </Typography>
-          </RNAnimated.View>
-
-          {/* Vitals Section */}
-          <RNAnimated.View  style={styles.section}>
-            <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
-              Vitals
-            </Typography>
-            
-            <View style={styles.vitalsRow}>
-              <View style={styles.vitalInputBox}>
-                <Typography variant="caption1" color={theme.colors.textMedium} style={{ marginBottom: 4 }}>Weight (lbs)</Typography>
-                <TextInput
-                  style={styles.vitalInput}
-                  keyboardType="numeric"
-                  placeholder="e.g. 145"
-                  value={weight}
-                  onChangeText={setWeight}
-                  placeholderTextColor={theme.colors.textMedium}
-                />
-              </View>
-
-              <View style={[styles.vitalInputBox, { flex: 1.5 }]}>
-                <Typography variant="caption1" color={theme.colors.textMedium} style={{ marginBottom: 4 }}>Blood Pressure</Typography>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <TextInput
-                    style={[styles.vitalInput, { flex: 1 }]}
-                    keyboardType="numeric"
-                    placeholder="120"
-                    value={systolic}
-                    onChangeText={setSystolic}
-                    placeholderTextColor={theme.colors.textMedium}
-                  />
-                  <Typography variant="title3" color={theme.colors.textMedium} style={{ marginHorizontal: 8 }}>/</Typography>
-                  <TextInput
-                    style={[styles.vitalInput, { flex: 1 }]}
-                    keyboardType="numeric"
-                    placeholder="80"
-                    value={diastolic}
-                    onChangeText={setDiastolic}
-                    placeholderTextColor={theme.colors.textMedium}
-                  />
-                </View>
-              </View>
-            </View>
-          </RNAnimated.View>
-
-          {symptomCategories.map((category, catIndex) => (
-            <RNAnimated.View key={category.title}  style={styles.section}>
-              <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
-                {category.title}
+    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+      
+      {daysSinceLastLog > 7 && (
+        <Card style={styles.nudgeCard} variant="filled">
+          <View style={styles.nudgeRow}>
+            <AlertCircle color={theme.colors.warning} size={24} />
+            <View style={styles.nudgeText}>
+              <Typography variant="headline">It's been a while!</Typography>
+              <Typography variant="subhead" color={theme.colors.textMedium}>
+                You haven't logged any symptoms in {daysSinceLastLog} days. Tracking helps us keep you and your baby safe.
               </Typography>
-              <View style={styles.chipContainer}>
-                {category.symptoms.map((symptom) => {
-                  const isSelected = selectedSymptoms.includes(symptom);
-                  return (
-                    <BounceButton 
-                      key={symptom} 
-                      onPress={() => toggleSymptom(symptom)}
-                      style={[styles.chip, isSelected && styles.chipSelected]}
-                    >
-                      {isSelected && <Check size={16} color="#fff" style={{ marginRight: 6 }} />}
-                      <Typography 
-                        variant="subhead" 
-                        color={isSelected ? '#fff' : theme.colors.textHigh}
-                      >
-                        {symptom}
-                      </Typography>
-                    </BounceButton>
-                  );
-                })}
-              </View>
-            </RNAnimated.View>
-          ))}
-
-          <RNAnimated.View  style={styles.footer}>
-            <Button 
-              title="Save Log" 
-              onPress={handleSave}
-              loading={loading}
-              disabled={selectedSymptoms.length === 0 && !weight && !systolic}
-            />
-          </RNAnimated.View>
-
-        </ScrollView>
-      </SafeAreaView>
-
-      {/* Fullscreen Success Overlay */}
-      {showSuccess && (
-        <View style={[styles.successOverlay, { opacity: opacityAnim }]}>
-          <View style={[styles.successModal, { transform: [{ scale: scaleAnim }] }]}>
-            <View style={styles.successIcon}>
-              <Check size={48} color="#fff" strokeWidth={3} />
             </View>
-            <Typography variant="title2" color={theme.colors.textHigh} style={{ marginTop: 16 }}>
-              Log Saved!
-            </Typography>
-            <Typography variant="body" color={theme.colors.textMedium} align="center" style={{ marginTop: 8 }}>
-              You're doing great. Keep up the consistency!
-            </Typography>
           </View>
-        </View>
+        </Card>
       )}
 
-    </LinearGradient>
+      <View style={styles.header}>
+        <Typography variant="largeTitle" color={theme.colors.textHigh}>
+          Symptom Tracker
+        </Typography>
+        <View style={styles.timestampRow}>
+          <Clock size={16} color={theme.colors.textMedium} />
+          <Typography variant="footnote" color={theme.colors.textMedium} style={{marginLeft: 4}}>
+            Recording for today, {new Date().toLocaleDateString()}
+          </Typography>
+        </View>
+      </View>
+
+      <View style={styles.list}>
+        {SYMPTOMS.map((symptom) => {
+          const isExpanded = expandedSymptom === symptom.id;
+          const selectedOptionId = selections[symptom.id];
+          const hasSelection = !!selectedOptionId;
+          const selectedOptionLabel = symptom.options.find(o => o.id === selectedOptionId)?.label;
+
+          return (
+            <Card key={symptom.id} style={styles.symptomCard} variant="elevated">
+              <TouchableOpacity 
+                activeOpacity={0.7} 
+                onPress={() => toggleExpand(symptom.id)}
+                style={styles.symptomHeader}
+              >
+                <View style={styles.symptomHeaderLeft}>
+                  <View style={[styles.statusIndicator, hasSelection && styles.statusActive]} />
+                  <View>
+                    <Typography variant="headline">{symptom.name}</Typography>
+                    {hasSelection && (
+                      <Typography variant="caption1" color={theme.colors.primary}>
+                        {selectedOptionLabel}
+                      </Typography>
+                    )}
+                  </View>
+                </View>
+                {isExpanded ? <ChevronUp size={20} color={theme.colors.textMedium} /> : <ChevronDown size={20} color={theme.colors.textMedium} />}
+              </TouchableOpacity>
+
+              {isExpanded && (
+                <View style={styles.expandedContent}>
+                  <Typography variant="subhead" color={theme.colors.textMedium} style={styles.question}>
+                    {symptom.question}
+                  </Typography>
+                  
+                  {symptom.options.map(option => {
+                    const isSelected = selectedOptionId === option.id;
+                    return (
+                      <TouchableOpacity 
+                        key={option.id}
+                        activeOpacity={0.8}
+                        onPress={() => selectIntensity(symptom.id, option.id)}
+                        style={[styles.optionRow, isSelected && styles.optionRowSelected]}
+                      >
+                        <View style={[styles.radio, isSelected && styles.radioSelected]}>
+                          {isSelected && <View style={styles.radioInner} />}
+                        </View>
+                        <Typography 
+                          variant="body" 
+                          color={isSelected ? theme.colors.primaryDark : theme.colors.textHigh}
+                        >
+                          {option.label}
+                        </Typography>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              )}
+            </Card>
+          );
+        })}
+      </View>
+
+      <Button 
+        title="Save Log" 
+        onPress={handleSave}
+        disabled={Object.keys(selections).length === 0}
+        style={styles.saveButton}
+      />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
+    backgroundColor: theme.colors.surfaceVariant, // Apple grouped background
+    padding: theme.spacing[5],
+    paddingTop: theme.spacing[8],
   },
-  safeArea: {
-    flex: 1,
+  nudgeCard: {
+    backgroundColor: theme.colors.warning + '15',
+    marginBottom: theme.spacing[5],
+    borderColor: theme.colors.warning,
+    borderWidth: 1,
   },
-  scrollContent: {
-    padding: theme.spacing[4],
-    paddingBottom: theme.spacing[8],
+  nudgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing[3],
+  },
+  nudgeText: {
+    flex: 1,
   },
   header: {
     marginBottom: theme.spacing[6],
+  },
+  timestampRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: theme.spacing[2],
   },
-  headerTitle: {
-    fontFamily: theme.typography.families.headingBold,
-  },
-  section: {
-    marginBottom: theme.spacing[6],
-  },
-  sectionTitle: {
-    marginBottom: theme.spacing[4],
-    fontFamily: theme.typography.families.headingBold,
-  },
-  chipContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: theme.spacing[3],
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    paddingVertical: theme.spacing[3],
-    paddingHorizontal: theme.spacing[4],
-    borderRadius: theme.radii.pill,
-    shadowColor: theme.colors.primaryDark,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: '#f5f5f5',
-  },
-  chipSelected: {
-    backgroundColor: theme.colors.primaryDark,
-    borderColor: theme.colors.primaryDark,
-  },
-  footer: {
-    marginTop: theme.spacing[4],
-  },
-  vitalsRow: {
-    flexDirection: 'row',
+  list: {
     gap: theme.spacing[4],
   },
-  vitalInputBox: {
-    flex: 1,
+  symptomCard: {
+    padding: 0,
+    overflow: 'hidden',
   },
-  vitalInput: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radii.lg,
-    padding: theme.spacing[3],
-    fontFamily: theme.typography.families.bodyMedium,
-    fontSize: 16,
-    color: theme.colors.textHigh,
+  symptomHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: theme.spacing[4],
   },
-  successOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+  symptomHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing[3],
+  },
+  statusIndicator: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: theme.colors.border,
+  },
+  statusActive: {
+    backgroundColor: theme.colors.primary,
+  },
+  expandedContent: {
+    padding: theme.spacing[4],
+    paddingTop: 0,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.surfaceVariant,
+  },
+  question: {
+    marginBottom: theme.spacing[3],
+    marginTop: theme.spacing[2],
+  },
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: theme.spacing[3],
+    paddingHorizontal: theme.spacing[3],
+    borderRadius: theme.radii.md,
+    gap: theme.spacing[3],
+  },
+  optionRowSelected: {
+    backgroundColor: theme.colors.primaryLight + '40',
+  },
+  radio: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: theme.colors.textMedium,
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 999,
   },
-  successModal: {
-    width: 250,
-    backgroundColor: '#fff',
-    borderRadius: theme.radii.xl,
-    padding: theme.spacing[6],
-    alignItems: 'center',
-    shadowColor: theme.colors.primaryDark,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 10,
+  radioSelected: {
+    borderColor: theme.colors.primary,
   },
-  successIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: theme.colors.success,
-    alignItems: 'center',
-    justifyContent: 'center',
+  radioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: theme.colors.primary,
+  },
+  saveButton: {
+    marginTop: theme.spacing[8],
+    marginBottom: theme.spacing[4],
   }
 });

@@ -124,10 +124,10 @@ export default function HomeScreen({ navigation }: Props) {
   }, []);
 
   const actionButtons = [
-    { id: 'tracker', label: t('actions.log'), icon: <Droplet color="#fff" size={24} />, route: 'Tracker', color: theme.colors.primary },
-    { id: 'symptoms', label: t('actions.symptoms'), icon: <Heart color={theme.colors.textHigh} size={24} />, route: 'Advisory', color: '#fff' },
-    { id: 'ai', label: t('actions.ai'), icon: <MessageCircle color={theme.colors.textHigh} size={24} />, route: 'BloomAI', color: '#fff' },
-    { id: 'checkin', label: t('actions.checkin'), icon: <CheckCircle color={theme.colors.textHigh} size={24} />, route: 'Tracker', color: '#fff' },
+    { id: 'checkin', label: 'Check-In', icon: <CheckCircle color="#fff" size={24} />, route: 'CheckIn', color: theme.colors.primary },
+    { id: 'symptoms', label: 'Symptoms', icon: <Heart color={theme.colors.textHigh} size={24} />, route: 'Tracker', color: '#fff' },
+    { id: 'ai', label: 'Bloom AI', icon: <MessageCircle color={theme.colors.textHigh} size={24} />, route: 'BloomAI', color: '#fff' },
+    { id: 'anc', label: 'ANC Visits', icon: <Calendar color={theme.colors.textHigh} size={24} />, route: 'ANCVisit', color: '#fff' },
   ];
 
   const insights = [
@@ -138,7 +138,7 @@ export default function HomeScreen({ navigation }: Props) {
 
   return (
     <LinearGradient
-      colors={['#ffffff', '#fdf2f4', '#fce7eb']}
+      colors={[theme.colors.surfaceVariant, theme.colors.surface, theme.colors.surfaceVariant]}
       style={styles.container}
     >
       <SafeAreaView edges={['top']} style={styles.safeArea}>
