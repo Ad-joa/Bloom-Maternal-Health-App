@@ -6,10 +6,15 @@ import tokens from '../../design-tokens.json';
 
 export const theme = {
   colors: {
-    // Apple-inspired soft, calming palette (moving away from bright pinks)
-    primary: '#4E9F8E',       // Soft Sage Teal
-    primaryLight: '#E6F2F0',  // Frosted very light teal
-    primaryDark: '#3A7A6C',
+    // Awwwards-level Pastel Palette
+    primary: '#8DD3C1',       // Monte Carlo
+    primaryLight: '#C8EAEB',  // Jagged Ice
+    primaryDark: '#6FB9A6',   // Slightly darker Monte Carlo
+    
+    accentPink: '#F4C1BE',    // Mandys Pink
+    accentPurple: '#E8B5DB',  // Light Orchid
+    
+    background: '#F7E3CF',    // Albescent White (Warm paper feel)
     
     success: '#34C759',       // Apple Green
     warning: '#FF9500',       // Apple Orange
@@ -17,21 +22,21 @@ export const theme = {
     info: '#007AFF',          // Apple Blue
     
     surface: '#FFFFFF',       // Clean white cards
-    surfaceVariant: '#F2F2F7',// Apple default grouped background
+    surfaceVariant: 'rgba(255, 255, 255, 0.6)', // For frosted glass overlays
     textHigh: '#1C1C1E',      // Apple rich black
-    textMedium: '#8E8E93',    // Apple system grey
-    border: '#E5E5EA',        // Apple subtle divider
+    textMedium: '#636366',    // Apple deep system grey
+    border: 'rgba(0, 0, 0, 0.05)', // Ultra-subtle border
   },
   typography: {
     families: {
-      headingRegular: tokens.typography.families.headingRegular.value,
-      headingMedium: tokens.typography.families.headingMedium.value,
-      headingSemibold: tokens.typography.families.headingSemibold.value,
-      headingBold: tokens.typography.families.headingBold.value,
-      bodyRegular: tokens.typography.families.bodyRegular.value,
-      bodyMedium: tokens.typography.families.bodyMedium.value,
-      bodySemibold: tokens.typography.families.bodySemibold.value,
-      bodyBold: tokens.typography.families.bodyBold.value,
+      headingRegular: 'Inter_400Regular',
+      headingMedium: 'Inter_500Medium',
+      headingSemibold: 'Inter_600SemiBold',
+      headingBold: 'Inter_700Bold',
+      bodyRegular: 'Inter_400Regular',
+      bodyMedium: 'Inter_500Medium',
+      bodySemibold: 'Inter_600SemiBold',
+      bodyBold: 'Inter_700Bold',
     },
     sizes: {
       largeTitle: parseInt(tokens.typography.sizes.largeTitle.value, 10),
@@ -73,18 +78,18 @@ export const theme = {
   },
   shadows: {
     soft: {
-      shadowColor: tokens.colors.primary["700"].value,
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.08,
-      shadowRadius: 24,
-      elevation: 4,
+      shadowColor: '#1C1C1E',
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.05,
+      shadowRadius: 30,
+      elevation: 2,
     },
     medium: {
-      shadowColor: tokens.colors.primary["700"].value,
-      shadowOffset: { width: 0, height: 12 },
-      shadowOpacity: 0.12,
-      shadowRadius: 32,
-      elevation: 8,
+      shadowColor: '#1C1C1E',
+      shadowOffset: { width: 0, height: 16 },
+      shadowOpacity: 0.08,
+      shadowRadius: 40,
+      elevation: 4,
     }
   }
 };

@@ -15,7 +15,7 @@ export const BounceButton: React.FC<BounceButtonProps> = ({
   onPress, 
   onPressIn, 
   onPressOut, 
-  scaleTo = 0.92,
+  scaleTo = 0.96,
   hapticStyle = Haptics.ImpactFeedbackStyle.Light,
   ...props 
 }) => {
@@ -25,8 +25,8 @@ export const BounceButton: React.FC<BounceButtonProps> = ({
     Animated.spring(scaleValue, {
       toValue: scaleTo,
       useNativeDriver: true,
-      speed: 60,
-      bounciness: 15,
+      speed: 80,
+      bounciness: 0,
     }).start();
     
     // Trigger haptic feedback
@@ -41,8 +41,8 @@ export const BounceButton: React.FC<BounceButtonProps> = ({
     Animated.spring(scaleValue, {
       toValue: 1,
       useNativeDriver: true,
-      speed: 30,
-      bounciness: 15,
+      speed: 80,
+      bounciness: 0,
     }).start();
 
     if (onPressOut) onPressOut(e);
