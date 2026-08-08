@@ -41,6 +41,10 @@ const WavyHeader = () => {
           strokeWidth="1"
           d="M0,40L48,61.3C96,83,192,125,288,125.3C384,125,480,83,576,50.7C672,19,768,-3,864,8C960,19,1056,61,1152,82.7C1248,104,1344,104,1392,104L1440,104" 
         />
+        {/* Decorative Floating Bubbles */}
+        <Svg.Circle cx="120" cy="50" r="40" fill="rgba(255,255,255,0.15)" />
+        <Svg.Circle cx="850" cy="110" r="80" fill="rgba(255,255,255,0.1)" />
+        <Svg.Circle cx="1300" cy="40" r="60" fill="rgba(255,255,255,0.15)" />
       </Svg>
     </View>
   );
@@ -116,12 +120,19 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 40,
     padding: theme.spacing[6],
     paddingTop: theme.spacing[8],
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -10 },
+    shadowOpacity: 0.05,
+    shadowRadius: 20,
+    elevation: 20,
   },
   header: {
-    marginBottom: theme.spacing[6],
+    marginBottom: theme.spacing[8],
+    alignItems: 'center',
   },
   subtitle: {
     marginTop: theme.spacing[2],
     lineHeight: 22,
+    textAlign: 'center',
   },
 });
