@@ -6,7 +6,7 @@ import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { useAuth } from '../context/AuthContext';
-import { Settings, Bell, CircleHelp, LogOut, ChevronRight, Lock, FileText } from 'lucide-react-native';
+import { Settings, Bell, CircleHelp, LogOut, ChevronRight, Lock, FileText, Calendar, Users } from 'lucide-react-native';
 import { scheduleDailyReminder } from '../utils/notifications';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -73,7 +73,9 @@ export default function ProfileScreen({ navigation }: any) {
   };
 
   const menuItems = [
-    { title: 'Personal Information', icon: <Settings size={20} color={theme.colors.textMedium} />, isToggle: false },
+    { title: 'Personal Information', icon: <Settings size={20} color={theme.colors.textMedium} />, route: 'Profile' },
+    { title: 'ANC Visits', icon: <Calendar size={20} color={theme.colors.textMedium} />, route: 'ANCVisit' },
+    { title: 'Partner Mode', icon: <Users size={20} color={theme.colors.textMedium} />, route: 'PartnerMode' },
     { 
       title: 'Daily Reminders', 
       icon: <Bell size={20} color={theme.colors.textMedium} />,
@@ -87,7 +89,7 @@ export default function ProfileScreen({ navigation }: any) {
       value: biometricsEnabled,
       onToggle: toggleBiometrics
     },
-    { title: 'Help & Support', icon: <CircleHelp size={20} color={theme.colors.textMedium} />, isToggle: false },
+    { title: 'Help & Support', icon: <CircleHelp size={20} color={theme.colors.textMedium} />, route: 'Profile' },
   ];
 
   return (
@@ -118,7 +120,7 @@ export default function ProfileScreen({ navigation }: any) {
                 styles.menuItem,
                 index !== menuItems.length - 1 && styles.menuItemBorder
               ]}
-              onPress={item.onPress}
+              onPress={item.onPress || (item.route ? () => item.route !== 'Profile' ? navigation.navigate(item.route) : null : undefined)}
             >
               <View style={styles.menuItemLeft}>
                 {item.icon}

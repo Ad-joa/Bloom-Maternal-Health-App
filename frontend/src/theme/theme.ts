@@ -6,20 +6,21 @@ import tokens from '../../design-tokens.json';
 
 export const theme = {
   colors: {
-    primary: tokens.colors.primary["500"].value,
-    primaryLight: tokens.colors.primary["100"].value,
-    primaryDark: tokens.colors.primary["700"].value,
+    // Apple-inspired soft, calming palette (moving away from bright pinks)
+    primary: '#4E9F8E',       // Soft Sage Teal
+    primaryLight: '#E6F2F0',  // Frosted very light teal
+    primaryDark: '#3A7A6C',
     
-    success: tokens.colors.semantic.success.value,
-    warning: tokens.colors.semantic.warning.value,
-    danger: tokens.colors.semantic.danger.value,
-    info: tokens.colors.semantic.info.value,
+    success: '#34C759',       // Apple Green
+    warning: '#FF9500',       // Apple Orange
+    danger: '#FF3B30',        // Apple Red
+    info: '#007AFF',          // Apple Blue
     
-    surface: tokens.colors.light.surface.value,
-    surfaceVariant: tokens.colors.light.surfaceVariant.value,
-    textHigh: tokens.colors.light.textHigh.value,
-    textMedium: tokens.colors.light.textMedium.value,
-    border: tokens.colors.light.border.value,
+    surface: '#FFFFFF',       // Clean white cards
+    surfaceVariant: '#F2F2F7',// Apple default grouped background
+    textHigh: '#1C1C1E',      // Apple rich black
+    textMedium: '#8E8E93',    // Apple system grey
+    border: '#E5E5EA',        // Apple subtle divider
   },
   typography: {
     families: {

@@ -9,18 +9,21 @@ import WelcomeScreen from './src/screens/WelcomeScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
-import InsightsScreen from './src/screens/InsightsScreen';
+import AnalysisScreen from './src/screens/AnalysisScreen';
 import BloomAIScreen from './src/screens/BloomAIScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import CommunityScreen from './src/screens/CommunityScreen';
 import ArticleScreen from './src/screens/ArticleScreen';
 import RemindersScreen from './src/screens/RemindersScreen';
+import ANCVisitScreen from './src/screens/ANCVisitScreen';
+import PartnerModeScreen from './src/screens/PartnerModeScreen';
+import CheckInScreen from './src/screens/CheckInScreen';
 import { BiometricGate } from './src/components/BiometricGate';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Home, LineChart, MessageCircle, Calendar, Users } from 'lucide-react-native';
+import { Home, LineChart, MessageCircle, Calendar, Users, Menu } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { theme } from './src/theme/theme';
 import * as Font from 'expo-font';
@@ -56,11 +59,14 @@ export type RootStackParamList = {
   Profile: undefined;
   Article: { articleId: string, title: string, content: string };
   Reminders: undefined;
+  ANCVisit: undefined;
+  PartnerMode: undefined;
+  CheckIn: undefined;
 };
 
 export type MainTabParamList = {
   Home: undefined;
-  Insights: undefined;
+  Analysis: undefined;
   Community: undefined;
   BloomAI: undefined;
   Tracker: undefined;
@@ -72,10 +78,10 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 function MainTabs() {
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
+      screenOptions={({ route, navigation }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           if (route.name === 'Home') return <Home size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
-          if (route.name === 'Insights') return <LineChart size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
+          if (route.name === 'Analysis') return <LineChart size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
           if (route.name === 'Community') return <Users size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
           if (route.name === 'BloomAI') return <MessageCircle size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
           if (route.name === 'Tracker') return <Calendar size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
@@ -107,10 +113,18 @@ function MainTabs() {
         headerStyle: { backgroundColor: '#fff', shadowOpacity: 0, elevation: 0 },
         headerTintColor: theme.colors.textHigh,
         headerTitleStyle: { fontFamily: theme.typography.families.headingBold },
+        headerRight: () => (
+          <TouchableOpacity 
+            style={{ marginRight: theme.spacing[4] }}
+            onPress={() => (navigation as any).navigate('Profile')} // We can make the profile screen hold the hamburger menu links
+          >
+            <Menu color={theme.colors.textHigh} size={24} />
+          </TouchableOpacity>
+        ),
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Today', headerShown: false }} />
-      <Tab.Screen name="Insights" component={InsightsScreen} options={{ title: 'Insights' }} />
+      <Tab.Screen name="Analysis" component={AnalysisScreen} options={{ title: 'Analysis' }} />
       <Tab.Screen name="Community" component={CommunityScreen} options={{ title: 'Community' }} />
       <Tab.Screen name="BloomAI" component={BloomAIScreen} options={{ title: 'Bloom AI' }} />
       <Tab.Screen name="Tracker" component={DailyLogScreen} options={{ title: 'Tracker' }} />
@@ -188,6 +202,21 @@ function Navigation() {
               name="Reminders" 
               component={RemindersScreen} 
               options={{ title: 'Reminders' }} 
+            />
+            <Stack.Screen 
+              name="ANCVisit" 
+              component={ANCVisitScreen} 
+              options={{ title: 'ANC Visits' }} 
+            />
+            <Stack.Screen 
+              name="PartnerMode" 
+              component={PartnerModeScreen} 
+              options={{ title: 'Partner Mode', headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="CheckIn" 
+              component={CheckInScreen} 
+              options={{ title: 'Daily Check-In' }} 
             />
           </>
         )}

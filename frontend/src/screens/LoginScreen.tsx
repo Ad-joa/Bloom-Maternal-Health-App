@@ -54,7 +54,7 @@ export default function LoginScreen({ navigation }: Props) {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.container}
       >
-        <View style={styles.content}>
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View  style={styles.header}>
             <Typography variant="largeTitle" color={theme.colors.primaryDark}>
               Welcome Back
@@ -98,7 +98,7 @@ export default function LoginScreen({ navigation }: Props) {
               </Typography>
             </TouchableOpacity>
           </View>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
     </LinearGradient>
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     padding: theme.spacing[5],
     justifyContent: 'center',
   },
