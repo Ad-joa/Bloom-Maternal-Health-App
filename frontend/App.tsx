@@ -32,12 +32,13 @@ import { registerForPushNotificationsAsync } from './src/utils/notifications';
 import { initDatabase } from './src/utils/database';
 import { startSyncEngine } from './src/utils/SyncEngine';
 
-import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-} from '@expo-google-fonts/inter';
+import { 
+  useFonts,
+  Montserrat_400Regular,
+  Montserrat_500Medium,
+  Montserrat_600SemiBold,
+  Montserrat_700Bold,
+} from '@expo-google-fonts/montserrat';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -220,10 +221,10 @@ export default function App() {
     async function prepare() {
       try {
         await Font.loadAsync({
-          Inter_400Regular,
-          Inter_500Medium,
-          Inter_600SemiBold,
-          Inter_700Bold,
+          Montserrat_400Regular,
+          Montserrat_500Medium,
+          Montserrat_600SemiBold,
+          Montserrat_700Bold,
         });
         
         // Initialize SQLite Offline Database

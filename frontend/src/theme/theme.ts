@@ -29,14 +29,14 @@ export const theme = {
   },
   typography: {
     families: {
-      headingRegular: 'Inter_400Regular',
-      headingMedium: 'Inter_500Medium',
-      headingSemibold: 'Inter_600SemiBold',
-      headingBold: 'Inter_700Bold',
-      bodyRegular: 'Inter_400Regular',
-      bodyMedium: 'Inter_500Medium',
-      bodySemibold: 'Inter_600SemiBold',
-      bodyBold: 'Inter_700Bold',
+      headingRegular: 'Montserrat_400Regular',
+      headingMedium: 'Montserrat_500Medium',
+      headingSemibold: 'Montserrat_600SemiBold',
+      headingBold: 'Montserrat_700Bold',
+      bodyRegular: 'Montserrat_400Regular',
+      bodyMedium: 'Montserrat_500Medium',
+      bodySemibold: 'Montserrat_600SemiBold',
+      bodyBold: 'Montserrat_700Bold',
     },
     sizes: {
       largeTitle: parseInt(tokens.typography.sizes.largeTitle.value, 10),

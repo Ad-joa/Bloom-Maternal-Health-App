@@ -58,7 +58,7 @@ export const FadeSlideIn: React.FC<FadeSlideInProps> = ({
     }
 
     const timer = setTimeout(() => {
-      Animated.parallel(animations).start();
+      animations.forEach(anim => anim.start());
     }, delay);
 
     return () => clearTimeout(timer);

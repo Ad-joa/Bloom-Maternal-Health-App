@@ -1,143 +1,241 @@
-import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { View, StyleSheet, TouchableOpacity, FlatList, Dimensions, Animated } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
-import { AuthLayout } from '../components/AuthLayout';
-import { ArrowRight, Heart, Leaf, Shield } from 'lucide-react-native';
-import { FadeSlideIn } from '../components/FadeSlideIn';
+import { BackgroundMesh } from '../components/BackgroundMesh';
+import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { BlurView } from 'expo-blur';
+import { BounceButton } from '../components/BounceButton';
+
+const { width, height } = Dimensions.get('window');
+
+const SLIDES = [
+  {
+    id: '1',
+    title: 'Your Pregnancy, Guided.',
+    description: 'Bloom is your personal maternal health companion, designed specifically for your journey.',
+    icon: <Ionicons name="heart" size={64} color={theme.colors.primaryDark} />,
+    iconBg: '#E8F8F2',
+  },
+  {
+    id: '2',
+    title: 'Track Vitals & Baby Growth',
+    description: 'Log your symptoms, mood, and daily vitals. Keep a beautiful record as your baby grows.',
+    icon: <Ionicons name="medical" size={64} color="#007AFF" />,
+    iconBg: '#E5F1FF',
+  },
+  {
+    id: '3',
+    title: 'Ghanaian Context',
+    description: 'Local nutrition advice, ANC reminders, and culturally relevant insights for Ghanaian mothers.',
+    icon: <Ionicons name="leaf" size={64} color="#E07A5F" />,
+    iconBg: '#FFF0EF',
+  },
+  {
+    id: '4',
+    title: 'Always Available',
+    description: 'Works entirely offline. Your data syncs securely only when you are back on Wi-Fi.',
+    icon: <Ionicons name="shield-checkmark" size={64} color="#8A5A99" />,
+    iconBg: '#F3EFFC',
+  },
+];
 
 type WelcomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Welcome'>;
 type Props = { navigation: WelcomeScreenNavigationProp };
 
 export default function WelcomeScreen({ navigation }: Props) {
-  return (
-    <AuthLayout title="Welcome" subtitle="Your maternal health companion, built with care.">
-      <View style={styles.content}>
-        {/* Feature Pills */}
-        <FadeSlideIn delay={300} duration={500} direction="down">
-          <View style={styles.features}>
-            <View style={styles.featurePill}>
-              <View style={[styles.featureIcon, { backgroundColor: '#E8F8F2' }]}>
-                <Heart size={18} color={theme.colors.primaryDark} strokeWidth={2.5} />
-              </View>
-              <View style={styles.featureTextGroup}>
-                <Typography variant="headline" color={theme.colors.textHigh} style={styles.featureTitle}>Track & Monitor</Typography>
-                <Typography variant="caption1" color="#636366">Log vitals, symptoms & baby growth</Typography>
-              </View>
-            </View>
+  const scrollX = useRef(new Animated.Value(0)).current;
+  const flatListRef = useRef<FlatList>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-            <View style={styles.featurePill}>
-              <View style={[styles.featureIcon, { backgroundColor: '#FFF0EF' }]}>
-                <Leaf size={18} color="#E07A5F" strokeWidth={2.5} />
-              </View>
-              <View style={styles.featureTextGroup}>
-                <Typography variant="headline" color={theme.colors.textHigh} style={styles.featureTitle}>Ghanaian Context</Typography>
-                <Typography variant="caption1" color="#636366">Local nutrition & ANC guidance</Typography>
-              </View>
-            </View>
+  const viewableItemsChanged = useRef(({ viewableItems }: any) => {
+    if (viewableItems && viewableItems.length > 0) {
+      setCurrentIndex(viewableItems[0].index);
+    }
+  }).current;
 
-            <View style={styles.featurePill}>
-              <View style={[styles.featureIcon, { backgroundColor: '#F3EFFC' }]}>
-                <Shield size={18} color="#8A5A99" strokeWidth={2.5} />
-              </View>
-              <View style={styles.featureTextGroup}>
-                <Typography variant="headline" color={theme.colors.textHigh} style={styles.featureTitle}>Works Offline</Typography>
-                <Typography variant="caption1" color="#636366">Syncs when you're back online</Typography>
-              </View>
-            </View>
+  const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
+
+  const scrollToNext = () => {
+    if (currentIndex < SLIDES.length - 1) {
+      flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
+    } else {
+      navigation.navigate('Auth');
+    }
+  };
+
+  const renderItem = ({ item }: { item: typeof SLIDES[0] }) => {
+    return (
+      <View style={styles.slide}>
+        <View style={styles.slideContent}>
+          <View style={[styles.iconWrapper, { backgroundColor: item.iconBg }]}>
+            {item.icon}
           </View>
-        </FadeSlideIn>
-
-        {/* CTA */}
-        <FadeSlideIn delay={600} duration={500} direction="up" style={styles.ctaSection}>
-          <TouchableOpacity onPress={() => navigation.navigate('Auth')} activeOpacity={0.8}>
-            <FadeSlideIn delay={700} direction="right">
-              <View style={styles.continueButton}>
-                <Typography variant="headline" style={styles.continueText}>Get Started</Typography>
-                <FadeSlideIn delay={900} zoom>
-                  <View style={styles.iconCircle}>
-                    <ArrowRight size={20} color="#FFF" strokeWidth={2.5} />
-                  </View>
-                </FadeSlideIn>
-              </View>
-            </FadeSlideIn>
-          </TouchableOpacity>
-        </FadeSlideIn>
+          <Typography variant="largeTitle" color="#000" style={styles.slideTitle}>
+            {item.title}
+          </Typography>
+          <Typography variant="body" color="#3A3A3C" style={styles.slideDescription}>
+            {item.description}
+          </Typography>
+        </View>
       </View>
-    </AuthLayout>
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      <BackgroundMesh />
+      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+        {/* Carousel */}
+        <Animated.FlatList
+          ref={flatListRef}
+          data={SLIDES}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          pagingEnabled
+          bounces={false}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+            { useNativeDriver: false }
+          )}
+          onViewableItemsChanged={viewableItemsChanged}
+          viewabilityConfig={viewConfig}
+          scrollEventThrottle={32}
+        />
+
+        {/* Footer Area */}
+        <View style={styles.footer}>
+          <View style={styles.pagination}>
+            {SLIDES.map((_, i) => {
+              const inputRange = [(i - 1) * width, i * width, (i + 1) * width];
+              const dotWidth = scrollX.interpolate({
+                inputRange,
+                outputRange: [8, 24, 8],
+                extrapolate: 'clamp',
+              });
+              const opacity = scrollX.interpolate({
+                inputRange,
+                outputRange: [0.3, 1, 0.3],
+                extrapolate: 'clamp',
+              });
+              return (
+                <Animated.View
+                  key={i.toString()}
+                  style={[styles.dot, { width: dotWidth, opacity }]}
+                />
+              );
+            })}
+          </View>
+
+          <BounceButton onPress={scrollToNext} style={styles.ctaButton}>
+            <View style={styles.ctaButtonInner}>
+              <Typography variant="headline" color="#FFF" style={styles.ctaText}>
+                {currentIndex === SLIDES.length - 1 ? "Get Started" : "Continue"}
+              </Typography>
+              {currentIndex === SLIDES.length - 1 && (
+                <View style={styles.ctaIcon}>
+                  <Ionicons name="arrow-forward" size={18} color="#000" />
+                </View>
+              )}
+            </View>
+          </BounceButton>
+        </View>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  content: {
-    justifyContent: 'space-between',
+  container: {
+    flex: 1,
+    backgroundColor: '#000',
   },
-  features: {
-    gap: 16,
-    marginTop: 8,
+  safeArea: {
+    flex: 1,
   },
-  featurePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)', // Translucent white pill over glass
-    borderRadius: 20,
-    padding: 16,
-    gap: 16,
-    // Refined subtle shadow
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.03,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  featureIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+  slide: {
+    width,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 32,
   },
-  featureTextGroup: {
+  slideContent: {
+    alignItems: 'center',
+    width: '100%',
+    paddingTop: height * 0.1, // Push content slightly up for balance
+  },
+  iconWrapper: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 48,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.1,
+    shadowRadius: 24,
+    elevation: 8,
+  },
+  slideTitle: {
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  slideDescription: {
+    textAlign: 'center',
+    paddingHorizontal: 16,
+    fontSize: 17, // iOS body size
+  },
+  footer: {
+    paddingHorizontal: 32,
+    paddingBottom: 24,
+    paddingTop: 16,
+  },
+  pagination: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 32,
+  },
+  dot: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#000',
+  },
+  ctaButton: {
+    backgroundColor: '#000',
+    width: '100%',
+    borderRadius: 32,
+    height: 64,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.2,
+    shadowRadius: 24,
+    elevation: 8,
+  },
+  ctaButtonInner: {
     flex: 1,
-    gap: 4,
-  },
-  featureTitle: {
-    fontSize: 16,
-    letterSpacing: -0.2,
-  },
-  ctaSection: {
-    alignItems: 'flex-end',
-    marginTop: 48,
-    paddingBottom: 8,
-  },
-  continueButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
-    paddingVertical: 10,
-    paddingLeft: 24,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)', // Stark black Apple CTA
-    borderRadius: 30,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    elevation: 6,
+    justifyContent: 'center',
+    gap: 12,
   },
-  continueText: {
-    color: '#FFF',
+  ctaText: {
     fontSize: 18,
     letterSpacing: 0.2,
   },
-  iconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)', // Glass over the black button
+  ctaIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FFF',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 6,
   },
 });
