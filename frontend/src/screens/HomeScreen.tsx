@@ -125,20 +125,22 @@ export default function HomeScreen({ navigation }: Props) {
 
   const actionButtons = [
     { id: 'checkin', label: 'Check-In', icon: <CheckCircle color="#fff" size={24} />, route: 'CheckIn', color: theme.colors.primary },
-    { id: 'symptoms', label: 'Symptoms', icon: <Heart color={theme.colors.textHigh} size={24} />, route: 'Tracker', color: '#fff' },
-    { id: 'ai', label: 'Bloom AI', icon: <MessageCircle color={theme.colors.textHigh} size={24} />, route: 'BloomAI', color: '#fff' },
-    { id: 'anc', label: 'ANC Visits', icon: <Calendar color={theme.colors.textHigh} size={24} />, route: 'ANCVisit', color: '#fff' },
+    { id: 'symptoms', label: 'Symptoms', icon: <Heart color={theme.colors.primaryDark} size={24} />, route: 'Tracker', color: theme.colors.surface },
+    { id: 'ai', label: 'Bloom AI', icon: <MessageCircle color={theme.colors.primaryDark} size={24} />, route: 'BloomAI', color: theme.colors.surface },
+    { id: 'anc', label: 'ANC Visits', icon: <Calendar color={theme.colors.primaryDark} size={24} />, route: 'ANCVisit', color: theme.colors.surface },
   ];
 
   const insights = [
-    { id: '1', title: 'Today\'s chance\nof symptoms', subtitle: 'View Insights', color: theme.colors.primaryLight, route: 'Insights' },
-    { id: '2', title: 'What makes you\nfeel loved?', subtitle: 'QUIZ', color: theme.colors.primaryDark, textLight: true, route: 'BloomAI' },
-    { id: '3', title: 'Nutrition Check', subtitle: 'Drink Water', color: '#F3E8FF', route: 'Tracker' },
+    { id: '1', title: 'Today\'s chance\nof symptoms', subtitle: 'View Insights', color: theme.colors.primaryLight, route: 'Tracker', textLight: false },
+    { id: '2', title: 'What makes you\nfeel loved?', subtitle: 'QUIZ', color: theme.colors.accentPurple, textLight: false, route: 'BloomAI' },
+    { id: '3', title: 'Nutrition Check', subtitle: 'Drink Water', color: theme.colors.accentPink, route: 'Tracker', textLight: false },
   ];
 
   return (
     <LinearGradient
-      colors={[theme.colors.surfaceVariant, theme.colors.surface, theme.colors.surfaceVariant]}
+      colors={[theme.colors.accentPink, theme.colors.primaryLight, theme.colors.background]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 0.6 }}
       style={styles.container}
     >
       <SafeAreaView edges={['top']} style={styles.safeArea}>
@@ -178,7 +180,7 @@ export default function HomeScreen({ navigation }: Props) {
             
             {/* 1. Pregnancy Status Card */}
             <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate('Trimester', { trimesterId: currentTrimester })}>
-              <Card style={styles.statusCard}>
+              <Card variant="glass" style={styles.statusCard}>
                 <View style={styles.statusHeader}>
                   <Typography variant="headline" color={theme.colors.primaryDark}>
                     {t('home.trimester')} {currentTrimester}
@@ -221,7 +223,7 @@ export default function HomeScreen({ navigation }: Props) {
             </TouchableOpacity>
 
             {/* 2. Quick Actions Grid Card */}
-            <Card style={styles.actionsCard}>
+            <Card variant="glass" style={styles.actionsCard}>
               <Typography variant="headline" color={theme.colors.textHigh} style={{ marginBottom: theme.spacing[4] }}>
                 {t('home.quickActions')}
               </Typography>
@@ -246,7 +248,7 @@ export default function HomeScreen({ navigation }: Props) {
             </Card>
 
             {/* 3. Daily Reflection Card */}
-            <Card style={styles.reflectionCard}>
+            <Card variant="glass" style={styles.reflectionCard}>
               <Typography variant="headline" color={theme.colors.primaryDark} style={{ marginBottom: theme.spacing[2] }}>
                 {t('home.dailyReflection')}
               </Typography>
