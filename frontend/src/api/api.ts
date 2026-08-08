@@ -4,19 +4,30 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // We rely on Expo's environment variables to prevent hardcoding server URLs in the codebase.
 // Define EXPO_PUBLIC_API_URL in a frontend/.env file.
+import Constants from 'expo-constants';
+
 const getBaseUrl = () => {
     if (process.env.EXPO_PUBLIC_API_URL) {
         return process.env.EXPO_PUBLIC_API_URL;
     }
     
-    // Fallback for local development if .env is missing
+    // Fallback for local development
     if (__DEV__) {
-        // Typically 10.0.2.2 for Android emulator, or your local machine's IP (e.g., 172.20.10.2)
-        // Since we know your IP is 172.20.10.2, we'll hardcode the fallback here so it works instantly
-        return 'http://172.20.10.2:8000';
+        // If testing on a physical device via Expo Go, this grabs your computer's local Wi-Fi IP automatically
+        const debuggerHost = Constants.expoConfig?.hostUri;
+        if (debuggerHost) {
+            const localhost = debuggerHost.split(':')[0];
+            return `http://${localhost}:8000`;
+        }
+        
+        // Emulators fallback
+        if (Platform.OS === 'android') {
+            return 'http://10.0.2.2:8000';
+        }
+        return 'http://127.0.0.1:8000';
     }
     
-    // Production fallback (should ideally be injected via EXPO_PUBLIC_API_URL in CI/CD)
+    // Production fallback
     return '';
 };
 
