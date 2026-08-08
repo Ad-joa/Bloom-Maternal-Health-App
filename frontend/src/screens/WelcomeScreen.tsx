@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
   },
   continueText: {
     fontFamily: theme.typography.families.bodyBold,
-    color: theme.colors.textDark || '#1A1A1A',
+    color: theme.colors.textHigh || '#1A1A1A',
     fontSize: 18,
     letterSpacing: 0.3,
   },
