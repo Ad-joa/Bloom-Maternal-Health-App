@@ -1,39 +1,66 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
 import { AuthLayout } from '../components/AuthLayout';
-import { ArrowRight } from 'lucide-react-native';
-import Animated, { FadeInDown, FadeInRight, ZoomIn } from 'react-native-reanimated';
+import { ArrowRight, Heart, Leaf, Shield } from 'lucide-react-native';
+import Animated, { FadeInDown, FadeInRight, FadeInUp, ZoomIn } from 'react-native-reanimated';
 
 type WelcomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Welcome'>;
+type Props = { navigation: WelcomeScreenNavigationProp };
 
-type Props = {
-  navigation: WelcomeScreenNavigationProp;
-};
+const { width } = Dimensions.get('window');
 
 export default function WelcomeScreen({ navigation }: Props) {
   return (
-    <AuthLayout title="Welcome" showWavyHeader={true}>
+    <AuthLayout title="Welcome" subtitle="Your maternal health companion, built with care." showWavyHeader={true}>
       <View style={styles.content}>
-        <Animated.View entering={FadeInDown.delay(200).springify().damping(12)}>
-          <Typography variant="body" color={theme.colors.textMedium} style={styles.subtitle}>
-            Your maternal health journey, seamlessly guided and supported every step of the way. Connect, track, and bloom.
-          </Typography>
+        {/* Feature Pills */}
+        <Animated.View entering={FadeInDown.delay(300).duration(500).springify().damping(14)} style={styles.features}>
+          <View style={styles.featurePill}>
+            <View style={[styles.featureIcon, { backgroundColor: '#E8F8F2' }]}>
+              <Heart size={16} color={theme.colors.primary} strokeWidth={2} />
+            </View>
+            <View style={styles.featureTextGroup}>
+              <Typography variant="footnote" color={theme.colors.textHigh} style={styles.featureTitle}>Track & Monitor</Typography>
+              <Typography variant="caption2" color="#8E8E93">Log vitals, symptoms & baby growth</Typography>
+            </View>
+          </View>
+
+          <View style={styles.featurePill}>
+            <View style={[styles.featureIcon, { backgroundColor: '#FFF0EF' }]}>
+              <Leaf size={16} color={theme.colors.accentPink} strokeWidth={2} />
+            </View>
+            <View style={styles.featureTextGroup}>
+              <Typography variant="footnote" color={theme.colors.textHigh} style={styles.featureTitle}>Ghanaian Context</Typography>
+              <Typography variant="caption2" color="#8E8E93">Local nutrition & ANC guidance</Typography>
+            </View>
+          </View>
+
+          <View style={styles.featurePill}>
+            <View style={[styles.featureIcon, { backgroundColor: '#F3EFFC' }]}>
+              <Shield size={16} color={theme.colors.accentPurple} strokeWidth={2} />
+            </View>
+            <View style={styles.featureTextGroup}>
+              <Typography variant="footnote" color={theme.colors.textHigh} style={styles.featureTitle}>Works Offline</Typography>
+              <Typography variant="caption2" color="#8E8E93">Syncs when you're back online</Typography>
+            </View>
+          </View>
         </Animated.View>
-        
-        <View style={styles.actionRow}>
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Animated.View entering={FadeInRight.delay(400).springify().damping(12)} style={styles.continueButton}>
-              <Typography variant="body" style={styles.continueText}>Continue</Typography>
-              <Animated.View entering={ZoomIn.delay(600).springify()} style={styles.iconCircle}>
+
+        {/* CTA */}
+        <Animated.View entering={FadeInUp.delay(600).duration(500).springify().damping(14)} style={styles.ctaSection}>
+          <TouchableOpacity onPress={() => navigation.navigate('Login')} activeOpacity={0.85}>
+            <Animated.View entering={FadeInRight.delay(700).springify().damping(12)} style={styles.continueButton}>
+              <Typography variant="body" style={styles.continueText}>Get Started</Typography>
+              <Animated.View entering={ZoomIn.delay(900).springify()} style={styles.iconCircle}>
                 <ArrowRight size={18} color="#FFF" strokeWidth={2.5} />
               </Animated.View>
             </Animated.View>
           </TouchableOpacity>
-        </View>
+        </Animated.View>
       </View>
     </AuthLayout>
   );
@@ -44,42 +71,64 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
   },
-  subtitle: {
-    lineHeight: 28,
-    marginBottom: theme.spacing[8],
-    fontSize: 16,
-    letterSpacing: 0.2,
+  features: {
+    gap: 12,
+    marginTop: 4,
   },
-  actionRow: {
+  featurePill: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
     alignItems: 'center',
-    marginTop: theme.spacing[6],
+    backgroundColor: '#F5F5F7',
+    borderRadius: 16,
+    padding: 16,
+    gap: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#E5E5EA',
+  },
+  featureIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  featureTextGroup: {
+    flex: 1,
+    gap: 2,
+  },
+  featureTitle: {
+    fontFamily: theme.typography.families.bodySemibold,
+    letterSpacing: 0.1,
+  },
+  ctaSection: {
+    alignItems: 'flex-end',
+    marginTop: 32,
+    paddingBottom: 16,
   },
   continueButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
-    paddingVertical: theme.spacing[2],
-    paddingLeft: theme.spacing[4],
+    paddingVertical: 8,
+    paddingLeft: 20,
   },
   continueText: {
-    fontFamily: theme.typography.families.bodyBold,
-    color: theme.colors.textHigh || '#1A1A1A',
+    fontFamily: theme.typography.families.bodySemibold,
+    color: theme.colors.textHigh,
     fontSize: 18,
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
   },
   iconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: theme.colors.accentPink,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: theme.colors.accentPink,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  }
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 8,
+  },
 });

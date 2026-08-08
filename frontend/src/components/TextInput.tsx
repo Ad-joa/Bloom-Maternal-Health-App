@@ -18,6 +18,22 @@ export const TextInput: React.FC<CustomTextInputProps> = ({
   style,
   ...props
 }) => {
+  // If containerStyle has flex:1, we are nested inside a custom input row.
+  // Strip the label, wrapper margin, and underline to act as a bare input.
+  const isNested = containerStyle && (containerStyle as any).flex === 1;
+
+  if (isNested) {
+    return (
+      <View style={[styles.nestedWrapper, containerStyle]}>
+        <RNTextInput
+          style={[styles.input, style]}
+          placeholderTextColor="#C7C7CC"
+          {...props}
+        />
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.wrapper, containerStyle]}>
       {label && (
@@ -29,7 +45,7 @@ export const TextInput: React.FC<CustomTextInputProps> = ({
         {leftIcon && <View style={styles.iconContainer}>{leftIcon}</View>}
         <RNTextInput
           style={[styles.input, style, leftIcon ? { paddingLeft: 8 } : null]}
-          placeholderTextColor="#B0B0B0"
+          placeholderTextColor="#C7C7CC"
           {...props}
         />
       </View>
@@ -45,6 +61,9 @@ export const TextInput: React.FC<CustomTextInputProps> = ({
 const styles = StyleSheet.create({
   wrapper: {
     marginBottom: theme.spacing[4],
+  },
+  nestedWrapper: {
+    justifyContent: 'center',
   },
   label: {
     marginBottom: theme.spacing[1],
@@ -72,9 +91,9 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: theme.typography.sizes.body,
-    fontFamily: theme.typography.families.bodyMedium,
+    fontFamily: theme.typography.families.bodyRegular,
     color: theme.colors.textHigh,
-    height: '100%',
+    paddingVertical: 0,
   },
   errorText: {
     marginTop: theme.spacing[1],
