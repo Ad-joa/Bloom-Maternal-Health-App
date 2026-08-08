@@ -31,9 +31,13 @@ export function evaluateSymptoms(symptoms: string[], userContext?: UserContext |
   // Danger signs requiring immediate medical attention
   const dangerSigns = [
     "severe bleeding", "heavy bleeding", "vaginal bleeding", "spotting",
-    "severe headache", "blurry vision", "convulsions", "fits",
-    "fever", "severe abdominal pain", "cramping", "reduced baby movement",
+    "convulsions", "fits", "fever", "severe abdominal pain", "cramping", "reduced baby movement",
     "water breaking early", "difficulty breathing", "chest pain"
+  ];
+
+  // Pre-Eclampsia specific red flags
+  const preEclampsiaSigns = [
+    "severe headache", "blurry vision", "high blood pressure", "high bp", "severe swelling"
   ];
 
   // Common mild symptoms
@@ -44,7 +48,15 @@ export function evaluateSymptoms(symptoms: string[], userContext?: UserContext |
   ];
 
   const hasDanger = symptomsLower.some(symptom => dangerSigns.some(danger => symptom.includes(danger)));
+  const hasPreEclampsia = symptomsLower.some(symptom => preEclampsiaSigns.some(danger => symptom.includes(danger)));
   const hasMild = symptomsLower.some(symptom => mildSymptoms.some(mild => symptom.includes(mild)));
+
+  if (hasPreEclampsia) {
+    return {
+      text: personalPrefix + "🚨 RED FLAG DETECTED (Pre-Eclampsia Risk): Your symptoms (severe headache, blurred vision, or high BP) are highly dangerous. Please go to the nearest CHPS compound or Hospital IMMEDIATELY.",
+      severity: 'danger'
+    };
+  }
 
   if (hasDanger) {
     return {
