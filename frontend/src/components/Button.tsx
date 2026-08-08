@@ -4,7 +4,8 @@ import {
   ActivityIndicator, 
   ViewStyle, 
   TextStyle,
-  PressableProps
+  PressableProps,
+  StyleProp
 } from 'react-native';
 import { theme } from '../theme/theme';
 import { Typography } from './Typography';
@@ -32,13 +33,13 @@ export const Button: React.FC<ButtonProps> = ({
 
   const isDisabled = disabled || loading;
 
-  const containerStyle: ViewStyle[] = [
+  const containerStyle: StyleProp<ViewStyle>[] = [
     styles.base,
-    isPrimary && styles.primary,
-    isSecondary && styles.secondary,
-    isTertiary && styles.tertiary,
-    isDisabled && styles.disabled,
-    style as ViewStyle,
+    isPrimary ? styles.primary : undefined,
+    isSecondary ? styles.secondary : undefined,
+    isTertiary ? styles.tertiary : undefined,
+    isDisabled ? styles.disabled : undefined,
+    style as StyleProp<ViewStyle>,
   ];
 
   let textColor = isPrimary ? theme.colors.surface : theme.colors.primary;

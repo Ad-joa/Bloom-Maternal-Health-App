@@ -7,8 +7,7 @@ import AdvisoryScreen from './src/screens/AdvisoryScreen';
 import DailyLogScreen from './src/screens/DailyLogScreen';
 import WelcomeScreen from './src/screens/WelcomeScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
-import LoginScreen from './src/screens/LoginScreen';
-import RegisterScreen from './src/screens/RegisterScreen';
+import AuthScreen from './src/screens/AuthScreen';
 import AnalysisScreen from './src/screens/AnalysisScreen';
 import BloomAIScreen from './src/screens/BloomAIScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
@@ -46,8 +45,7 @@ SplashScreen.preventAutoHideAsync();
 export type RootStackParamList = {
   Welcome: undefined;
   Onboarding: { user: any };
-  Login: undefined;
-  Register: undefined;
+  Auth: undefined;
   MainTabs: undefined;
   Trimester: { trimesterId: number };
   Advisory: undefined;
@@ -151,13 +149,8 @@ function Navigation() {
               options={{ headerShown: false }} 
             />
             <Stack.Screen 
-              name="Login" 
-              component={LoginScreen} 
-              options={{ headerShown: false }} 
-            />
-            <Stack.Screen 
-              name="Register" 
-              component={RegisterScreen} 
+              name="Auth" 
+              component={AuthScreen} 
               options={{ headerShown: false }} 
             />
             <Stack.Screen 
