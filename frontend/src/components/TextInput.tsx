@@ -7,12 +7,14 @@ export interface CustomTextInputProps extends TextInputProps {
   label?: string;
   error?: string;
   containerStyle?: ViewStyle;
+  leftIcon?: React.ReactNode;
 }
 
 export const TextInput: React.FC<CustomTextInputProps> = ({
   label,
   error,
   containerStyle,
+  leftIcon,
   style,
   ...props
 }) => {
@@ -24,9 +26,10 @@ export const TextInput: React.FC<CustomTextInputProps> = ({
         </Typography>
       )}
       <View style={[styles.inputContainer, error ? styles.inputError : null]}>
+        {leftIcon && <View style={styles.iconContainer}>{leftIcon}</View>}
         <RNTextInput
-          style={[styles.input, style]}
-          placeholderTextColor={theme.colors.textMedium}
+          style={[styles.input, style, leftIcon ? { paddingLeft: 8 } : null]}
+          placeholderTextColor="#B0B0B0"
           {...props}
         />
       </View>
@@ -48,22 +51,30 @@ const styles = StyleSheet.create({
     marginLeft: theme.spacing[1],
   },
   inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: 'transparent',
     borderBottomWidth: 1,
     borderBottomColor: '#EAEAEA',
     paddingHorizontal: theme.spacing[1],
-    paddingVertical: theme.spacing[2],
-    minHeight: 44,
+    paddingVertical: theme.spacing[1],
+    minHeight: 48,
+  },
+  iconContainer: {
     justifyContent: 'center',
+    alignItems: 'center',
+    width: 24,
   },
   inputError: {
     borderBottomColor: theme.colors.danger,
     backgroundColor: 'transparent',
   },
   input: {
+    flex: 1,
     fontSize: theme.typography.sizes.body,
     fontFamily: theme.typography.families.bodyMedium,
     color: theme.colors.textHigh,
+    height: '100%',
   },
   errorText: {
     marginTop: theme.spacing[1],
