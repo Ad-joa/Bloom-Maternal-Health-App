@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Defs, LinearGradient, Stop, Circle } from 'react-native-svg';
 import { theme } from '../theme/theme';
 import { Typography } from './Typography';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import { FadeSlideIn } from './FadeSlideIn';
 
 const { width, height } = Dimensions.get('window');
 
@@ -65,7 +65,7 @@ export const AuthLayout = ({ children, title, subtitle, showWavyHeader = true }:
             {showWavyHeader && <View style={{ height: height * 0.32 }} />}
             
             <View style={styles.contentCard}>
-              <Animated.View entering={FadeInDown.delay(100).duration(500).springify().damping(15)} style={styles.header}>
+              <FadeSlideIn delay={100} duration={500} direction="down" style={styles.header}>
                 <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.titleText}>
                   {title}
                 </Typography>
@@ -74,10 +74,10 @@ export const AuthLayout = ({ children, title, subtitle, showWavyHeader = true }:
                     {subtitle}
                   </Typography>
                 )}
-              </Animated.View>
-              <Animated.View entering={FadeInDown.delay(250).duration(500).springify().damping(15)}>
+              </FadeSlideIn>
+              <FadeSlideIn delay={250} duration={500} direction="down">
                 {children}
-              </Animated.View>
+              </FadeSlideIn>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>

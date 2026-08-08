@@ -9,7 +9,7 @@ import { Typography } from '../components/Typography';
 import { AuthLayout } from '../components/AuthLayout';
 import { loginUser } from '../api/api';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react-native';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import { FadeSlideIn } from '../components/FadeSlideIn';
 import { BounceButton } from '../components/BounceButton';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
@@ -28,15 +28,11 @@ export default function LoginScreen({ navigation }: Props) {
       setLoading(true);
       try {
         const response = await loginUser({ email, password });
-        if (response.user) {
-          if (!response.user.trimester || !response.user.due_date) {
-            navigation.navigate('Onboarding', { user: response.user });
-          } else {
-            login(response.user);
-          }
+        if (response && response.token) {
+          login(response.user);
         }
       } catch (error) {
-        console.error("Login failed", error);
+        console.error('Login failed', error);
       } finally {
         setLoading(false);
       }
@@ -44,11 +40,11 @@ export default function LoginScreen({ navigation }: Props) {
   };
 
   return (
-    <AuthLayout title="Sign in" subtitle="Welcome back to Bloom. Enter your details below.">
-      {/* Form Fields */}
+    <AuthLayout title="Sign In" subtitle="Welcome back. Let's continue your journey.">
       <View style={styles.form}>
+        {/* Email */}
         <View style={styles.inputGroup}>
-          <Typography variant="footnote" color="#8E8E93" style={styles.inputLabel}>Email</Typography>
+          <Typography variant="footnote" color="#8E8E93" style={styles.inputLabel}>Email Address</Typography>
           <View style={styles.inputRow}>
             <Mail size={18} color="#C7C7CC" strokeWidth={1.8} />
             <TextInput
@@ -62,6 +58,7 @@ export default function LoginScreen({ navigation }: Props) {
           </View>
         </View>
 
+        {/* Password */}
         <View style={styles.inputGroup}>
           <Typography variant="footnote" color="#8E8E93" style={styles.inputLabel}>Password</Typography>
           <View style={styles.inputRow}>
@@ -79,29 +76,27 @@ export default function LoginScreen({ navigation }: Props) {
           </View>
         </View>
 
-        {/* Options Row */}
+        {/* Remember & Forgot */}
         <View style={styles.optionsRow}>
-          <TouchableOpacity style={styles.checkboxRow} onPress={() => setRememberMe(!rememberMe)} activeOpacity={0.7}>
+          <TouchableOpacity onPress={() => setRememberMe(!rememberMe)} style={styles.rememberRow} activeOpacity={0.7}>
             <View style={[styles.checkbox, rememberMe && styles.checkboxActive]}>
               {rememberMe && <View style={styles.checkboxDot} />}
             </View>
-            <Typography variant="caption1" color="#636366" style={{ letterSpacing: 0.1 }}>Remember Me</Typography>
+            <Typography variant="footnote" color="#636366">Remember me</Typography>
           </TouchableOpacity>
           <TouchableOpacity activeOpacity={0.6}>
-            <Typography variant="caption1" color={theme.colors.accentPink} style={{ fontFamily: theme.typography.families.bodySemibold, letterSpacing: 0.1 }}>
-              Forgot Password?
-            </Typography>
+            <Typography variant="footnote" style={styles.forgotText}>Forgot password?</Typography>
           </TouchableOpacity>
         </View>
 
-        {/* Login Button */}
-        <BounceButton onPress={handleLogin} disabled={loading} style={styles.loginButton}>
-          <View style={styles.loginButtonInner}>
-            <Typography variant="headline" color="#FFFFFF" style={styles.loginButtonText}>
-              {loading ? 'Signing in...' : 'Login'}
+        {/* Sign In Button */}
+        <BounceButton onPress={handleLogin} disabled={loading} style={styles.signInButton}>
+          <View style={styles.signInButtonInner}>
+            <Typography variant="headline" color="#FFFFFF" style={styles.signInButtonText}>
+              {loading ? 'Signing in...' : 'Sign In'}
             </Typography>
             {!loading && (
-              <View style={styles.loginButtonArrow}>
+              <View style={styles.signInButtonArrow}>
                 <ArrowRight size={16} color={theme.colors.accentPink} strokeWidth={2.5} />
               </View>
             )}
@@ -130,7 +125,7 @@ export default function LoginScreen({ navigation }: Props) {
       </View>
 
       {/* Footer */}
-      <Animated.View entering={FadeInUp.delay(500).duration(400)} style={styles.footer}>
+      <FadeSlideIn delay={500} duration={400} direction="up" style={styles.footer}>
         <Typography variant="footnote" color="#8E8E93">
           Don't have an account?{' '}
         </Typography>
@@ -139,7 +134,7 @@ export default function LoginScreen({ navigation }: Props) {
             Sign up
           </Typography>
         </TouchableOpacity>
-      </Animated.View>
+      </FadeSlideIn>
     </AuthLayout>
   );
 }
@@ -177,24 +172,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: -4,
   },
-  checkboxRow: {
+  rememberRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
   checkbox: {
-    width: 18,
-    height: 18,
-    borderRadius: 5,
+    width: 20,
+    height: 20,
+    borderRadius: 6,
     borderWidth: 1.5,
     borderColor: '#D1D1D6',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F5F5F7',
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkboxActive: {
-    borderColor: theme.colors.accentPink,
     backgroundColor: theme.colors.accentPink,
+    borderColor: theme.colors.accentPink,
   },
   checkboxDot: {
     width: 8,
@@ -202,7 +197,11 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: '#FFFFFF',
   },
-  loginButton: {
+  forgotText: {
+    color: theme.colors.accentPink,
+    fontFamily: theme.typography.families.bodySemibold,
+  },
+  signInButton: {
     backgroundColor: theme.colors.accentPink,
     borderRadius: 16,
     height: 56,
@@ -213,19 +212,19 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 8,
   },
-  loginButtonInner: {
+  signInButtonInner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
     gap: 10,
   },
-  loginButtonText: {
+  signInButtonText: {
     fontFamily: theme.typography.families.bodySemibold,
     letterSpacing: 0.3,
     fontSize: 17,
   },
-  loginButtonArrow: {
+  signInButtonArrow: {
     width: 28,
     height: 28,
     borderRadius: 14,

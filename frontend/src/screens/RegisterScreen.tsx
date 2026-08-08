@@ -8,7 +8,7 @@ import { Typography } from '../components/Typography';
 import { AuthLayout } from '../components/AuthLayout';
 import { registerUser } from '../api/api';
 import { Mail, Lock, User, Eye, EyeOff, ArrowRight, Shield } from 'lucide-react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
+import { FadeSlideIn } from '../components/FadeSlideIn';
 import { BounceButton } from '../components/BounceButton';
 
 type RegisterScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Register'>;
@@ -151,7 +151,7 @@ export default function RegisterScreen({ navigation }: Props) {
       </View>
 
       {/* Footer */}
-      <Animated.View entering={FadeInUp.delay(500).duration(400)} style={styles.footer}>
+      <FadeSlideIn delay={500} duration={400} direction="up" style={styles.footer}>
         <Typography variant="footnote" color="#8E8E93">
           Already have an account?{' '}
         </Typography>
@@ -160,7 +160,7 @@ export default function RegisterScreen({ navigation }: Props) {
             Sign in
           </Typography>
         </TouchableOpacity>
-      </Animated.View>
+      </FadeSlideIn>
     </AuthLayout>
   );
 }
