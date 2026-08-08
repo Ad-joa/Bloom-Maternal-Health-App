@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Dimensions, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Path, Defs, LinearGradient, Stop } from 'react-native-svg';
+import Svg, { Path, Defs, LinearGradient, Stop, Circle } from 'react-native-svg';
 import { theme } from '../theme/theme';
 import { Typography } from './Typography';
 
@@ -42,9 +42,9 @@ const WavyHeader = () => {
           d="M0,40L48,61.3C96,83,192,125,288,125.3C384,125,480,83,576,50.7C672,19,768,-3,864,8C960,19,1056,61,1152,82.7C1248,104,1344,104,1392,104L1440,104" 
         />
         {/* Decorative Floating Bubbles */}
-        <Svg.Circle cx="120" cy="50" r="40" fill="rgba(255,255,255,0.15)" />
-        <Svg.Circle cx="850" cy="110" r="80" fill="rgba(255,255,255,0.1)" />
-        <Svg.Circle cx="1300" cy="40" r="60" fill="rgba(255,255,255,0.15)" />
+        <Circle cx="120" cy="50" r="40" fill="rgba(255,255,255,0.15)" />
+        <Circle cx="850" cy="110" r="80" fill="rgba(255,255,255,0.1)" />
+        <Circle cx="1300" cy="40" r="60" fill="rgba(255,255,255,0.15)" />
       </Svg>
     </View>
   );

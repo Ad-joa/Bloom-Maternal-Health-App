@@ -89,7 +89,7 @@ export default function LoginScreen({ navigation }: Props) {
           </View>
           <TouchableOpacity style={styles.socialButton}>
             <Apple size={22} color={theme.colors.textHigh} />
-            <Typography variant="bodyBold" color={theme.colors.textHigh} style={styles.socialText}>
+            <Typography variant="body" color={theme.colors.textHigh} style={[styles.socialText, { fontFamily: theme.typography.families.bodyBold }]}>
               Continue with Apple
             </Typography>
           </TouchableOpacity>
