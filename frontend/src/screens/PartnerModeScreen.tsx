@@ -7,7 +7,7 @@ import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { BounceButton } from '../components/BounceButton';
 import { X, Heart, Calendar, Droplets, Moon, Baby, Stethoscope } from 'lucide-react-native';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import { FadeSlideIn } from '../components/FadeSlideIn';
 
 const { width, height } = Dimensions.get('window');
 
@@ -53,7 +53,7 @@ export default function PartnerModeScreen({ navigation }: any) {
 
           <View style={styles.contentCard}>
             {/* Header Row */}
-            <Animated.View entering={FadeInDown.delay(100).duration(500).springify().damping(15)} style={styles.headerRow}>
+            <FadeSlideIn delay={100} duration={500} direction="down" style={styles.headerRow}>
               <View style={styles.headerText}>
                 <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.titleText}>
                   Family Dashboard
@@ -65,31 +65,33 @@ export default function PartnerModeScreen({ navigation }: any) {
               <BounceButton onPress={() => navigation.goBack()} scaleTo={0.85} style={styles.closeBtn}>
                 <X color={theme.colors.textMedium} size={20} strokeWidth={2} />
               </BounceButton>
-            </Animated.View>
+            </FadeSlideIn>
 
             {/* Stats Grid */}
-            <Animated.View entering={FadeInDown.delay(200).duration(500).springify().damping(15)} style={styles.grid}>
-              <Card style={styles.gridCard} variant="filled">
-                <View style={[styles.cardIcon, { backgroundColor: '#E8F8F2' }]}>
-                  <Calendar size={18} color={theme.colors.primary} strokeWidth={2} />
-                </View>
-                <Typography variant="caption1" color="#8E8E93" style={styles.cardLabel}>WEEK</Typography>
-                <Typography variant="largeTitle" color={theme.colors.primaryDark} style={styles.cardValue}>24</Typography>
-                <Typography variant="caption2" color="#AEAEB2">Trimester 2</Typography>
-              </Card>
+            <FadeSlideIn delay={200} duration={500} direction="down">
+              <View style={styles.grid}>
+                <Card style={styles.gridCard} variant="filled">
+                  <View style={[styles.cardIcon, { backgroundColor: '#E8F8F2' }]}>
+                    <Calendar size={18} color={theme.colors.primary} strokeWidth={2} />
+                  </View>
+                  <Typography variant="caption1" color="#8E8E93" style={styles.cardLabel}>WEEK</Typography>
+                  <Typography variant="largeTitle" color={theme.colors.primaryDark} style={styles.cardValue}>24</Typography>
+                  <Typography variant="caption2" color="#AEAEB2">Trimester 2</Typography>
+                </Card>
 
-              <Card style={styles.gridCard} variant="filled">
-                <View style={[styles.cardIcon, { backgroundColor: '#FFF0EF' }]}>
-                  <Baby size={18} color={theme.colors.accentPink} strokeWidth={2} />
-                </View>
-                <Typography variant="caption1" color="#8E8E93" style={styles.cardLabel}>BABY SIZE</Typography>
-                <Typography style={styles.babyEmoji}>🌽</Typography>
-                <Typography variant="caption2" color="#AEAEB2">Ear of Corn</Typography>
-              </Card>
-            </Animated.View>
+                <Card style={styles.gridCard} variant="filled">
+                  <View style={[styles.cardIcon, { backgroundColor: '#FFF0EF' }]}>
+                    <Baby size={18} color={theme.colors.accentPink} strokeWidth={2} />
+                  </View>
+                  <Typography variant="caption1" color="#8E8E93" style={styles.cardLabel}>BABY SIZE</Typography>
+                  <Typography style={styles.babyEmoji}>🌽</Typography>
+                  <Typography variant="caption2" color="#AEAEB2">Ear of Corn</Typography>
+                </Card>
+              </View>
+            </FadeSlideIn>
 
             {/* Vibe Card */}
-            <Animated.View entering={FadeInDown.delay(300).duration(500).springify().damping(15)}>
+            <FadeSlideIn delay={300} duration={500} direction="down">
               <Card style={styles.vibeCard} variant="elevated">
                 <View style={styles.vibeHeader}>
                   <View style={[styles.cardIcon, { backgroundColor: '#FFF8E1' }]}>
@@ -116,10 +118,10 @@ export default function PartnerModeScreen({ navigation }: any) {
                   </View>
                 </View>
               </Card>
-            </Animated.View>
+            </FadeSlideIn>
 
             {/* How to Support Section */}
-            <Animated.View entering={FadeInUp.delay(400).duration(500).springify().damping(15)}>
+            <FadeSlideIn delay={400} duration={500} direction="up">
               <Typography variant="footnote" color="#8E8E93" style={styles.sectionLabel}>HOW TO SUPPORT HER TODAY</Typography>
               <Card style={styles.supportCard} variant="elevated">
                 <SupportItem icon={<Droplets size={16} color="#007AFF" strokeWidth={2} />} bg="#EBF5FF" text="Make sure she is drinking plenty of water." />
@@ -128,14 +130,14 @@ export default function PartnerModeScreen({ navigation }: any) {
                 <View style={styles.supportDivider} />
                 <SupportItem icon={<Stethoscope size={16} color={theme.colors.primary} strokeWidth={2} />} bg="#E8F8F2" text="Remind her about the ANC visit next week." />
               </Card>
-            </Animated.View>
+            </FadeSlideIn>
 
             {/* Next Visit Card */}
-            <Animated.View entering={FadeInUp.delay(500).duration(500).springify().damping(15)}>
+            <FadeSlideIn delay={500} duration={500} direction="up">
               <Typography variant="footnote" color="#8E8E93" style={styles.sectionLabel}>NEXT HOSPITAL VISIT</Typography>
               <Card style={styles.visitCard} variant="elevated">
                 <View style={styles.visitRow}>
-                  <View style={[styles.visitDateBadge]}>
+                  <View style={styles.visitDateBadge}>
                     <Typography variant="title3" color="#FFF" style={styles.visitDay}>20</Typography>
                     <Typography variant="caption2" color="rgba(255,255,255,0.8)">OCT</Typography>
                   </View>
@@ -145,7 +147,7 @@ export default function PartnerModeScreen({ navigation }: any) {
                   </View>
                 </View>
               </Card>
-            </Animated.View>
+            </FadeSlideIn>
 
             {/* Bottom spacer */}
             <View style={{ height: 40 }} />

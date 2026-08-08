@@ -6,7 +6,7 @@ import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
 import { AuthLayout } from '../components/AuthLayout';
 import { ArrowRight, Heart, Leaf, Shield } from 'lucide-react-native';
-import Animated, { FadeInDown, FadeInRight, FadeInUp, ZoomIn } from 'react-native-reanimated';
+import { FadeSlideIn } from '../components/FadeSlideIn';
 
 type WelcomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Welcome'>;
 type Props = { navigation: WelcomeScreenNavigationProp };
@@ -18,49 +18,55 @@ export default function WelcomeScreen({ navigation }: Props) {
     <AuthLayout title="Welcome" subtitle="Your maternal health companion, built with care." showWavyHeader={true}>
       <View style={styles.content}>
         {/* Feature Pills */}
-        <Animated.View entering={FadeInDown.delay(300).duration(500).springify().damping(14)} style={styles.features}>
-          <View style={styles.featurePill}>
-            <View style={[styles.featureIcon, { backgroundColor: '#E8F8F2' }]}>
-              <Heart size={16} color={theme.colors.primary} strokeWidth={2} />
+        <FadeSlideIn delay={300} duration={500} direction="down">
+          <View style={styles.features}>
+            <View style={styles.featurePill}>
+              <View style={[styles.featureIcon, { backgroundColor: '#E8F8F2' }]}>
+                <Heart size={16} color={theme.colors.primary} strokeWidth={2} />
+              </View>
+              <View style={styles.featureTextGroup}>
+                <Typography variant="footnote" color={theme.colors.textHigh} style={styles.featureTitle}>Track & Monitor</Typography>
+                <Typography variant="caption2" color="#8E8E93">Log vitals, symptoms & baby growth</Typography>
+              </View>
             </View>
-            <View style={styles.featureTextGroup}>
-              <Typography variant="footnote" color={theme.colors.textHigh} style={styles.featureTitle}>Track & Monitor</Typography>
-              <Typography variant="caption2" color="#8E8E93">Log vitals, symptoms & baby growth</Typography>
-            </View>
-          </View>
 
-          <View style={styles.featurePill}>
-            <View style={[styles.featureIcon, { backgroundColor: '#FFF0EF' }]}>
-              <Leaf size={16} color={theme.colors.accentPink} strokeWidth={2} />
+            <View style={styles.featurePill}>
+              <View style={[styles.featureIcon, { backgroundColor: '#FFF0EF' }]}>
+                <Leaf size={16} color={theme.colors.accentPink} strokeWidth={2} />
+              </View>
+              <View style={styles.featureTextGroup}>
+                <Typography variant="footnote" color={theme.colors.textHigh} style={styles.featureTitle}>Ghanaian Context</Typography>
+                <Typography variant="caption2" color="#8E8E93">Local nutrition & ANC guidance</Typography>
+              </View>
             </View>
-            <View style={styles.featureTextGroup}>
-              <Typography variant="footnote" color={theme.colors.textHigh} style={styles.featureTitle}>Ghanaian Context</Typography>
-              <Typography variant="caption2" color="#8E8E93">Local nutrition & ANC guidance</Typography>
-            </View>
-          </View>
 
-          <View style={styles.featurePill}>
-            <View style={[styles.featureIcon, { backgroundColor: '#F3EFFC' }]}>
-              <Shield size={16} color={theme.colors.accentPurple} strokeWidth={2} />
-            </View>
-            <View style={styles.featureTextGroup}>
-              <Typography variant="footnote" color={theme.colors.textHigh} style={styles.featureTitle}>Works Offline</Typography>
-              <Typography variant="caption2" color="#8E8E93">Syncs when you're back online</Typography>
+            <View style={styles.featurePill}>
+              <View style={[styles.featureIcon, { backgroundColor: '#F3EFFC' }]}>
+                <Shield size={16} color={theme.colors.accentPurple} strokeWidth={2} />
+              </View>
+              <View style={styles.featureTextGroup}>
+                <Typography variant="footnote" color={theme.colors.textHigh} style={styles.featureTitle}>Works Offline</Typography>
+                <Typography variant="caption2" color="#8E8E93">Syncs when you're back online</Typography>
+              </View>
             </View>
           </View>
-        </Animated.View>
+        </FadeSlideIn>
 
         {/* CTA */}
-        <Animated.View entering={FadeInUp.delay(600).duration(500).springify().damping(14)} style={styles.ctaSection}>
+        <FadeSlideIn delay={600} duration={500} direction="up" style={styles.ctaSection}>
           <TouchableOpacity onPress={() => navigation.navigate('Login')} activeOpacity={0.85}>
-            <Animated.View entering={FadeInRight.delay(700).springify().damping(12)} style={styles.continueButton}>
-              <Typography variant="body" style={styles.continueText}>Get Started</Typography>
-              <Animated.View entering={ZoomIn.delay(900).springify()} style={styles.iconCircle}>
-                <ArrowRight size={18} color="#FFF" strokeWidth={2.5} />
-              </Animated.View>
-            </Animated.View>
+            <FadeSlideIn delay={700} direction="right">
+              <View style={styles.continueButton}>
+                <Typography variant="body" style={styles.continueText}>Get Started</Typography>
+                <FadeSlideIn delay={900} zoom>
+                  <View style={styles.iconCircle}>
+                    <ArrowRight size={18} color="#FFF" strokeWidth={2.5} />
+                  </View>
+                </FadeSlideIn>
+              </View>
+            </FadeSlideIn>
           </TouchableOpacity>
-        </Animated.View>
+        </FadeSlideIn>
       </View>
     </AuthLayout>
   );
