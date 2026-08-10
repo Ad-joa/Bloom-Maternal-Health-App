@@ -4,8 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
 import { BounceButton } from '../components/BounceButton';
-import { Send, Sparkles } from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { BackgroundMesh } from '../components/BackgroundMesh';
+import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 
 import { getAdvisory } from '../api/api';
 import { useAuth } from '../context/AuthContext';
@@ -69,7 +70,8 @@ export default function BloomAIScreen() {
   ];
 
   return (
-    <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.container}>
+    <View style={styles.container}>
+      <BackgroundMesh />
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <KeyboardAvoidingView 
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
@@ -132,7 +134,7 @@ export default function BloomAIScreen() {
             )}
           </ScrollView>
           
-          <View style={styles.inputArea}>
+          <BlurView intensity={80} tint="light" style={styles.inputArea}>
             {/* Suggested Prompts */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.promptsContainer}>
               {SUGGESTED_PROMPTS.map((prompt, index) => (
@@ -141,7 +143,7 @@ export default function BloomAIScreen() {
                   style={styles.promptChip} 
                   onPress={() => handlePromptPress(prompt)}
                 >
-                  <Sparkles size={14} color={theme.colors.primaryDark} style={{ marginRight: 6 }} />
+                  <Ionicons name="sparkles" size={14} color={theme.colors.primaryDark} style={{ marginRight: 6 }} />
                   <Typography variant="caption1" color={theme.colors.primaryDark}>{prompt}</Typography>
                 </BounceButton>
               ))}
@@ -164,13 +166,13 @@ export default function BloomAIScreen() {
                 style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
                 disabled={!inputText.trim()}
               >
-                <Send color="#fff" size={20} style={styles.sendIcon} />
+                <Ionicons name="send" color="#fff" size={20} style={styles.sendIcon} />
               </BounceButton>
             </View>
-          </View>
+          </BlurView>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -214,7 +216,9 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: theme.spacing[2],
@@ -240,7 +244,9 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 4,
   },
   bubbleAI: {
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255, 255, 255, 0.65)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.8)',
     borderBottomLeftRadius: 4,
   },
   loadingBubble: {
@@ -251,7 +257,7 @@ const styles = StyleSheet.create({
     padding: theme.spacing[4],
     paddingTop: theme.spacing[2],
     paddingBottom: Platform.OS === 'ios' ? theme.spacing[2] : theme.spacing[4],
-    backgroundColor: 'rgba(255,255,255,0.8)',
+    backgroundColor: 'transparent', // Handled by BlurView
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.05)',
   },
@@ -262,7 +268,7 @@ const styles = StyleSheet.create({
   },
   inputWrapper: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
     borderWidth: 1,
     borderColor: theme.colors.border,
     borderRadius: 24,

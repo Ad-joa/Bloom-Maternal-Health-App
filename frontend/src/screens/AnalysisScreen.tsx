@@ -3,11 +3,16 @@ import { View, StyleSheet, ScrollView } from 'react-native';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
-import { LineChart, CalendarHeart, TrendingUp } from 'lucide-react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { BackgroundMesh } from '../components/BackgroundMesh';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function AnalysisScreen() {
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <View style={styles.container}>
+      <BackgroundMesh />
+      <SafeAreaView edges={['top']} style={styles.safeArea}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <Typography variant="largeTitle" color={theme.colors.primaryDark}>
           Trends & Analysis
@@ -19,7 +24,7 @@ export default function AnalysisScreen() {
 
       <Card style={styles.vibeCard} variant="filled">
         <View style={styles.row}>
-          <TrendingUp color={theme.colors.success} size={28} />
+          <Ionicons name="trending-up" color={theme.colors.success} size={28} />
           <View style={{marginLeft: theme.spacing[4], flex: 1}}>
             <Typography variant="headline">Improving Trend</Typography>
             <Typography variant="subhead" color={theme.colors.textMedium}>
@@ -33,7 +38,7 @@ export default function AnalysisScreen() {
         Symptom History
       </Typography>
       
-      <Card style={styles.historyCard} variant="elevated">
+      <Card style={styles.historyCard} variant="glass">
         <View style={styles.historyRow}>
           <Typography variant="subhead" color={theme.colors.textMedium}>Yesterday, 2:30 PM</Typography>
           <View style={styles.tag}>
@@ -56,8 +61,8 @@ export default function AnalysisScreen() {
         </View>
       </Card>
 
-      <Card style={styles.placeholderCard} variant="outlined">
-        <LineChart color={theme.colors.textMedium} size={48} />
+      <Card style={styles.placeholderCard} variant="glass">
+        <Ionicons name="stats-chart" color={theme.colors.textMedium} size={48} />
         <Typography variant="headline" style={{marginTop: theme.spacing[4]}}>
           More Data Needed
         </Typography>
@@ -66,15 +71,22 @@ export default function AnalysisScreen() {
         </Typography>
       </Card>
       
-    </ScrollView>
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  scrollContent: {
     flexGrow: 1,
     padding: theme.spacing[5],
-    backgroundColor: theme.colors.surfaceVariant,
   },
   header: {
     marginBottom: theme.spacing[6],
