@@ -5,8 +5,8 @@ import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { BounceButton } from '../components/BounceButton';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Heart, MessageSquare, Plus } from 'lucide-react-native';
+import { BackgroundMesh } from '../components/BackgroundMesh';
+import { Ionicons } from '@expo/vector-icons';
 
 
 const MOCK_POSTS = [
@@ -57,7 +57,7 @@ export default function CommunityScreen() {
 
   const renderPost = ({ item, index }: { item: typeof MOCK_POSTS[0], index: number }) => (
     <View >
-      <Card style={styles.postCard}>
+      <Card variant="glass" style={styles.postCard}>
       <View style={styles.postHeader}>
         <View style={styles.avatar}>
           <Typography variant="headline" color="#fff">{item.author[0]}</Typography>
@@ -74,13 +74,13 @@ export default function CommunityScreen() {
 
       <View style={styles.postFooter}>
         <BounceButton style={styles.actionButton} onPress={() => toggleLike(item.id)}>
-          <Heart size={20} color={item.liked ? theme.colors.primaryDark : theme.colors.textMedium} fill={item.liked ? theme.colors.primaryDark : 'transparent'} />
+          <Ionicons name={item.liked ? "heart" : "heart-outline"} size={20} color={item.liked ? theme.colors.primaryDark : theme.colors.textMedium} />
           <Typography variant="subhead" color={item.liked ? theme.colors.primaryDark : theme.colors.textMedium} style={{ marginLeft: 6 }}>
             {item.likes}
           </Typography>
         </BounceButton>
         <BounceButton style={styles.actionButton}>
-          <MessageSquare size={20} color={theme.colors.textMedium} />
+          <Ionicons name="chatbubble-outline" size={20} color={theme.colors.textMedium} />
           <Typography variant="subhead" color={theme.colors.textMedium} style={{ marginLeft: 6 }}>
             {item.comments}
           </Typography>
@@ -91,7 +91,8 @@ export default function CommunityScreen() {
   );
 
   return (
-    <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.container}>
+    <View style={styles.container}>
+      <BackgroundMesh />
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         
         <View  style={styles.header}>
@@ -113,11 +114,11 @@ export default function CommunityScreen() {
 
         {/* Floating Action Button */}
         <BounceButton style={styles.fab}>
-          <Plus size={24} color="#fff" />
+          <Ionicons name="add" size={24} color="#fff" />
         </BounceButton>
 
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -153,7 +154,9 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: theme.spacing[3],
@@ -168,7 +171,7 @@ const styles = StyleSheet.create({
   postFooter: {
     flexDirection: 'row',
     borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
+    borderTopColor: 'rgba(255, 255, 255, 0.5)',
     paddingTop: theme.spacing[3],
     gap: theme.spacing[6],
   },

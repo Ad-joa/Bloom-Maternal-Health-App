@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Animated, Platform, FlatList, KeyboardAvoidingView, Switch, UIManager, LayoutAnimation, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
+import { BackgroundMesh } from '../components/BackgroundMesh';
+import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { useAuth } from '../context/AuthContext';
-import { Settings, Bell, CircleHelp, LogOut, ChevronRight, Lock, FileText, Calendar, Users } from 'lucide-react-native';
 import { scheduleDailyReminder } from '../utils/notifications';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -73,36 +74,37 @@ export default function ProfileScreen({ navigation }: any) {
   };
 
   const menuItems = [
-    { title: 'Personal Information', icon: <Settings size={20} color={theme.colors.textMedium} />, route: 'Profile' },
-    { title: 'ANC Visits', icon: <Calendar size={20} color={theme.colors.textMedium} />, route: 'ANCVisit' },
-    { title: 'Partner Mode', icon: <Users size={20} color={theme.colors.textMedium} />, route: 'PartnerMode' },
+    { title: 'Personal Information', icon: <Ionicons name="settings-sharp" size={20} color={theme.colors.textMedium} />, route: 'Profile' },
+    { title: 'ANC Visits', icon: <Ionicons name="calendar" size={20} color={theme.colors.textMedium} />, route: 'ANCVisit' },
+    { title: 'Partner Mode', icon: <Ionicons name="people" size={20} color={theme.colors.textMedium} />, route: 'PartnerMode' },
     { 
       title: 'Daily Reminders', 
-      icon: <Bell size={20} color={theme.colors.textMedium} />,
+      icon: <Ionicons name="notifications" size={20} color={theme.colors.textMedium} />,
       isToggle: false,
       onPress: () => navigation.navigate('Reminders')
     },
     { 
       title: 'App Lock (FaceID/TouchID)', 
-      icon: <Lock size={20} color={theme.colors.textMedium} />,
+      icon: <Ionicons name="lock-closed" size={20} color={theme.colors.textMedium} />,
       isToggle: true,
       value: biometricsEnabled,
       onToggle: toggleBiometrics
     },
-    { title: 'Help & Support', icon: <CircleHelp size={20} color={theme.colors.textMedium} />, route: 'Profile' },
+    { title: 'Help & Support', icon: <Ionicons name="help-circle" size={20} color={theme.colors.textMedium} />, route: 'Profile' },
   ];
 
   return (
-    <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.container}>
+    <View style={styles.container}>
+      <BackgroundMesh />
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
       <View style={styles.profileHeader}>
-        <View style={styles.avatarLarge}>
+        <BlurView intensity={80} tint="light" style={styles.avatarLarge}>
           <Typography variant="largeTitle" color={theme.colors.primaryDark}>
             {user?.name ? user.name[0].toUpperCase() : 'B'}
           </Typography>
-        </View>
+        </BlurView>
         <Typography variant="title2" style={styles.name}>{user?.name || 'Bloom User'}</Typography>
         <Typography variant="body" color={theme.colors.textMedium}>{user?.email || 'user@example.com'}</Typography>
       </View>
@@ -112,7 +114,7 @@ export default function ProfileScreen({ navigation }: any) {
           ACCOUNT
         </Typography>
 
-        <Card style={styles.menuCard}>
+        <Card variant="glass" style={styles.menuCard}>
           {menuItems.map((item, index) => (
             <TouchableOpacity
               key={item.title}
@@ -134,7 +136,7 @@ export default function ProfileScreen({ navigation }: any) {
                   thumbColor="#fff"
                 />
               ) : (
-                <ChevronRight size={20} color={theme.colors.textMedium} />
+                <Ionicons name="chevron-forward" size={20} color={theme.colors.textMedium} />
               )}
             </TouchableOpacity>
           ))}
@@ -145,22 +147,22 @@ export default function ProfileScreen({ navigation }: any) {
         <Typography variant="subhead" color={theme.colors.textMedium} style={styles.sectionLabel}>
           MEDICAL
         </Typography>
-        <Card style={styles.menuCard}>
+        <Card variant="glass" style={styles.menuCard}>
           <TouchableOpacity style={styles.menuItem} onPress={handleExportPDF}>
             <View style={styles.menuItemLeft}>
-              <FileText size={20} color={theme.colors.primaryDark} />
+              <Ionicons name="document-text" size={20} color={theme.colors.primaryDark} />
               <Typography variant="body" color={theme.colors.primaryDark} style={styles.menuItemText}>
                 Export Medical Report (PDF)
               </Typography>
             </View>
-            <ChevronRight size={20} color={theme.colors.primaryDark} />
+            <Ionicons name="chevron-forward" size={20} color={theme.colors.primaryDark} />
           </TouchableOpacity>
         </Card>
       </View>
 
       <TouchableOpacity onPress={logout} style={styles.logoutButton}>
-        <Card style={styles.logoutCard}>
-          <LogOut size={20} color={theme.colors.danger} />
+        <Card variant="glass" style={styles.logoutCard}>
+          <Ionicons name="log-out" size={20} color={theme.colors.danger} />
           <Typography variant="body" color={theme.colors.danger} style={styles.logoutText}>
             Log Out
           </Typography>
@@ -169,7 +171,7 @@ export default function ProfileScreen({ navigation }: any) {
 
         </ScrollView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -192,7 +194,10 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: theme.colors.primaryLight,
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    overflow: 'hidden',
+    borderColor: 'rgba(255, 255, 255, 0.6)',
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: theme.spacing[4],
@@ -216,7 +221,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: theme.spacing[4],
-    backgroundColor: theme.colors.surface,
+    backgroundColor: 'transparent',
   },
   menuItemBorder: {
     borderBottomWidth: 1,

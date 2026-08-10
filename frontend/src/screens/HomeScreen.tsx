@@ -8,8 +8,8 @@ import { useAuth } from '../context/AuthContext';
 import { Typography } from '../components/Typography';
 import { BounceButton } from '../components/BounceButton';
 import { Card } from '../components/Card';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Droplet, Heart, CheckCircle, MessageCircle, Calendar, ChevronRight } from 'lucide-react-native';
+import { BackgroundMesh } from '../components/BackgroundMesh';
+import { Ionicons } from '@expo/vector-icons';
 import { getDaysUntilDue, getWeeksPregnant, getCurrentTrimester } from '../utils/dateUtils';
 
 const { width } = Dimensions.get('window');
@@ -124,10 +124,10 @@ export default function HomeScreen({ navigation }: Props) {
   }, []);
 
   const actionButtons = [
-    { id: 'checkin', label: 'Check-In', icon: <CheckCircle color="#fff" size={24} />, route: 'CheckIn', color: theme.colors.primary },
-    { id: 'symptoms', label: 'Symptoms', icon: <Heart color={theme.colors.primaryDark} size={24} />, route: 'Tracker', color: theme.colors.surface },
-    { id: 'ai', label: 'Bloom AI', icon: <MessageCircle color={theme.colors.primaryDark} size={24} />, route: 'BloomAI', color: theme.colors.surface },
-    { id: 'anc', label: 'ANC Visits', icon: <Calendar color={theme.colors.primaryDark} size={24} />, route: 'ANCVisit', color: theme.colors.surface },
+    { id: 'checkin', label: 'Check-In', icon: <Ionicons name="checkmark-circle" color="#fff" size={24} />, route: 'CheckIn', color: theme.colors.primary },
+    { id: 'symptoms', label: 'Symptoms', icon: <Ionicons name="heart" color={theme.colors.primaryDark} size={24} />, route: 'Tracker', color: theme.colors.surface },
+    { id: 'ai', label: 'Bloom AI', icon: <Ionicons name="chatbubble" color={theme.colors.primaryDark} size={24} />, route: 'BloomAI', color: theme.colors.surface },
+    { id: 'anc', label: 'ANC Visits', icon: <Ionicons name="calendar" color={theme.colors.primaryDark} size={24} />, route: 'ANCVisit', color: theme.colors.surface },
   ];
 
   const insights = [
@@ -137,12 +137,8 @@ export default function HomeScreen({ navigation }: Props) {
   ];
 
   return (
-    <LinearGradient
-      colors={[theme.colors.accentPink, theme.colors.primaryLight, theme.colors.background]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 0.6 }}
-      style={styles.container}
-    >
+    <View style={styles.container}>
+      <BackgroundMesh />
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
           
@@ -157,7 +153,7 @@ export default function HomeScreen({ navigation }: Props) {
               <Typography variant="headline" color={theme.colors.textHigh} style={{ marginRight: 8 }}>
                 {today.toLocaleDateString('en-US', { day: 'numeric', month: 'long' })}
               </Typography>
-              <Calendar color={theme.colors.textHigh} size={20} />
+              <Ionicons name="calendar" color={theme.colors.textHigh} size={20} />
             </View>
           </View>
 
@@ -185,7 +181,7 @@ export default function HomeScreen({ navigation }: Props) {
                   <Typography variant="headline" color={theme.colors.primaryDark}>
                     {t('home.trimester')} {currentTrimester}
                   </Typography>
-                  <ChevronRight size={20} color={theme.colors.primaryDark} />
+                  <Ionicons name="chevron-forward" size={20} color={theme.colors.primaryDark} />
                 </View>
 
                 {dueDate ? (
@@ -287,7 +283,7 @@ export default function HomeScreen({ navigation }: Props) {
 
         </ScrollView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
