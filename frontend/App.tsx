@@ -20,9 +20,8 @@ import CheckInScreen from './src/screens/CheckInScreen';
 import { BiometricGate } from './src/components/BiometricGate';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Home, LineChart, MessageCircle, Calendar, Users, Menu } from 'lucide-react-native';
-import { BlurView } from 'expo-blur';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { theme } from './src/theme/theme';
 import * as Font from 'expo-font';
@@ -74,45 +73,52 @@ function MainTabs() {
     <Tab.Navigator
       screenOptions={({ route, navigation }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          if (route.name === 'Home') return <Home size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
-          if (route.name === 'Analysis') return <LineChart size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
-          if (route.name === 'Community') return <Users size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
-          if (route.name === 'BloomAI') return <MessageCircle size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
-          if (route.name === 'Tracker') return <Calendar size={size} color={color} strokeWidth={focused ? 2.5 : 2} />;
-          return null;
+          let iconName: keyof typeof Ionicons.glyphMap = 'home';
+          if (route.name === 'Home') iconName = focused ? 'home' : 'home-outline';
+          if (route.name === 'Analysis') iconName = focused ? 'stats-chart' : 'stats-chart-outline';
+          if (route.name === 'Community') iconName = focused ? 'people' : 'people-outline';
+          if (route.name === 'BloomAI') iconName = focused ? 'chatbubble' : 'chatbubble-outline';
+          if (route.name === 'Tracker') iconName = focused ? 'calendar' : 'calendar-outline';
+          
+          return (
+            <View style={{
+              backgroundColor: focused ? theme.colors.primaryLight + '20' : 'transparent',
+              padding: 10,
+              borderRadius: 20,
+            }}>
+              <Ionicons name={iconName} size={24} color={color} />
+            </View>
+          );
         },
         tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: theme.colors.textMedium,
-        tabBarBackground: () => (
-          <BlurView tint="light" intensity={80} style={StyleSheet.absoluteFill} />
-        ),
+        tabBarInactiveTintColor: '#4B5563', // Dark gray for inactive icons on black background
+        tabBarShowLabel: false,
         tabBarStyle: {
           position: 'absolute',
-          backgroundColor: 'rgba(255, 255, 255, 0.65)',
+          backgroundColor: '#1C1C1E', // Black pill
+          bottom: 24,
+          left: 24,
+          right: 24,
+          height: 64,
+          borderRadius: 32,
           borderTopWidth: 0,
-          elevation: 0, // Remove elevation to let BlurView shine
-          shadowColor: theme.colors.primaryDark,
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 15,
-          paddingTop: 8,
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
+          elevation: 10, 
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 10 },
+          shadowOpacity: 0.2,
+          shadowRadius: 20,
+          paddingTop: 0, // Reset default top padding
+          paddingBottom: 0, // Center items vertically
         },
-        tabBarLabelStyle: {
-          fontFamily: theme.typography.families.bodyMedium,
-          fontSize: 10,
-          marginTop: 4,
-        },
-        headerStyle: { backgroundColor: '#fff', shadowOpacity: 0, elevation: 0 },
+        headerStyle: { backgroundColor: '#F8F9FA', shadowOpacity: 0, elevation: 0 },
         headerTintColor: theme.colors.textHigh,
         headerTitleStyle: { fontFamily: theme.typography.families.headingBold },
         headerRight: () => (
           <TouchableOpacity 
             style={{ marginRight: theme.spacing[4] }}
-            onPress={() => (navigation as any).navigate('Profile')} // We can make the profile screen hold the hamburger menu links
+            onPress={() => (navigation as any).navigate('Profile')}
           >
-            <Menu color={theme.colors.textHigh} size={24} />
+            <Ionicons name="menu" color={theme.colors.textHigh} size={24} />
           </TouchableOpacity>
         ),
       })}

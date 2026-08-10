@@ -6,26 +6,26 @@ import tokens from '../../design-tokens.json';
 
 export const theme = {
   colors: {
-    // Awwwards-level Pastel Palette
-    primary: '#8DD3C1',       // Monte Carlo
-    primaryLight: '#C8EAEB',  // Jagged Ice
-    primaryDark: '#6FB9A6',   // Slightly darker Monte Carlo
+    // Purple Neumorphic Palette
+    primary: '#C084FC',       // Vibrant Purple
+    primaryLight: '#E9D5FF',  // Light Purple
+    primaryDark: '#9333EA',   // Deep Purple
     
-    accentPink: '#F4C1BE',    // Mandys Pink
-    accentPurple: '#E8B5DB',  // Light Orchid
+    accentPink: '#F4C1BE',    // (kept for compatibility, though less used now)
+    accentPurple: '#C084FC',  
     
-    background: '#F7E3CF',    // Albescent White (Warm paper feel)
+    background: '#F8F9FA',    // Clean off-white
     
-    success: '#34C759',       // Apple Green
-    warning: '#FF9500',       // Apple Orange
-    danger: '#FF3B30',        // Apple Red
-    info: '#007AFF',          // Apple Blue
+    success: '#34C759',       
+    warning: '#FF9500',       
+    danger: '#FF3B30',        
+    info: '#007AFF',          
     
     surface: '#FFFFFF',       // Clean white cards
-    surfaceVariant: 'rgba(255, 255, 255, 0.6)', // For frosted glass overlays
-    textHigh: '#1C1C1E',      // Apple rich black
-    textMedium: '#636366',    // Apple deep system grey
-    border: 'rgba(0, 0, 0, 0.05)', // Ultra-subtle border
+    surfaceVariant: '#F3F4F6',// Light grey for tags/chips
+    textHigh: '#1C1C1E',      // Almost black
+    textMedium: '#9CA3AF',    // Soft grey
+    border: 'rgba(0, 0, 0, 0.05)', 
   },
   typography: {
     families: {
