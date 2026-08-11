@@ -95,7 +95,7 @@ export default function ProfileScreen({ navigation }: any) {
 
   return (
     <View style={styles.container}>
-      <BackgroundMesh />
+
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
@@ -178,13 +178,14 @@ export default function ProfileScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: theme.colors.background,
   },
   safeArea: {
     flex: 1,
   },
   scrollContent: {
     padding: theme.spacing[5],
-    paddingBottom: theme.spacing[8],
+    paddingBottom: 120, // Avoid bottom nav bar
   },
   profileHeader: {
     alignItems: 'center',

@@ -91,8 +91,14 @@ function MainTabs() {
           );
         },
         tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: '#4B5563', // Dark gray for inactive icons on black background
+        tabBarInactiveTintColor: '#9CA3AF', // Light gray for inactive icons to be visible on black
         tabBarShowLabel: false,
+        safeAreaInsets: { bottom: 0 },
+        tabBarItemStyle: {
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingVertical: 0,
+        },
         tabBarStyle: {
           position: 'absolute',
           backgroundColor: '#1C1C1E', // Black pill
@@ -107,8 +113,8 @@ function MainTabs() {
           shadowOffset: { width: 0, height: 10 },
           shadowOpacity: 0.2,
           shadowRadius: 20,
-          paddingTop: 0, // Reset default top padding
-          paddingBottom: 0, // Center items vertically
+          paddingBottom: 0, 
+          paddingTop: 0,
         },
         headerStyle: { backgroundColor: '#F8F9FA', shadowOpacity: 0, elevation: 0 },
         headerTintColor: theme.colors.textHigh,

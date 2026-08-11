@@ -21,6 +21,8 @@ export default function HomeScreen({ navigation }: Props) {
   const dueDate = user?.due_date || '';
   const weeksPregnant = dueDate ? getWeeksPregnant(dueDate) : 32; // Mocking 32 for the UI
   const daysUntilDue = dueDate ? getDaysUntilDue(dueDate) : 56; // Mocking 8 weeks left
+  
+  const today = new Date();
 
   return (
     <View style={styles.container}>
@@ -44,9 +46,19 @@ export default function HomeScreen({ navigation }: Props) {
                 </Typography>
               </View>
             </View>
-            <TouchableOpacity style={styles.iconButton}>
-              <Ionicons name="notifications-outline" size={22} color={theme.colors.textMedium} />
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={{ marginRight: 12, alignItems: 'flex-end' }}>
+                <Typography variant="footnote" color={theme.colors.textMedium}>
+                  {today.toLocaleDateString('en-US', { weekday: 'short' })}
+                </Typography>
+                <Typography variant="subhead" color={theme.colors.textHigh} style={{ fontFamily: theme.typography.families.headingBold }}>
+                  {today.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
+                </Typography>
+              </View>
+              <TouchableOpacity style={styles.iconButton}>
+                <Ionicons name="notifications-outline" size={22} color={theme.colors.textHigh} />
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Section Title & Controls */}
