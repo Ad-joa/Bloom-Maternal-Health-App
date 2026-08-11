@@ -8,7 +8,7 @@ import { Typography } from '../components/Typography';
 import { Ionicons } from '@expo/vector-icons';
 import { getWeeksPregnant, getDaysUntilDue } from '../utils/dateUtils';
 import { LineChart } from 'react-native-chart-kit';
-import { getSymptomLogs } from '../api/api';
+import { getSymptomLogs, getAncVisits } from '../api/api';
 
 const { width } = Dimensions.get('window');
 
@@ -26,10 +26,15 @@ export default function HomeScreen({ navigation }: Props) {
   const remainingWeeks = Math.ceil(daysUntilDue / 7);
   
   const [logs, setLogs] = React.useState<any[]>([]);
+  const [nextVisit, setNextVisit] = React.useState<any>(null);
+  
   React.useEffect(() => {
     if (user?.id) {
-      getSymptomLogs(user.id).then(data => {
-        setLogs(data || []);
+      getSymptomLogs(user.id).then(data => setLogs(data || []));
+      getAncVisits(user.id).then(data => {
+        const visits = data || [];
+        const upcoming = visits.find((v: any) => v.status === 'scheduled');
+        setNextVisit(upcoming);
       });
     }
   }, [user]);
@@ -261,7 +266,7 @@ export default function HomeScreen({ navigation }: Props) {
                 <Ionicons name="medical-outline" size={24} color={theme.colors.primary} />
               </View>
               <Typography variant="subhead" style={styles.actionTitle}>Next ANC Visit</Typography>
-              <Typography variant="caption1" color={theme.colors.textMedium}>Oct 12, 10:00 AM</Typography>
+              <Typography variant="caption1" color={theme.colors.textMedium}>{nextVisit ? `${nextVisit.date.split(' ')[0]}, ${nextVisit.time}` : 'Schedule Now'}</Typography>
             </TouchableOpacity>
 
             {/* Daily Check-In Card */}
