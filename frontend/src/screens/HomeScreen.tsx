@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Image } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Image, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { theme } from '../theme/theme';
@@ -22,6 +22,11 @@ export default function HomeScreen({ navigation }: Props) {
   const weeksPregnant = dueDate ? getWeeksPregnant(dueDate) : 32; // Fallback to 32
   const daysUntilDue = dueDate ? getDaysUntilDue(dueDate) : 56; // Fallback to 56 days
   const remainingWeeks = Math.ceil(daysUntilDue / 7);
+  
+  const hour = new Date().getHours();
+  let greeting = 'Good Evening,';
+  if (hour < 12) greeting = 'Good Morning,';
+  else if (hour < 18) greeting = 'Good Afternoon,';
   
   let currentTrimester = 1;
   if (weeksPregnant >= 13 && weeksPregnant <= 26) currentTrimester = 2;
@@ -128,35 +133,32 @@ export default function HomeScreen({ navigation }: Props) {
               </TouchableOpacity>
               <View style={styles.headerTextContainer}>
                 <Typography variant="caption1" color={theme.colors.textMedium}>
-                  Good Morning
+                  {greeting}
                 </Typography>
-                <Typography variant="headline" color={theme.colors.textHigh} style={styles.greeting}>
-                  Hello {user?.name ? user.name.split(' ')[0] : 'Mummy'}!
+                <Typography variant="title3" color={theme.colors.textHigh} style={{ fontFamily: theme.typography.families.headingBold }}>
+                  {user?.name ? user.name.split(' ')[0] : 'Mama'}
                 </Typography>
               </View>
             </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-
-              <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Reminders')}>
-                <Ionicons name="notifications-outline" size={22} color={theme.colors.textHigh} />
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Reminders')}>
+              <Ionicons name="notifications-outline" size={24} color={theme.colors.textHigh} />
+              <View style={styles.notificationDot} />
+            </TouchableOpacity>
           </View>
 
-          {/* Flo-style Calendar Strip */}
-          <View style={styles.calendarStrip}>
+          {/* Flo-Style Calendar Strip */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.calendarStrip}>
             {calendarDays.map((day, idx) => (
               <TouchableOpacity key={idx} style={[styles.calendarDay, day.isToday && styles.calendarDayActive]}>
-                <Typography variant="caption1" color={day.isToday ? '#fff' : theme.colors.textMedium} style={styles.calendarDayName}>
-                  {day.dayName[0]}
+                <Typography variant="caption1" color={day.isToday ? '#fff' : theme.colors.textMedium} style={{ fontFamily: theme.typography.families.bodySemibold }}>
+                  {day.dayName}
                 </Typography>
-                <Typography variant="subhead" color={day.isToday ? '#fff' : theme.colors.textHigh} style={styles.calendarDayNumber}>
+                <Typography variant="headline" color={day.isToday ? '#fff' : theme.colors.textHigh} style={{ marginTop: 4 }}>
                   {day.dayNumber}
                 </Typography>
-                {day.isToday && <View style={styles.calendarDot} />}
               </TouchableOpacity>
             ))}
-          </View>
+          </ScrollView>
 
           {/* Section Title & Controls */}
           <View style={styles.sectionHeader}>
@@ -202,6 +204,14 @@ export default function HomeScreen({ navigation }: Props) {
                 <Ionicons name="time-outline" size={14} color={theme.colors.textMedium} />
               </View>
             </View>
+          </View>
+
+          {/* Baby Size Fact */}
+          <View style={styles.babyFactCard}>
+            <Ionicons name="sparkles" size={18} color={theme.colors.primaryDark} style={{ marginRight: 8, marginTop: 2 }} />
+            <Typography variant="subhead" color={theme.colors.textHigh} style={{ flex: 1, lineHeight: 20 }}>
+              <Text style={{ fontFamily: theme.typography.families.headingBold }}>Week {weeksPregnant}:</Text> Your baby is the size of a squash! They are practicing opening and closing their eyes.
+            </Typography>
           </View>
 
           {/* Daily Focus Goal Widget */}
@@ -285,41 +295,36 @@ const styles = StyleSheet.create({
   headerTextContainer: {
     justifyContent: 'center',
   },
-  greeting: {
-    fontFamily: theme.typography.families.headingBold,
+  notificationDot: {
+    position: 'absolute',
+    top: 10,
+    right: 12,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#E91E63',
+    borderWidth: 1,
+    borderColor: '#F8F9FA',
   },
   calendarStrip: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing[5],
-    marginBottom: theme.spacing[4],
+    paddingHorizontal: theme.spacing[4],
+    paddingBottom: theme.spacing[4],
+    gap: theme.spacing[2],
   },
   calendarDay: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: 44,
-    height: 64,
-    borderRadius: 22,
-    backgroundColor: 'transparent',
+    paddingVertical: theme.spacing[2],
+    paddingHorizontal: theme.spacing[3],
+    borderRadius: theme.radii.md,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    minWidth: 54,
   },
   calendarDayActive: {
     backgroundColor: theme.colors.primary,
-    ...theme.shadows.medium,
-  },
-  calendarDayName: {
-    marginBottom: 4,
-    fontFamily: theme.typography.families.bodySemibold,
-  },
-  calendarDayNumber: {
-    fontFamily: theme.typography.families.headingBold,
-  },
-  calendarDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#fff',
-    position: 'absolute',
-    bottom: 6,
+    borderColor: theme.colors.primary,
   },
   iconButton: {
     width: 44,
@@ -398,6 +403,15 @@ const styles = StyleSheet.create({
   },
   floatingNumber: {
     fontFamily: theme.typography.families.headingBold,
+  },
+  babyFactCard: {
+    flexDirection: 'row',
+    backgroundColor: theme.colors.primaryLight + '30',
+    padding: theme.spacing[4],
+    borderRadius: theme.radii.lg,
+    marginHorizontal: theme.spacing[4],
+    marginBottom: theme.spacing[6],
+    alignItems: 'flex-start',
   },
   smallIconWrap: {
     position: 'absolute',
