@@ -46,7 +46,7 @@ export default function CommunityScreen() {
         };
       }
       return post;
-    });
+    }));
 
     // Send to backend for real-time broadcast
     socket.emit('toggle_like', id);
