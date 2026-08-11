@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { theme } from '../theme/theme';
@@ -7,8 +7,55 @@ import { Typography } from '../components/Typography';
 import { BackgroundMesh } from '../components/BackgroundMesh';
 import { X, Heart, Calendar, Droplets, Moon, Baby, Stethoscope } from 'lucide-react-native';
 import { FadeSlideIn } from '../components/FadeSlideIn';
+import { useAuth } from '../context/AuthContext';
+import { getPartnerSummary, getAncVisits } from '../api/api';
+import { getWeeksPregnant, getDaysUntilDue } from '../utils/dateUtils';
 
 export default function PartnerModeScreen({ navigation }: any) {
+  const { user } = useAuth();
+  const [summary, setSummary] = useState<any>(null);
+  const [nextVisit, setNextVisit] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      if (user?.id) {
+        try {
+          const [summaryData, visits] = await Promise.all([
+            getPartnerSummary(user.id),
+            getAncVisits(user.id)
+          ]);
+          setSummary(summaryData);
+          if (visits && visits.length > 0) {
+            setNextVisit(visits.find((v: any) => v.status === 'scheduled'));
+          }
+        } catch (e) {
+          console.error("Error loading partner mode data", e);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    loadData();
+  }, [user]);
+
+  const weeksPregnant = user?.due_date ? getWeeksPregnant(user.due_date) : 24;
+  
+  // Simple mock mapping for baby size based on weeks
+  const getBabySize = (weeks: number) => {
+    if (weeks < 13) return { emoji: '🍋', name: 'Lemon' };
+    if (weeks < 27) return { emoji: '🌽', name: 'Ear of Corn' };
+    return { emoji: '🍉', name: 'Watermelon' };
+  };
+  const babySize = getBabySize(weeksPregnant);
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
   return (
     <View style={styles.container}>
       <BackgroundMesh />
@@ -43,8 +90,8 @@ export default function PartnerModeScreen({ navigation }: any) {
                     <Calendar size={20} color={theme.colors.primaryDark} strokeWidth={2.5} />
                   </View>
                   <Typography variant="caption1" color="#636366" style={styles.cardLabel}>WEEK</Typography>
-                  <Typography style={styles.cardValue}>24</Typography>
-                  <Typography variant="caption2" color="#8E8E93">Trimester 2</Typography>
+                  <Typography style={styles.cardValue}>{weeksPregnant}</Typography>
+                  <Typography variant="caption2" color="#8E8E93">Trimester {user?.trimester || 2}</Typography>
                 </BlurView>
               </View>
 
@@ -54,8 +101,8 @@ export default function PartnerModeScreen({ navigation }: any) {
                     <Baby size={20} color="#E07A5F" strokeWidth={2.5} />
                   </View>
                   <Typography variant="caption1" color="#636366" style={styles.cardLabel}>BABY SIZE</Typography>
-                  <Typography style={styles.babyEmoji}>🌽</Typography>
-                  <Typography variant="caption2" color="#8E8E93">Ear of Corn</Typography>
+                  <Typography style={styles.babyEmoji}>{babySize.emoji}</Typography>
+                  <Typography variant="caption2" color="#8E8E93">{babySize.name}</Typography>
                 </BlurView>
               </View>
             </View>
@@ -74,18 +121,17 @@ export default function PartnerModeScreen({ navigation }: any) {
                   </Typography>
                 </View>
                 <View style={styles.vibeBody}>
-                  <Typography style={styles.vibeEmoji}>🙂</Typography>
+                  <Typography style={styles.vibeEmoji}>{summary?.emoji || '🙂'}</Typography>
                   <View style={styles.vibeTextWrap}>
                     <Typography variant="body" color="#3A3A3C" style={styles.vibeDesc}>
-                      She is feeling generally good today, though slightly fatigued.
+                      {summary?.vibe || 'She is feeling generally good today, though slightly fatigued.'}
                     </Typography>
                     <View style={styles.moodPillRow}>
-                      <View style={[styles.moodPill, { backgroundColor: 'rgba(232, 248, 242, 0.8)' }]}>
-                        <Typography variant="caption2" color={theme.colors.primaryDark}>Calm</Typography>
-                      </View>
-                      <View style={[styles.moodPill, { backgroundColor: 'rgba(255, 240, 239, 0.8)' }]}>
-                        <Typography variant="caption2" color="#E07A5F">Tired</Typography>
-                      </View>
+                      {summary?.tags?.map((tag: string, index: number) => (
+                        <View key={index} style={[styles.moodPill, { backgroundColor: index % 2 === 0 ? 'rgba(232, 248, 242, 0.8)' : 'rgba(255, 240, 239, 0.8)' }]}>
+                          <Typography variant="caption2" color={index % 2 === 0 ? theme.colors.primaryDark : "#E07A5F"}>{tag}</Typography>
+                        </View>
+                      ))}
                     </View>
                   </View>
                 </View>
@@ -98,11 +144,24 @@ export default function PartnerModeScreen({ navigation }: any) {
             <Typography variant="caption1" color="#8E8E93" style={styles.sectionLabel}>HOW TO SUPPORT HER TODAY</Typography>
             <View style={styles.cardWrapper}>
               <BlurView intensity={80} tint="light" style={styles.supportCard}>
-                <SupportItem icon={<Droplets size={18} color="#007AFF" strokeWidth={2.5} />} bg="rgba(235, 245, 255, 0.8)" text="Make sure she is drinking plenty of water." />
-                <View style={styles.supportDivider} />
-                <SupportItem icon={<Moon size={18} color="#AF52DE" strokeWidth={2.5} />} bg="rgba(243, 239, 252, 0.8)" text="Offer a gentle lower-back massage before bed." />
-                <View style={styles.supportDivider} />
-                <SupportItem icon={<Stethoscope size={18} color={theme.colors.primaryDark} strokeWidth={2.5} />} bg="rgba(232, 248, 242, 0.8)" text="Remind her about the ANC visit next week." />
+                {summary?.support_actions?.map((action: string, index: number) => {
+                  const icons = [
+                    <Droplets size={18} color="#007AFF" strokeWidth={2.5} />,
+                    <Moon size={18} color="#AF52DE" strokeWidth={2.5} />,
+                    <Heart size={18} color={theme.colors.primaryDark} strokeWidth={2.5} />
+                  ];
+                  const bgs = ["rgba(235, 245, 255, 0.8)", "rgba(243, 239, 252, 0.8)", "rgba(232, 248, 242, 0.8)"];
+                  return (
+                    <React.Fragment key={index}>
+                      <SupportItem 
+                        icon={icons[index % icons.length]} 
+                        bg={bgs[index % bgs.length]} 
+                        text={action} 
+                      />
+                      {index < summary.support_actions.length - 1 && <View style={styles.supportDivider} />}
+                    </React.Fragment>
+                  );
+                })}
               </BlurView>
             </View>
           </FadeSlideIn>
@@ -112,16 +171,22 @@ export default function PartnerModeScreen({ navigation }: any) {
             <Typography variant="caption1" color="#8E8E93" style={styles.sectionLabel}>NEXT HOSPITAL VISIT</Typography>
             <View style={styles.cardWrapper}>
               <BlurView intensity={80} tint="light" style={styles.visitCard}>
-                <View style={styles.visitRow}>
-                  <View style={styles.visitDateBadge}>
-                    <Typography variant="title3" color="#FFF" style={styles.visitDay}>20</Typography>
-                    <Typography variant="caption2" color="rgba(255,255,255,0.8)">OCT</Typography>
+                {nextVisit ? (
+                  <View style={styles.visitRow}>
+                    <View style={styles.visitDateBadge}>
+                      <Typography variant="title3" color="#FFF" style={styles.visitDay}>{nextVisit.date.split(' ')[0].replace(/[^0-9]/g, '') || nextVisit.date.split(' ')[0]}</Typography>
+                      <Typography variant="caption2" color="rgba(255,255,255,0.8)">{nextVisit.date.split(' ')[1] ? nextVisit.date.split(' ')[1].substring(0, 3).toUpperCase() : 'APP'}</Typography>
+                    </View>
+                    <View style={styles.visitInfo}>
+                      <Typography variant="headline" color={theme.colors.textHigh} style={{ fontSize: 17 }}>{nextVisit.date}, {nextVisit.time}</Typography>
+                      <Typography variant="footnote" color="#636366" style={{ marginTop: 4 }}>{nextVisit.doctor || 'Routine Checkup'}</Typography>
+                    </View>
                   </View>
-                  <View style={styles.visitInfo}>
-                    <Typography variant="headline" color={theme.colors.textHigh} style={{ fontSize: 17 }}>October 20th, 10:00 AM</Typography>
-                    <Typography variant="footnote" color="#636366" style={{ marginTop: 4 }}>Dr. Mensah at General Hospital</Typography>
-                  </View>
-                </View>
+                ) : (
+                   <View style={[styles.visitRow, {justifyContent: 'center'}]}>
+                      <Typography variant="body" color="#636366">No upcoming visits scheduled.</Typography>
+                   </View>
+                )}
               </BlurView>
             </View>
           </FadeSlideIn>
