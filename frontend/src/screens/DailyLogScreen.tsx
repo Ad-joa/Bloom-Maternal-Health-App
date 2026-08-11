@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, LayoutAnimation, Platform, UIManager } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, LayoutAnimation, Platform, UIManager, Alert, ActivityIndicator } from 'react-native';
+import { useAuth } from '../context/AuthContext';
+import { saveSymptomLog, getInsights } from '../api/api';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
@@ -44,13 +46,28 @@ const SYMPTOMS = [
   }
 ];
 
-export default function DailyLogScreen() {
+export default function DailyLogScreen({ navigation }: any) {
+  const { user } = useAuth();
+  
   // Track expanded accordion state
   const [expandedSymptom, setExpandedSymptom] = useState<string | null>(null);
   // Track selected intensities: { symptomId: optionId }
   const [selections, setSelections] = useState<Record<string, string>>({});
-  // Mock last logged date to show the 7-day nudge
-  const [daysSinceLastLog] = useState(8); 
+  
+  const [daysSinceLastLog, setDaysSinceLastLog] = useState(0); 
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (user?.id) {
+      getInsights(user.id)
+        .then(data => {
+          // If we have totalLogs > 0 we can assume they logged recently. 
+          // For now, if totalLogs is 0, we show a nudge.
+          if (data.totalLogs === 0) setDaysSinceLastLog(8);
+        })
+        .catch(console.error);
+    }
+  }, [user]);
 
   const toggleExpand = (id: string) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -70,13 +87,31 @@ export default function DailyLogScreen() {
     }, 300);
   };
 
-  const handleSave = () => {
-    // In a real app, we would save this to the DB with a timestamp
-    const logData = {
-      timestamp: new Date().toISOString(),
-      symptoms: selections
-    };
-    console.log("Saving log:", logData);
+  const handleSave = async () => {
+    if (Object.keys(selections).length === 0) {
+      Alert.alert("No symptoms selected", "Please select at least one symptom to log.");
+      return;
+    }
+
+    if (!user) {
+      Alert.alert("Error", "You must be logged in to save logs.");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      // Map selections to an array of strings e.g. ["headache: h1", "nausea: n2"]
+      const selectedArray = Object.entries(selections).map(([key, val]) => `${key}:${val}`);
+      
+      await saveSymptomLog(user.id, selectedArray.join(', '));
+      Alert.alert("Success", "Your symptom log has been saved securely.", [
+        { text: "OK", onPress: () => navigation.goBack() }
+      ]);
+    } catch (error) {
+      Alert.alert("Error", "Failed to save symptom log. It may have been saved offline.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -170,12 +205,13 @@ export default function DailyLogScreen() {
         })}
       </View>
 
-      <Button 
-        title="Save Log" 
-        onPress={handleSave}
-        disabled={Object.keys(selections).length === 0}
-        style={styles.saveButton}
-      />
+        <Button 
+          title="Save Daily Log" 
+          onPress={handleSave} 
+          variant="primary" 
+          disabled={isSaving}
+          style={styles.saveButton}
+        />
     </ScrollView>
   );
 }

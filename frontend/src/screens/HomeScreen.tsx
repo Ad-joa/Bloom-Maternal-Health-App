@@ -64,14 +64,7 @@ export default function HomeScreen({ navigation }: Props) {
               </View>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <View style={{ marginRight: 12, alignItems: 'flex-end' }}>
-                <Typography variant="footnote" color={theme.colors.textMedium}>
-                  {today.toLocaleDateString('en-US', { weekday: 'short' })}
-                </Typography>
-                <Typography variant="subhead" color={theme.colors.textHigh} style={{ fontFamily: theme.typography.families.headingBold }}>
-                  {today.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
-                </Typography>
-              </View>
+
               <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Reminders')}>
                 <Ionicons name="notifications-outline" size={22} color={theme.colors.textHigh} />
               </TouchableOpacity>
@@ -193,8 +186,8 @@ export default function HomeScreen({ navigation }: Props) {
 
             {/* Daily Check-In Card */}
             <TouchableOpacity activeOpacity={0.8} style={[styles.actionCard, {backgroundColor: '#fff'}]} onPress={() => navigation.navigate('CheckIn')}>
-              <View style={[styles.actionIconWrap, {backgroundColor: theme.colors.secondary + '20'}]}>
-                <Ionicons name="checkbox-outline" size={24} color={theme.colors.secondary} />
+              <View style={[styles.actionIconWrap, {backgroundColor: theme.colors.info + '20'}]}>
+                <Ionicons name="checkbox-outline" size={24} color={theme.colors.info} />
               </View>
               <Typography variant="subhead" style={styles.actionTitle}>Daily Check-In</Typography>
               <Typography variant="caption1" color={theme.colors.textMedium}>Log your vitals</Typography>

@@ -1,4 +1,5 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface User {
   id: number;
@@ -28,16 +29,46 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const login = (userData: User) => {
-    setUser(userData);
-    setIsAuthenticated(true);
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const storedUser = await AsyncStorage.getItem('@bloom_user');
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+          setIsAuthenticated(true);
+        }
+      } catch (e) {
+        console.error("Failed to load user from storage", e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadUser();
+  }, []);
+
+  const login = async (userData: User) => {
+    try {
+      await AsyncStorage.setItem('@bloom_user', JSON.stringify(userData));
+      setUser(userData);
+      setIsAuthenticated(true);
+    } catch (e) {
+      console.error("Failed to save user to storage", e);
+    }
   };
   
-  const logout = () => {
-    setUser(null);
-    setIsAuthenticated(false);
+  const logout = async () => {
+    try {
+      await AsyncStorage.removeItem('@bloom_user');
+      setUser(null);
+      setIsAuthenticated(false);
+    } catch (e) {
+      console.error("Failed to remove user from storage", e);
+    }
   };
+
+  if (isLoading) return null;
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
