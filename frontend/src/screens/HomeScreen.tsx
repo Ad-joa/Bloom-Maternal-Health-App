@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { theme } from '../theme/theme';
 import { useAuth } from '../context/AuthContext';
 import { Typography } from '../components/Typography';
-import { Ionicons } from '@expo/vector-icons';
+import { Apple, Flower, Activity, Heart, ChevronRight, Bell, ChevronDown, ArrowRight, Smile, Clock, Sparkles, Stethoscope, CheckSquare, HeartPulse } from 'lucide-react-native';
+import { FadeSlideIn } from '../components/FadeSlideIn';
 import { getWeeksPregnant, getDaysUntilDue } from '../utils/dateUtils';
 import { LineChart } from 'react-native-chart-kit';
 import { getSymptomLogs, getAncVisits } from '../api/api';
@@ -76,52 +77,52 @@ export default function HomeScreen({ navigation }: Props) {
       return (
         <TouchableOpacity activeOpacity={0.8} style={[styles.goalWidget, { backgroundColor: '#E8F5E9' }]} onPress={() => navigation.navigate('Advisory')}>
           <View style={[styles.goalIconWrap, { backgroundColor: theme.colors.success }]}>
-            <Ionicons name="nutrition" size={24} color="#fff" />
+            <Apple size={24} color="#fff" />
           </View>
           <View style={styles.goalTextWrap}>
             <Typography variant="caption1" color={theme.colors.success} style={{fontFamily: theme.typography.families.headingBold}}>DAILY FOCUS: HEALTHY DIET</Typography>
             <Typography variant="subhead" color={theme.colors.textHigh} style={{marginTop: 4}}>Remember your folic acid and stay hydrated today.</Typography>
           </View>
-          <Ionicons name="chevron-forward" size={20} color={theme.colors.success} />
+          <ChevronRight size={20} color={theme.colors.success} />
         </TouchableOpacity>
       );
     } else if (goal === "Manage Stress") {
       return (
         <TouchableOpacity activeOpacity={0.8} style={[styles.goalWidget, { backgroundColor: '#E3F2FD' }]} onPress={() => navigation.navigate('Advisory')}>
           <View style={[styles.goalIconWrap, { backgroundColor: theme.colors.info }]}>
-            <Ionicons name="flower" size={24} color="#fff" />
+            <Flower size={24} color="#fff" />
           </View>
           <View style={styles.goalTextWrap}>
             <Typography variant="caption1" color={theme.colors.info} style={{fontFamily: theme.typography.families.headingBold}}>DAILY FOCUS: MANAGE STRESS</Typography>
             <Typography variant="subhead" color={theme.colors.textHigh} style={{marginTop: 4}}>Take 5 deep breaths. You are doing great, mama.</Typography>
           </View>
-          <Ionicons name="chevron-forward" size={20} color={theme.colors.info} />
+          <ChevronRight size={20} color={theme.colors.info} />
         </TouchableOpacity>
       );
     } else if (goal === "Stay Active") {
       return (
         <TouchableOpacity activeOpacity={0.8} style={[styles.goalWidget, { backgroundColor: '#FFF3E0' }]} onPress={() => navigation.navigate('Advisory')}>
           <View style={[styles.goalIconWrap, { backgroundColor: theme.colors.warning }]}>
-            <Ionicons name="fitness" size={24} color="#fff" />
+            <Activity size={24} color="#fff" />
           </View>
           <View style={styles.goalTextWrap}>
             <Typography variant="caption1" color={theme.colors.warning} style={{fontFamily: theme.typography.families.headingBold}}>DAILY FOCUS: STAY ACTIVE</Typography>
             <Typography variant="subhead" color={theme.colors.textHigh} style={{marginTop: 4}}>Try a 10-minute safe prenatal stretch today.</Typography>
           </View>
-          <Ionicons name="chevron-forward" size={20} color={theme.colors.warning} />
+          <ChevronRight size={20} color={theme.colors.warning} />
         </TouchableOpacity>
       );
     } else if (goal === "Prepare for Birth") {
       return (
         <TouchableOpacity activeOpacity={0.8} style={[styles.goalWidget, { backgroundColor: '#FCE4EC' }]} onPress={() => navigation.navigate('Advisory')}>
           <View style={[styles.goalIconWrap, { backgroundColor: '#E91E63' }]}>
-            <Ionicons name="medkit" size={24} color="#fff" />
+            <Stethoscope size={24} color="#fff" />
           </View>
           <View style={styles.goalTextWrap}>
             <Typography variant="caption1" color="#E91E63" style={{fontFamily: theme.typography.families.headingBold}}>DAILY FOCUS: PREPARE FOR BIRTH</Typography>
             <Typography variant="subhead" color={theme.colors.textHigh} style={{marginTop: 4}}>Time to start reviewing your hospital bag checklist.</Typography>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#E91E63" />
+          <ChevronRight size={20} color="#E91E63" />
         </TouchableOpacity>
       );
     }
@@ -130,13 +131,13 @@ export default function HomeScreen({ navigation }: Props) {
     return (
       <TouchableOpacity activeOpacity={0.8} style={[styles.goalWidget, { backgroundColor: theme.colors.primaryLight + '40' }]} onPress={() => navigation.navigate('Profile')}>
         <View style={[styles.goalIconWrap, { backgroundColor: theme.colors.primary }]}>
-          <Ionicons name="heart" size={24} color="#fff" />
+          <Heart size={24} color="#fff" />
         </View>
         <View style={styles.goalTextWrap}>
           <Typography variant="caption1" color={theme.colors.primary} style={{fontFamily: theme.typography.families.headingBold}}>WELLNESS</Typography>
           <Typography variant="subhead" color={theme.colors.textHigh} style={{marginTop: 4}}>Set your primary pregnancy goal in your Profile.</Typography>
         </View>
-        <Ionicons name="chevron-forward" size={20} color={theme.colors.primary} />
+        <ChevronRight size={20} color={theme.colors.primary} />
       </TouchableOpacity>
     );
   };
@@ -176,7 +177,7 @@ export default function HomeScreen({ navigation }: Props) {
               </View>
             </View>
             <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Reminders')}>
-              <Ionicons name="notifications-outline" size={24} color={theme.colors.textHigh} />
+              <Bell size={24} color={theme.colors.textHigh} />
               <View style={styles.notificationDot} />
             </TouchableOpacity>
           </View>
@@ -203,10 +204,10 @@ export default function HomeScreen({ navigation }: Props) {
             <View style={styles.sectionControls}>
               <TouchableOpacity style={styles.dropdownButton} onPress={() => navigation.navigate('Trimester', { trimesterId: currentTrimester })}>
                 <Typography variant="subhead" color={theme.colors.textMedium} style={{marginRight: 4}}>Trimester</Typography>
-                <Ionicons name="chevron-down" size={16} color={theme.colors.textMedium} />
+                <ChevronDown size={16} color={theme.colors.textMedium} />
               </TouchableOpacity>
               <TouchableOpacity style={styles.arrowButton} onPress={() => navigation.navigate('Tracker')}>
-                <Ionicons name="arrow-forward" size={20} color="#fff" />
+                <ArrowRight size={20} color="#fff" />
               </TouchableOpacity>
             </View>
           </View>
@@ -226,7 +227,7 @@ export default function HomeScreen({ navigation }: Props) {
                 Completed{'\n'}Week
               </Typography>
               <View style={styles.smallIconWrap}>
-                <Ionicons name="happy-outline" size={14} color={theme.colors.textMedium} />
+                <Smile size={14} color={theme.colors.textMedium} />
               </View>
             </View>
 
@@ -236,14 +237,14 @@ export default function HomeScreen({ navigation }: Props) {
                 Remaining{'\n'}Week
               </Typography>
               <View style={styles.smallIconWrapTop}>
-                <Ionicons name="time-outline" size={14} color={theme.colors.textMedium} />
+                <Clock size={14} color={theme.colors.textMedium} />
               </View>
             </View>
           </View>
 
           {/* Baby Size Fact */}
           <View style={styles.babyFactCard}>
-            <Ionicons name="sparkles" size={18} color={theme.colors.primaryDark} style={{ marginRight: 8, marginTop: 2 }} />
+            <Sparkles size={18} color={theme.colors.primaryDark} style={{ marginRight: 8, marginTop: 2 }} />
             <Typography variant="subhead" color={theme.colors.textHigh} style={{ flex: 1, lineHeight: 20 }}>
               <Text style={{ fontFamily: theme.typography.families.headingBold }}>Week {weeksPregnant}:</Text> Your baby is the size of a squash! They are practicing opening and closing their eyes.
             </Typography>
@@ -263,7 +264,7 @@ export default function HomeScreen({ navigation }: Props) {
             {/* ANC Visit Card */}
             <TouchableOpacity activeOpacity={0.8} style={[styles.actionCard, {backgroundColor: '#fff'}]} onPress={() => navigation.navigate('ANCVisit')}>
               <View style={[styles.actionIconWrap, {backgroundColor: theme.colors.primaryLight + '20'}]}>
-                <Ionicons name="medical-outline" size={24} color={theme.colors.primary} />
+                <Stethoscope size={24} color={theme.colors.primary} />
               </View>
               <Typography variant="subhead" style={styles.actionTitle}>Next ANC Visit</Typography>
               <Typography variant="caption1" color={theme.colors.textMedium}>{nextVisit ? `${nextVisit.date.split(' ')[0]}, ${nextVisit.time}` : 'Schedule Now'}</Typography>
@@ -272,7 +273,7 @@ export default function HomeScreen({ navigation }: Props) {
             {/* Daily Check-In Card */}
             <TouchableOpacity activeOpacity={0.8} style={[styles.actionCard, {backgroundColor: '#fff'}]} onPress={() => navigation.navigate('CheckIn')}>
               <View style={[styles.actionIconWrap, {backgroundColor: theme.colors.info + '20'}]}>
-                <Ionicons name="checkbox-outline" size={24} color={theme.colors.info} />
+                <CheckSquare size={24} color={theme.colors.info} />
               </View>
               <Typography variant="subhead" style={styles.actionTitle}>Daily Check-In</Typography>
               <Typography variant="caption1" color={theme.colors.textMedium}>Log your vitals</Typography>
@@ -281,7 +282,7 @@ export default function HomeScreen({ navigation }: Props) {
             {/* Partner Mode Card */}
             <TouchableOpacity activeOpacity={0.8} style={[styles.actionCard, {backgroundColor: '#fff'}]} onPress={() => navigation.navigate('PartnerMode')}>
               <View style={[styles.actionIconWrap, {backgroundColor: theme.colors.success + '20'}]}>
-                <Ionicons name="heart-half-outline" size={24} color={theme.colors.success} />
+                <HeartPulse size={24} color={theme.colors.success} />
               </View>
               <Typography variant="subhead" style={styles.actionTitle}>Partner Mode</Typography>
               <Typography variant="caption1" color={theme.colors.textMedium}>Share journey</Typography>
@@ -330,6 +331,7 @@ export default function HomeScreen({ navigation }: Props) {
             />
           </View>
 
+                  </FadeSlideIn>
         </ScrollView>
       </SafeAreaView>
     </View>
