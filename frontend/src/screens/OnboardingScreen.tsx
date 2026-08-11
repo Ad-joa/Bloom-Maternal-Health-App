@@ -19,20 +19,16 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 type OnboardingScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Onboarding'>;
-type OnboardingScreenRouteProp = RouteProp<RootStackParamList, 'Onboarding'>;
-
 type Props = {
   navigation: OnboardingScreenNavigationProp;
-  route: OnboardingScreenRouteProp;
 };
 
 const TOTAL_STEPS = 8;
 
-export default function OnboardingScreen({ navigation, route }: Props) {
+export default function OnboardingScreen({ navigation }: Props) {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
-  const user = route.params?.user;
+  const { user, login } = useAuth();
 
   // Form State
   const [dueDate, setDueDate] = useState('');

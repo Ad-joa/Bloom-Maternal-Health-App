@@ -45,8 +45,8 @@ SplashScreen.preventAutoHideAsync();
 
 export type RootStackParamList = {
   Welcome: undefined;
-  Onboarding: { user: any };
   Auth: undefined;
+  Onboarding: undefined;
   MainTabs: undefined;
   Trimester: { trimesterId: number };
   Advisory: undefined;
@@ -150,7 +150,8 @@ function MainTabs() {
 }
 
 function Navigation() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const needsOnboarding = isAuthenticated && !user?.due_date;
 
   return (
     <NavigationContainer>
@@ -177,6 +178,9 @@ function Navigation() {
               component={AuthScreen}
               options={{ headerShown: false }}
             />
+          </>
+        ) : needsOnboarding ? (
+          <>
             <Stack.Screen
               name="Onboarding"
               component={OnboardingScreen}
