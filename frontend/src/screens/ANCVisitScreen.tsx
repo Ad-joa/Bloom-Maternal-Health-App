@@ -1,28 +1,68 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Modal, Alert } from 'react-native';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
-import { CheckCircle2, Clock, CalendarHeart } from 'lucide-react-native';
-
-const PAST_VISITS = [
-  { date: '12th Aug', notes: 'First Trimester Scan. Everything normal.' },
-  { date: '15th Sep', notes: 'Routine checkup. Blood pressure slightly high.' },
-];
-
-const NEXT_VISIT = {
-  date: '20th Oct',
-  time: '10:00 AM',
-  doctor: 'Dr. Mensah',
-};
+import { CheckCircle2, CalendarHeart, Plus } from 'lucide-react-native';
+import { useAuth } from '../context/AuthContext';
+import { getAncVisits, createAncVisit } from '../api/api';
+import { TextInput } from '../components/TextInput';
+import { Button } from '../components/Button';
 
 export default function ANCVisitScreen() {
+  const { user } = useAuth();
+  const [visits, setVisits] = useState<any[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  
+  // New Visit Form
+  const [newDate, setNewDate] = useState('');
+  const [newTime, setNewTime] = useState('');
+  const [newDoctor, setNewDoctor] = useState('');
+
+  const loadVisits = async () => {
+    if (user?.id) {
+      const data = await getAncVisits(user.id);
+      setVisits(data || []);
+    }
+  };
+
+  useEffect(() => {
+    loadVisits();
+  }, [user]);
+
+  const handleSaveVisit = async () => {
+    if (!newDate || !newTime) {
+      Alert.alert("Error", "Please provide at least a date and time.");
+      return;
+    }
+    try {
+      if (user?.id) {
+        await createAncVisit(user.id, { date: newDate, time: newTime, doctor: newDoctor });
+        setModalVisible(false);
+        setNewDate('');
+        setNewTime('');
+        setNewDoctor('');
+        loadVisits();
+      }
+    } catch (e) {
+      Alert.alert("Error", "Could not save visit.");
+    }
+  };
+
+  const nextVisit = visits.find(v => v.status === 'scheduled');
+  const pastVisits = visits.filter(v => v.status === 'completed' || v.status === 'scheduled'); // simplifying for UI
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
-        <Typography variant="largeTitle" color={theme.colors.primaryDark}>
-          Antenatal Care
-        </Typography>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+          <Typography variant="largeTitle" color={theme.colors.primaryDark}>
+            Antenatal Care
+          </Typography>
+          <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.addBtn}>
+            <Plus color="#fff" size={24} />
+          </TouchableOpacity>
+        </View>
         <Typography variant="body" color={theme.colors.textMedium} style={{marginTop: 8}}>
           Keep track of your hospital visits.
         </Typography>
@@ -31,15 +71,23 @@ export default function ANCVisitScreen() {
       <Typography variant="title3" style={styles.sectionTitle}>
         Next Appointment
       </Typography>
-      <Card style={styles.highlightCard} variant="filled">
-        <View style={styles.row}>
-          <CalendarHeart color={theme.colors.primaryDark} size={32} />
-          <View style={{marginLeft: theme.spacing[4]}}>
-            <Typography variant="headline" color={theme.colors.primaryDark}>{NEXT_VISIT.date} at {NEXT_VISIT.time}</Typography>
-            <Typography variant="subhead" color={theme.colors.primaryDark}>{NEXT_VISIT.doctor}</Typography>
+      {nextVisit ? (
+        <Card style={styles.highlightCard} variant="filled">
+          <View style={styles.row}>
+            <CalendarHeart color={theme.colors.primaryDark} size={32} />
+            <View style={{marginLeft: theme.spacing[4]}}>
+              <Typography variant="headline" color={theme.colors.primaryDark}>{nextVisit.date} at {nextVisit.time}</Typography>
+              <Typography variant="subhead" color={theme.colors.primaryDark}>{nextVisit.doctor || 'Routine Checkup'}</Typography>
+            </View>
           </View>
-        </View>
-      </Card>
+        </Card>
+      ) : (
+        <Card style={styles.card} variant="glass">
+          <Typography variant="body" color={theme.colors.textMedium} align="center">
+            No upcoming appointments scheduled.
+          </Typography>
+        </Card>
+      )}
 
       <Typography variant="title3" style={styles.sectionTitle}>
         Preparation Checklist
@@ -68,25 +116,77 @@ export default function ANCVisitScreen() {
         <Typography style={styles.bullet}>• Should I change my prenatal vitamins?</Typography>
       </Card>
 
-      <Typography variant="title3" style={styles.sectionTitle}>
+      <Typography variant="title3" style={[styles.sectionTitle, {marginTop: theme.spacing[6]}]}>
         Past Visits
       </Typography>
-      {PAST_VISITS.map((visit, idx) => (
-        <Card key={idx} style={styles.pastCard} variant="outlined">
+      
+      {pastVisits.length > 0 ? pastVisits.map((visit, index) => (
+        <Card key={index} style={styles.card} variant="glass">
           <View style={styles.row}>
-            <Clock size={16} color={theme.colors.textMedium} />
-            <Typography variant="headline" style={{marginLeft: 8}}>{visit.date}</Typography>
+            <View style={styles.dateCircle}>
+              <Typography variant="subhead" color={theme.colors.primaryDark}>{visit.date.split(' ')[0]}</Typography>
+            </View>
+            <View style={{marginLeft: theme.spacing[4], flex: 1}}>
+              <Typography variant="headline">{visit.doctor || 'Checkup'} - {visit.time}</Typography>
+              <Typography variant="caption1" color={theme.colors.textMedium}>{visit.notes || 'No notes available.'}</Typography>
+            </View>
           </View>
-          <Typography variant="body" color={theme.colors.textMedium} style={{marginTop: 8}}>
-            {visit.notes}
-          </Typography>
         </Card>
-      ))}
+      )) : (
+        <Typography variant="body" color={theme.colors.textMedium} align="center" style={{marginTop: 20}}>
+          No past visits recorded.
+        </Typography>
+      )}
+
+      {/* Add Visit Modal */}
+      <Modal visible={modalVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Typography variant="title3" style={{marginBottom: 16}}>Schedule Visit</Typography>
+            
+            <TextInput
+              placeholder="Date (e.g. 25th Nov)"
+              value={newDate}
+              onChangeText={setNewDate}
+            />
+            <TextInput
+              placeholder="Time (e.g. 10:00 AM)"
+              value={newTime}
+              onChangeText={setNewTime}
+            />
+            <TextInput
+              placeholder="Doctor (Optional)"
+              value={newDoctor}
+              onChangeText={setNewDoctor}
+            />
+            
+            <Button title="Save Appointment" onPress={handleSaveVisit} style={{marginTop: 16}} />
+            <Button title="Cancel" onPress={() => setModalVisible(false)} variant="secondary" style={{marginTop: 8}} />
+          </View>
+        </View>
+      </Modal>
+
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  addBtn: {
+    backgroundColor: theme.colors.primary,
+    padding: 8,
+    borderRadius: 20,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    padding: 24,
+  },
   container: {
     flexGrow: 1,
     padding: theme.spacing[5],
@@ -121,6 +221,14 @@ const styles = StyleSheet.create({
   },
   bullet: {
     marginBottom: theme.spacing[2],
+  },
+  dateCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: theme.colors.primaryLight + '40',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   pastCard: {
     marginBottom: theme.spacing[3],

@@ -7,6 +7,7 @@ import { getTrimesterData } from './data/trimester';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import { GoogleGenAI } from '@google/genai';
 
 dotenv.config();
 
@@ -16,51 +17,70 @@ const io = new Server(httpServer, {
   cors: { origin: '*' }
 });
 
+// Initialize Gemini Client
+// IMPORTANT: You must add GEMINI_API_KEY to your .env file
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || 'MISSING_KEY' });
+
 const prisma = new PrismaClient();
 
 app.use(cors());
 app.use(express.json());
 
-// In-memory mock posts for real-time demonstration
-let mockPosts = [
-  { id: '1', author: 'Sarah M.', week: 24, content: "Is anyone else experiencing wild cravings at week 24? I literally just ate pickles with peanut butter and it was the best thing ever.", likes: 12, comments: 4, liked: false },
-  { id: '2', author: 'Emily R.', week: 12, content: "Finally made it to the second trimester! The morning sickness is slowly fading away. Hang in there mamas! 🌸", likes: 45, comments: 8, liked: true },
-  { id: '3', author: 'Jessica T.', week: 36, content: "Hospital bag is packed! What is one thing you wish you packed but forgot?", likes: 8, comments: 15, liked: false }
-];
-
-io.on('connection', (socket) => {
+io.on('connection', async (socket) => {
   console.log(`Socket connected: ${socket.id}`);
 
-  // Send initial posts
-  socket.emit('init_posts', mockPosts);
+  // Send initial posts from database
+  try {
+    const posts = await prisma.community_posts.findMany({
+      orderBy: { created_at: 'desc' },
+      take: 50
+    });
+    // Add a dummy 'liked' field for the frontend UI state
+    const formattedPosts = posts.map(p => ({ ...p, liked: false }));
+    socket.emit('init_posts', formattedPosts);
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+  }
 
   // Handle toggling like
-  socket.on('toggle_like', (postId) => {
-    mockPosts = mockPosts.map(post => {
-      if (post.id === postId) {
-        return {
-          ...post,
-          liked: !post.liked,
-          likes: post.liked ? post.likes - 1 : post.likes + 1
-        };
-      }
-      return post;
-    });
-    // Broadcast the update to EVERYONE
-    io.emit('posts_updated', mockPosts);
+  socket.on('toggle_like', async (postId) => {
+    try {
+      await prisma.community_posts.update({
+        where: { id: postId },
+        data: { likes: { increment: 1 } } // Simplified: just increments for demo
+      });
+      
+      const posts = await prisma.community_posts.findMany({
+        orderBy: { created_at: 'desc' },
+        take: 50
+      });
+      const formattedPosts = posts.map(p => ({ ...p, liked: false }));
+      io.emit('posts_updated', formattedPosts);
+    } catch (error) {
+      console.error("Error toggling like:", error);
+    }
   });
 
   // Handle new post
-  socket.on('create_post', (post) => {
-    const newPost = {
-      ...post,
-      id: Math.random().toString(36).substr(2, 9),
-      likes: 0,
-      comments: 0,
-      liked: false,
-    };
-    mockPosts = [newPost, ...mockPosts];
-    io.emit('posts_updated', mockPosts);
+  socket.on('create_post', async (post) => {
+    try {
+      await prisma.community_posts.create({
+        data: {
+          author: post.author,
+          week: post.week,
+          content: post.content,
+        }
+      });
+      
+      const posts = await prisma.community_posts.findMany({
+        orderBy: { created_at: 'desc' },
+        take: 50
+      });
+      const formattedPosts = posts.map(p => ({ ...p, liked: false }));
+      io.emit('posts_updated', formattedPosts);
+    } catch (error) {
+      console.error("Error creating post:", error);
+    }
   });
 
   socket.on('disconnect', () => {
@@ -138,6 +158,7 @@ app.post('/advisory', async (req, res) => {
   try {
     const { symptoms, user_id } = req.body;
     let context = null;
+    let userDetails = "";
 
     if (user_id) {
       const user = await prisma.users.findUnique({ where: { id: user_id } });
@@ -147,11 +168,57 @@ app.post('/advisory', async (req, res) => {
           medical_conditions: user.medical_conditions,
           age: user.age
         };
+        
+        userDetails = `
+          The user's name is ${user.name || 'Mama'}.
+          She is currently in Trimester ${user.trimester || 'Unknown'}.
+          Her primary goal is: ${user.primary_goal || 'Healthy Pregnancy'}.
+          Medical conditions/history: ${user.medical_conditions || 'None'}.
+          Age: ${user.age || 'Unknown'}.
+        `;
       }
     }
 
-    const advice = evaluateSymptoms(symptoms, context);
-    res.json({ advice });
+    // Safety First: Use the local rules engine to detect critical danger signs immediately
+    const rulesResult = evaluateSymptoms(symptoms, context);
+    if (rulesResult.severity === 'danger') {
+      return res.json({ advice: rulesResult.text }); // Return immediately, do not wait for AI
+    }
+
+    // No danger detected. Ask Gemini for an empathetic, personalized response.
+    const systemInstruction = `
+      You are Bloom AI, a highly empathetic, expert maternal health assistant.
+      Your tone should be warm, reassuring, and professional. 
+      You are talking to a pregnant mother.
+      
+      Here is her profile:
+      ${userDetails}
+      
+      Instructions:
+      1. Provide helpful advice for the symptoms she describes.
+      2. Keep responses concise and easy to read (max 3-4 short paragraphs).
+      3. Always include a gentle disclaimer that you are an AI and she should consult her doctor if symptoms worsen.
+      4. Speak directly to her, and use her name if you know it.
+    `;
+
+    const userPrompt = Array.isArray(symptoms) ? symptoms.join(', ') : symptoms;
+
+    try {
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: userPrompt,
+        config: {
+          systemInstruction: systemInstruction,
+        }
+      });
+      
+      res.json({ advice: response.text });
+    } catch (aiError) {
+      console.error("Gemini API Error:", aiError);
+      // Fallback to rules engine if AI fails or key is missing
+      res.json({ advice: rulesResult.text });
+    }
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ detail: "Server error" });
@@ -296,6 +363,43 @@ app.get('/users/:user_id/logs', async (req, res) => {
     });
 
     res.json(logs);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ detail: "Server error" });
+  }
+});
+
+app.get('/users/:user_id/anc-visits', async (req, res) => {
+  try {
+    const user_id = parseInt(req.params.user_id);
+    const visits = await prisma.anc_visits.findMany({
+      where: { user_id },
+      orderBy: { created_at: 'desc' }
+    });
+    res.json(visits);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ detail: "Server error" });
+  }
+});
+
+app.post('/users/:user_id/anc-visits', async (req, res) => {
+  try {
+    const user_id = parseInt(req.params.user_id);
+    const { date, time, doctor, notes, status } = req.body;
+    
+    const visit = await prisma.anc_visits.create({
+      data: {
+        user_id,
+        date,
+        time,
+        doctor,
+        notes,
+        status: status || 'scheduled'
+      }
+    });
+
+    res.json(visit);
   } catch (error) {
     console.error(error);
     res.status(500).json({ detail: "Server error" });
