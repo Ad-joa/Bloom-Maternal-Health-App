@@ -21,7 +21,8 @@ import { BiometricGate } from './src/components/BiometricGate';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Home, Activity, Users, MessageCircle, CalendarDays } from 'lucide-react-native';
+import { StyleSheet, TouchableOpacity, View, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { theme } from './src/theme/theme';
 import * as Font from 'expo-font';
@@ -31,7 +32,7 @@ import { registerForPushNotificationsAsync } from './src/utils/notifications';
 import { initDatabase } from './src/utils/database';
 import { startSyncEngine } from './src/utils/SyncEngine';
 
-import { 
+import {
   useFonts,
   Montserrat_400Regular,
   Montserrat_500Medium,
@@ -68,59 +69,69 @@ export type MainTabParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
+function CustomTabBar({ state, navigation }: any) {
+  return (
+    <View style={{
+      position: 'absolute',
+      backgroundColor: '#1C1C1E',
+      bottom: Platform.OS === 'ios' ? 34 : 40,
+      left: 24,
+      right: 24,
+      height: 64,
+      borderRadius: 32,
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      alignItems: 'center',
+      elevation: 10,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.2,
+      shadowRadius: 20,
+    }}>
+      {state.routes.map((route: any, index: number) => {
+        const isFocused = state.index === index;
+        const onPress = () => {
+          const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+          if (!isFocused && !event.defaultPrevented) {
+             navigation.navigate(route.name);
+          }
+        };
+
+        let Icon = Home;
+        if (route.name === 'Home') Icon = Home;
+        if (route.name === 'Analysis') Icon = Activity;
+        if (route.name === 'Community') Icon = Users;
+        if (route.name === 'BloomAI') Icon = MessageCircle;
+        if (route.name === 'Tracker') Icon = CalendarDays;
+
+        return (
+          <TouchableOpacity key={route.key} onPress={onPress} activeOpacity={0.8} style={{
+            width: 44,
+            height: 44,
+            borderRadius: 22,
+            backgroundColor: isFocused ? 'rgba(192, 132, 252, 0.2)' : 'transparent',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+            <Icon size={24} color={isFocused ? theme.colors.primary : '#9CA3AF'} strokeWidth={isFocused ? 2.5 : 2} />
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
+
 function MainTabs() {
   return (
     <Tab.Navigator
+      tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={({ route, navigation }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap = 'home';
-          if (route.name === 'Home') iconName = focused ? 'home' : 'home-outline';
-          if (route.name === 'Analysis') iconName = focused ? 'stats-chart' : 'stats-chart-outline';
-          if (route.name === 'Community') iconName = focused ? 'people' : 'people-outline';
-          if (route.name === 'BloomAI') iconName = focused ? 'chatbubble' : 'chatbubble-outline';
-          if (route.name === 'Tracker') iconName = focused ? 'calendar' : 'calendar-outline';
-          
-          return (
-            <View style={{
-              backgroundColor: focused ? theme.colors.primaryLight + '20' : 'transparent',
-              padding: 10,
-              borderRadius: 20,
-            }}>
-              <Ionicons name={iconName} size={24} color={color} />
-            </View>
-          );
-        },
-        tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: '#9CA3AF', // Light gray for inactive icons to be visible on black
-        tabBarShowLabel: false,
-        safeAreaInsets: { bottom: 0 },
-        tabBarItemStyle: {
-          justifyContent: 'center',
-          alignItems: 'center',
-          paddingVertical: 0,
-        },
-        tabBarStyle: {
-          position: 'absolute',
-          backgroundColor: '#1C1C1E', // Black pill
-          bottom: 24,
-          left: 24,
-          right: 24,
-          height: 64,
-          borderRadius: 32,
-          borderTopWidth: 0,
-          elevation: 10, 
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 10 },
-          shadowOpacity: 0.2,
-          shadowRadius: 20,
-          paddingBottom: 0, 
-          paddingTop: 0,
-        },
+
         headerStyle: { backgroundColor: '#F8F9FA', shadowOpacity: 0, elevation: 0 },
         headerTintColor: theme.colors.textHigh,
         headerTitleStyle: { fontFamily: theme.typography.families.headingBold },
         headerRight: () => (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={{ marginRight: theme.spacing[4] }}
             onPress={() => (navigation as any).navigate('Profile')}
           >
@@ -140,10 +151,10 @@ function MainTabs() {
 
 function Navigation() {
   const { isAuthenticated } = useAuth();
-  
+
   return (
     <NavigationContainer>
-      <Stack.Navigator 
+      <Stack.Navigator
         screenOptions={{
           headerStyle: {
             backgroundColor: theme.colors.primary,
@@ -156,68 +167,68 @@ function Navigation() {
       >
         {!isAuthenticated ? (
           <>
-            <Stack.Screen 
-              name="Welcome" 
-              component={WelcomeScreen} 
-              options={{ headerShown: false }} 
+            <Stack.Screen
+              name="Welcome"
+              component={WelcomeScreen}
+              options={{ headerShown: false }}
             />
-            <Stack.Screen 
-              name="Auth" 
-              component={AuthScreen} 
-              options={{ headerShown: false }} 
+            <Stack.Screen
+              name="Auth"
+              component={AuthScreen}
+              options={{ headerShown: false }}
             />
-            <Stack.Screen 
-              name="Onboarding" 
-              component={OnboardingScreen} 
-              options={{ headerShown: false }} 
+            <Stack.Screen
+              name="Onboarding"
+              component={OnboardingScreen}
+              options={{ headerShown: false }}
             />
           </>
         ) : (
           <>
-            <Stack.Screen 
+            <Stack.Screen
               name="MainTabs" 
               component={MainTabs} 
-              options={{ headerShown: false }} 
+              options={{ headerShown: false, title: '' }}
             />
-            <Stack.Screen 
-              name="Trimester" 
-              component={TrimesterScreen} 
+            <Stack.Screen
+              name="Trimester"
+              component={TrimesterScreen}
               options={({ route }) => ({ title: `Trimester ${route.params.trimesterId}` })}
             />
-            <Stack.Screen 
-              name="Advisory" 
-              component={AdvisoryScreen} 
-              options={{ title: 'Health Advisory' }} 
+            <Stack.Screen
+              name="Advisory"
+              component={AdvisoryScreen}
+              options={{ title: 'Health Advisory' }}
             />
-            <Stack.Screen 
-              name="Profile" 
-              component={ProfileScreen} 
-              options={{ title: 'Profile' }} 
+            <Stack.Screen
+              name="Profile"
+              component={ProfileScreen}
+              options={{ title: 'Profile' }}
             />
-            <Stack.Screen 
-              name="Article" 
-              component={ArticleScreen} 
-              options={{ headerShown: false }} 
+            <Stack.Screen
+              name="Article"
+              component={ArticleScreen}
+              options={{ headerShown: false }}
             />
-            <Stack.Screen 
-              name="Reminders" 
-              component={RemindersScreen} 
-              options={{ title: 'Reminders' }} 
+            <Stack.Screen
+              name="Reminders"
+              component={RemindersScreen}
+              options={{ title: 'Reminders' }}
             />
-            <Stack.Screen 
-              name="ANCVisit" 
-              component={ANCVisitScreen} 
-              options={{ title: 'ANC Visits' }} 
+            <Stack.Screen
+              name="ANCVisit"
+              component={ANCVisitScreen}
+              options={{ title: 'ANC Visits' }}
             />
-            <Stack.Screen 
-              name="PartnerMode" 
-              component={PartnerModeScreen} 
-              options={{ title: 'Partner Mode', headerShown: false }} 
+            <Stack.Screen
+              name="PartnerMode"
+              component={PartnerModeScreen}
+              options={{ title: 'Partner Mode', headerShown: false }}
             />
-            <Stack.Screen 
-              name="CheckIn" 
-              component={CheckInScreen} 
-              options={{ title: 'Daily Check-In' }} 
+            <Stack.Screen
+              name="CheckIn"
+              component={CheckInScreen}
+              options={{ title: 'Daily Check-In' }}
             />
           </>
         )}
@@ -238,13 +249,13 @@ export default function App() {
           Montserrat_600SemiBold,
           Montserrat_700Bold,
         });
-        
+
         // Initialize SQLite Offline Database
         await initDatabase();
-        
+
         // Request notification permissions
         await registerForPushNotificationsAsync();
-        
+
       } catch (e) {
         console.warn(e);
       } finally {
@@ -254,7 +265,7 @@ export default function App() {
     }
 
     prepare();
-    
+
     // Start the Offline-First Sync Engine
     const unsubscribeSync = startSyncEngine();
 

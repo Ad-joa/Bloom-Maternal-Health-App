@@ -19,10 +19,27 @@ export default function HomeScreen({ navigation }: Props) {
   const { t } = useTranslation();
   
   const dueDate = user?.due_date || '';
-  const weeksPregnant = dueDate ? getWeeksPregnant(dueDate) : 32; // Mocking 32 for the UI
-  const daysUntilDue = dueDate ? getDaysUntilDue(dueDate) : 56; // Mocking 8 weeks left
+  const weeksPregnant = dueDate ? getWeeksPregnant(dueDate) : 32; // Fallback to 32
+  const daysUntilDue = dueDate ? getDaysUntilDue(dueDate) : 56; // Fallback to 56 days
+  const remainingWeeks = Math.ceil(daysUntilDue / 7);
+  
+  let currentTrimester = 1;
+  if (weeksPregnant >= 13 && weeksPregnant <= 26) currentTrimester = 2;
+  if (weeksPregnant >= 27) currentTrimester = 3;
   
   const today = new Date();
+  
+  // Generate 7 days around today for the calendar strip
+  const calendarDays = Array.from({ length: 7 }).map((_, i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() - 3 + i);
+    return {
+      date: d,
+      dayName: d.toLocaleDateString('en-US', { weekday: 'short' }),
+      dayNumber: d.getDate(),
+      isToday: i === 3,
+    };
+  });
 
   return (
     <View style={styles.container}>
@@ -55,10 +72,25 @@ export default function HomeScreen({ navigation }: Props) {
                   {today.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
                 </Typography>
               </View>
-              <TouchableOpacity style={styles.iconButton}>
+              <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Reminders')}>
                 <Ionicons name="notifications-outline" size={22} color={theme.colors.textHigh} />
               </TouchableOpacity>
             </View>
+          </View>
+
+          {/* Flo-style Calendar Strip */}
+          <View style={styles.calendarStrip}>
+            {calendarDays.map((day, idx) => (
+              <TouchableOpacity key={idx} style={[styles.calendarDay, day.isToday && styles.calendarDayActive]}>
+                <Typography variant="caption1" color={day.isToday ? '#fff' : theme.colors.textMedium} style={styles.calendarDayName}>
+                  {day.dayName[0]}
+                </Typography>
+                <Typography variant="subhead" color={day.isToday ? '#fff' : theme.colors.textHigh} style={styles.calendarDayNumber}>
+                  {day.dayNumber}
+                </Typography>
+                {day.isToday && <View style={styles.calendarDot} />}
+              </TouchableOpacity>
+            ))}
           </View>
 
           {/* Section Title & Controls */}
@@ -67,8 +99,8 @@ export default function HomeScreen({ navigation }: Props) {
               Pregnancy{'\n'}Journey
             </Typography>
             <View style={styles.sectionControls}>
-              <TouchableOpacity style={styles.dropdownButton}>
-                <Typography variant="subhead" color={theme.colors.textMedium} style={{marginRight: 4}}>Months</Typography>
+              <TouchableOpacity style={styles.dropdownButton} onPress={() => navigation.navigate('Trimester', { trimesterId: currentTrimester })}>
+                <Typography variant="subhead" color={theme.colors.textMedium} style={{marginRight: 4}}>Trimester</Typography>
                 <Ionicons name="chevron-down" size={16} color={theme.colors.textMedium} />
               </TouchableOpacity>
               <TouchableOpacity style={styles.arrowButton} onPress={() => navigation.navigate('Tracker')}>
@@ -97,7 +129,7 @@ export default function HomeScreen({ navigation }: Props) {
             </View>
 
             <View style={[styles.floatingCard, styles.cardBottomLeft]}>
-              <Typography variant="title2" style={styles.floatingNumber}>08</Typography>
+              <Typography variant="title2" style={styles.floatingNumber}>{remainingWeeks.toString().padStart(2, '0')}</Typography>
               <Typography variant="caption1" color={theme.colors.textMedium} style={{marginTop: -4}}>
                 Remaining{'\n'}Week
               </Typography>
@@ -110,7 +142,7 @@ export default function HomeScreen({ navigation }: Props) {
           {/* Symptoms Cards */}
           <View style={styles.symptomsRow}>
             {/* Purple Card */}
-            <View style={[styles.symptomCard, styles.symptomCardPurple]}>
+            <TouchableOpacity activeOpacity={0.8} style={[styles.symptomCard, styles.symptomCardPurple]} onPress={() => navigation.navigate('Analysis')}>
               <View style={styles.symptomIconWrap}>
                 <Ionicons name="snow-outline" size={20} color={theme.colors.primaryDark} />
               </View>
@@ -123,10 +155,10 @@ export default function HomeScreen({ navigation }: Props) {
                   Back pain
                 </Typography>
               </View>
-            </View>
+            </TouchableOpacity>
 
             {/* White Card */}
-            <View style={[styles.symptomCard, styles.symptomCardWhite]}>
+            <TouchableOpacity activeOpacity={0.8} style={[styles.symptomCard, styles.symptomCardWhite]} onPress={() => navigation.navigate('Analysis')}>
               <View style={[styles.symptomIconWrap, {backgroundColor: '#F8F9FA'}]}>
                 <Ionicons name="fitness-outline" size={20} color={theme.colors.textMedium} />
               </View>
@@ -139,8 +171,45 @@ export default function HomeScreen({ navigation }: Props) {
                   Fatigue
                 </Typography>
               </View>
-            </View>
+            </TouchableOpacity>
           </View>
+
+          {/* Upcoming & Actions */}
+          <View style={[styles.sectionHeader, { marginTop: 0, marginBottom: theme.spacing[3] }]}>
+            <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
+              Upcoming & Actions
+            </Typography>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.actionsScrollContent}>
+            
+            {/* ANC Visit Card */}
+            <TouchableOpacity activeOpacity={0.8} style={[styles.actionCard, {backgroundColor: '#fff'}]} onPress={() => navigation.navigate('ANCVisit')}>
+              <View style={[styles.actionIconWrap, {backgroundColor: theme.colors.primaryLight + '20'}]}>
+                <Ionicons name="medical-outline" size={24} color={theme.colors.primary} />
+              </View>
+              <Typography variant="subhead" style={styles.actionTitle}>Next ANC Visit</Typography>
+              <Typography variant="caption1" color={theme.colors.textMedium}>Oct 12, 10:00 AM</Typography>
+            </TouchableOpacity>
+
+            {/* Daily Check-In Card */}
+            <TouchableOpacity activeOpacity={0.8} style={[styles.actionCard, {backgroundColor: '#fff'}]} onPress={() => navigation.navigate('CheckIn')}>
+              <View style={[styles.actionIconWrap, {backgroundColor: theme.colors.secondary + '20'}]}>
+                <Ionicons name="checkbox-outline" size={24} color={theme.colors.secondary} />
+              </View>
+              <Typography variant="subhead" style={styles.actionTitle}>Daily Check-In</Typography>
+              <Typography variant="caption1" color={theme.colors.textMedium}>Log your vitals</Typography>
+            </TouchableOpacity>
+
+            {/* Partner Mode Card */}
+            <TouchableOpacity activeOpacity={0.8} style={[styles.actionCard, {backgroundColor: '#fff'}]} onPress={() => navigation.navigate('PartnerMode')}>
+              <View style={[styles.actionIconWrap, {backgroundColor: theme.colors.success + '20'}]}>
+                <Ionicons name="heart-half-outline" size={24} color={theme.colors.success} />
+              </View>
+              <Typography variant="subhead" style={styles.actionTitle}>Partner Mode</Typography>
+              <Typography variant="caption1" color={theme.colors.textMedium}>Share journey</Typography>
+            </TouchableOpacity>
+
+          </ScrollView>
 
         </ScrollView>
       </SafeAreaView>
@@ -185,6 +254,39 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontFamily: theme.typography.families.headingBold,
+  },
+  calendarStrip: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing[5],
+    marginBottom: theme.spacing[4],
+  },
+  calendarDay: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 44,
+    height: 64,
+    borderRadius: 22,
+    backgroundColor: 'transparent',
+  },
+  calendarDayActive: {
+    backgroundColor: theme.colors.primary,
+    ...theme.shadows.medium,
+  },
+  calendarDayName: {
+    marginBottom: 4,
+    fontFamily: theme.typography.families.bodySemibold,
+  },
+  calendarDayNumber: {
+    fontFamily: theme.typography.families.headingBold,
+  },
+  calendarDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#fff',
+    position: 'absolute',
+    bottom: 6,
   },
   iconButton: {
     width: 44,
@@ -328,5 +430,28 @@ const styles = StyleSheet.create({
   },
   symptomTitle: {
     fontFamily: theme.typography.families.headingBold,
+  },
+  actionsScrollContent: {
+    paddingHorizontal: theme.spacing[5],
+    paddingBottom: theme.spacing[6],
+  },
+  actionCard: {
+    width: 140,
+    padding: theme.spacing[4],
+    borderRadius: 20,
+    marginRight: theme.spacing[4],
+    ...theme.shadows.soft,
+  },
+  actionIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: theme.spacing[3],
+  },
+  actionTitle: {
+    fontFamily: theme.typography.families.headingBold,
+    marginBottom: 2,
   },
 });
