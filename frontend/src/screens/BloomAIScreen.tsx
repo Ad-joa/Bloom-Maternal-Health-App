@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Animated, Platform, FlatList, KeyboardAvoidingView, Switch, UIManager, LayoutAnimation, ActivityIndicator, TextInput as RNTextInput } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Animated, Platform, FlatList, KeyboardAvoidingView, Switch, UIManager, LayoutAnimation, ActivityIndicator, TextInput as RNTextInput, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
@@ -7,7 +7,7 @@ import { BounceButton } from '../components/BounceButton';
 import { BackgroundMesh } from '../components/BackgroundMesh';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import { Send, Sparkles } from 'lucide-react-native';
+import { Send, Flower2 } from 'lucide-react-native';
 
 import { getAdvisory } from '../api/api';
 import { useAuth } from '../context/AuthContext';
@@ -22,10 +22,17 @@ export default function BloomAIScreen() {
   const { user } = useAuth();
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const [messages, setMessages] = useState<Message[]>([
     { id: '1', text: `Hi ${user?.name ? user.name.split(' ')[0] : 'there'}! I am Bloom AI. Do you have any questions about your pregnancy today? Describe what you are feeling.`, sender: 'ai' },
   ]);
+
+  React.useEffect(() => {
+    const showSub = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', () => setKeyboardVisible(true));
+    const hideSub = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => setKeyboardVisible(false));
+    return () => { showSub.remove(); hideSub.remove(); };
+  }, []);
 
   const handleSend = async () => {
     if (!inputText.trim()) return;
@@ -77,7 +84,7 @@ export default function BloomAIScreen() {
         <KeyboardAvoidingView 
           behavior={Platform.OS === 'ios' ? 'padding' : undefined} 
           style={styles.container}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
         >
           {/* Custom Header removed in favor of standard tab menu */}
 
@@ -98,7 +105,7 @@ export default function BloomAIScreen() {
               >
                 {msg.sender === 'ai' && (
                   <View style={styles.aiAvatar}>
-                    <Ionicons name="sparkles" size={16} color="#FFF" />
+                    <Flower2 size={18} color="#FFF" />
                   </View>
                 )}
                 <View 
@@ -119,7 +126,7 @@ export default function BloomAIScreen() {
             {loading && (
               <View style={[styles.messageRow, styles.messageRowAI]}>
                 <View style={styles.aiAvatar}>
-                  <Ionicons name="sparkles" size={16} color="#FFF" />
+                  <Flower2 size={18} color="#FFF" />
                 </View>
                 <View style={[styles.bubble, styles.bubbleAI, styles.loadingBubble]}>
                   <ActivityIndicator size="small" color={theme.colors.primary} />
@@ -128,7 +135,7 @@ export default function BloomAIScreen() {
             )}
           </ScrollView>
           
-          <BlurView intensity={80} tint="light" style={styles.inputArea}>
+          <BlurView intensity={80} tint="light" style={[styles.inputArea, { paddingBottom: keyboardVisible ? (Platform.OS === 'ios' ? 16 : 24) : 110 }]}>
             {/* Suggested Prompts */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.promptsContainer}>
               {SUGGESTED_PROMPTS.map((prompt, index) => (
@@ -137,8 +144,7 @@ export default function BloomAIScreen() {
                   style={styles.promptChip} 
                   onPress={() => handlePromptPress(prompt)}
                 >
-                  <Sparkles size={14} color={theme.colors.primaryDark} style={{ marginRight: 6 }} />
-                  <Typography variant="caption1" color={theme.colors.primaryDark}>{prompt}</Typography>
+                  <Typography variant="caption1" color={theme.colors.primaryDark} style={{fontFamily: theme.typography.families.headingBold}}>{prompt}</Typography>
                 </BounceButton>
               ))}
             </ScrollView>
@@ -248,10 +254,8 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing[3],
   },
   inputArea: {
-    padding: theme.spacing[4],
     paddingTop: theme.spacing[2],
-    paddingBottom: 110,
-    backgroundColor: 'transparent', // Handled by BlurView
+    backgroundColor: 'transparent',
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.05)',
   },
@@ -259,12 +263,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: theme.spacing[2],
+    paddingHorizontal: theme.spacing[4],
   },
   inputWrapper: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: 'rgba(0,0,0,0.08)',
     borderRadius: 24,
     minHeight: 48,
     maxHeight: 120,
@@ -276,9 +281,10 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   input: {
+    flex: 1,
     paddingHorizontal: theme.spacing[4],
-    paddingTop: 12,
-    paddingBottom: 12,
+    paddingTop: Platform.OS === 'ios' ? 14 : 10,
+    paddingBottom: Platform.OS === 'ios' ? 14 : 10,
     fontSize: 16,
     color: theme.colors.textHigh,
     fontFamily: theme.typography.families.bodyRegular,
