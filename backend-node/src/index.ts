@@ -264,6 +264,44 @@ app.put('/users/:user_id/onboard', async (req, res) => {
   }
 });
 
+app.post('/users/:user_id/logs', async (req, res) => {
+  try {
+    const user_id = parseInt(req.params.user_id);
+    const { symptoms } = req.body;
+    
+    // Create the log
+    const log = await prisma.symptom_logs.create({
+      data: {
+        user_id,
+        symptoms,
+      }
+    });
+
+    res.json(log);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ detail: "Server error" });
+  }
+});
+
+app.get('/users/:user_id/logs', async (req, res) => {
+  try {
+    const user_id = parseInt(req.params.user_id);
+    
+    // Get last 7 days of logs
+    const logs = await prisma.symptom_logs.findMany({
+      where: { user_id },
+      orderBy: { created_at: 'asc' },
+      take: 20
+    });
+
+    res.json(logs);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ detail: "Server error" });
+  }
+});
+
 const PORT = process.env.PORT || 8000;
 httpServer.listen(PORT, () => {
   console.log(`Node.js backend (with Socket.io) running on http://0.0.0.0:${PORT}`);
