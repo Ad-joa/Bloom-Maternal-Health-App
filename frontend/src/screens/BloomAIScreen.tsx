@@ -74,18 +74,11 @@ export default function BloomAIScreen() {
 
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined} 
           style={styles.container}
-          keyboardVerticalOffset={90}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
         >
-          <View style={styles.header}>
-            <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.headerTitle}>
-              Bloom AI
-            </Typography>
-            <Typography variant="body" color={theme.colors.textMedium}>
-              Your intelligent pregnancy assistant
-            </Typography>
-          </View>
+          {/* Custom Header removed in favor of standard tab menu */}
 
           <ScrollView 
             ref={scrollViewRef}
@@ -104,7 +97,7 @@ export default function BloomAIScreen() {
               >
                 {msg.sender === 'ai' && (
                   <View style={styles.aiAvatar}>
-                    <Typography style={{fontSize: 16}}>🌸</Typography>
+                    <Ionicons name="sparkles" size={16} color="#FFF" />
                   </View>
                 )}
                 <View 
@@ -125,7 +118,7 @@ export default function BloomAIScreen() {
             {loading && (
               <View style={[styles.messageRow, styles.messageRowAI]}>
                 <View style={styles.aiAvatar}>
-                  <Typography style={{fontSize: 16}}>🌸</Typography>
+                  <Ionicons name="sparkles" size={16} color="#FFF" />
                 </View>
                 <View style={[styles.bubble, styles.bubbleAI, styles.loadingBubble]}>
                   <ActivityIndicator size="small" color={theme.colors.primary} />
@@ -217,9 +210,8 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.6)',
+    backgroundColor: theme.colors.primaryDark,
+    borderWidth: 0,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: theme.spacing[2],
@@ -257,7 +249,7 @@ const styles = StyleSheet.create({
   inputArea: {
     padding: theme.spacing[4],
     paddingTop: theme.spacing[2],
-    paddingBottom: Platform.OS === 'ios' ? theme.spacing[2] : theme.spacing[4],
+    paddingBottom: 110,
     backgroundColor: 'transparent', // Handled by BlurView
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.05)',
