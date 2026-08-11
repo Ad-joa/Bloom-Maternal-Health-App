@@ -74,7 +74,7 @@ function CustomTabBar({ state, navigation }: any) {
   return (
     <View style={{
       position: 'absolute',
-      backgroundColor: '#1C1C1E',
+      backgroundColor: '#FFFFFF',
       bottom: Platform.OS === 'ios' ? 34 : 40,
       left: 24,
       right: 24,
