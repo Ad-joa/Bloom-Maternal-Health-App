@@ -7,6 +7,8 @@ import { useAuth } from '../context/AuthContext';
 import { Typography } from '../components/Typography';
 import { Ionicons } from '@expo/vector-icons';
 import { getWeeksPregnant, getDaysUntilDue } from '../utils/dateUtils';
+import { LineChart } from 'react-native-chart-kit';
+import { getSymptomLogs } from '../api/api';
 
 const { width } = Dimensions.get('window');
 
@@ -23,6 +25,34 @@ export default function HomeScreen({ navigation }: Props) {
   const daysUntilDue = dueDate ? getDaysUntilDue(dueDate) : 56; // Fallback to 56 days
   const remainingWeeks = Math.ceil(daysUntilDue / 7);
   
+  const [logs, setLogs] = React.useState<any[]>([]);
+  React.useEffect(() => {
+    if (user?.id) {
+      getSymptomLogs(user.id).then(data => {
+        setLogs(data || []);
+      });
+    }
+  }, [user]);
+
+  const getSeverityScore = (symptomsStr: string) => {
+    if (!symptomsStr) return 0;
+    if (symptomsStr.toLowerCase().includes('severe') || symptomsStr.toLowerCase().includes('n3') || symptomsStr.toLowerCase().includes('c3')) return 3;
+    if (symptomsStr.toLowerCase().includes('moderate') || symptomsStr.toLowerCase().includes('n2') || symptomsStr.toLowerCase().includes('c2')) return 2;
+    if (symptomsStr.toLowerCase().includes('mild') || symptomsStr.toLowerCase().includes('n1') || symptomsStr.toLowerCase().includes('c1')) return 1;
+    return 1;
+  };
+
+  const chartData = {
+    labels: logs.length > 0 ? logs.slice(-5).map(l => new Date(l.created_at).toLocaleDateString('en-US', {weekday: 'short'})) : ["M", "T", "W", "T", "F"],
+    datasets: [
+      {
+        data: logs.length > 0 ? logs.slice(-5).map(l => getSeverityScore(l.symptoms)) : [1, 2, 1, 3, 2],
+        color: (opacity = 1) => theme.colors.primaryDark,
+        strokeWidth: 3
+      }
+    ]
+  };
+
   const hour = new Date().getHours();
   let greeting = 'Good Evening,';
   if (hour < 12) greeting = 'Good Morning,';
@@ -253,6 +283,47 @@ export default function HomeScreen({ navigation }: Props) {
             </TouchableOpacity>
 
           </ScrollView>
+
+          {/* Vitals Mini-Chart */}
+          <View style={[styles.sectionHeader, { marginTop: theme.spacing[6], marginBottom: theme.spacing[3] }]}>
+            <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
+              My Vitals
+            </Typography>
+            <TouchableOpacity onPress={() => navigation.navigate('Analysis')}>
+              <Typography variant="subhead" color={theme.colors.primary}>View All</Typography>
+            </TouchableOpacity>
+          </View>
+          
+          <View style={{ marginHorizontal: theme.spacing[5], marginBottom: theme.spacing[6], backgroundColor: '#fff', borderRadius: 24, padding: theme.spacing[4], ...theme.shadows.medium }}>
+            <Typography variant="subhead" color={theme.colors.textMedium} style={{marginBottom: theme.spacing[2]}}>
+              Symptom Intensity (Last 5 Logs)
+            </Typography>
+            <LineChart
+              data={chartData}
+              width={width - 72} 
+              height={140}
+              withInnerLines={false}
+              withOuterLines={false}
+              chartConfig={{
+                backgroundColor: '#ffffff',
+                backgroundGradientFrom: '#ffffff',
+                backgroundGradientTo: '#ffffff',
+                decimalPlaces: 0,
+                color: (opacity = 1) => theme.colors.primaryLight,
+                labelColor: (opacity = 1) => theme.colors.textMedium,
+                propsForDots: {
+                  r: "4",
+                  strokeWidth: "2",
+                  stroke: theme.colors.primaryDark
+                }
+              }}
+              bezier
+              style={{
+                borderRadius: 16,
+                marginLeft: -20
+              }}
+            />
+          </View>
 
         </ScrollView>
       </SafeAreaView>

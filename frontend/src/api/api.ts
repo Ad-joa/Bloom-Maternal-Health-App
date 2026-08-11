@@ -90,6 +90,16 @@ export const saveSymptomLog = async (userId: number, symptoms: string) => {
     }
 };
 
+export const getSymptomLogs = async (userId: number) => {
+    try {
+        const response = await apiClient.get(`/users/${userId}/logs`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching logs:", error);
+        return [];
+    }
+};
+
 export const getInsights = async (userId: number) => {
     try {
         const response = await apiClient.get(`/users/${userId}/insights`);
