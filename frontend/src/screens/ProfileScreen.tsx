@@ -109,8 +109,6 @@ export default function ProfileScreen({ navigation }: any) {
         <Typography variant="body" color={theme.colors.textMedium}>{user?.email || 'user@example.com'}</Typography>
       </View>
 
-      </View>
-
       <View style={styles.section}>
         <Typography variant="subhead" color={theme.colors.textMedium} style={styles.sectionLabel}>
           PREGNANCY DETAILS

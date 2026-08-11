@@ -28,6 +28,7 @@ import { theme } from './src/theme/theme';
 import * as Font from 'expo-font';
 import './src/i18n';
 import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
 import { registerForPushNotificationsAsync } from './src/utils/notifications';
 import { initDatabase } from './src/utils/database';
 import { startSyncEngine } from './src/utils/SyncEngine';
@@ -284,6 +285,7 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
+      <StatusBar style="dark" />
       <AuthProvider>
         <BiometricGate>
           <Navigation />
