@@ -5,14 +5,68 @@ import { PrismaClient } from '@prisma/client';
 import { evaluateSymptoms } from './engine/rules';
 import { getTrimesterData } from './data/trimester';
 import dotenv from 'dotenv';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 
 dotenv.config();
 
 const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: { origin: '*' }
+});
+
 const prisma = new PrismaClient();
 
 app.use(cors());
 app.use(express.json());
+
+// In-memory mock posts for real-time demonstration
+let mockPosts = [
+  { id: '1', author: 'Sarah M.', week: 24, content: "Is anyone else experiencing wild cravings at week 24? I literally just ate pickles with peanut butter and it was the best thing ever.", likes: 12, comments: 4, liked: false },
+  { id: '2', author: 'Emily R.', week: 12, content: "Finally made it to the second trimester! The morning sickness is slowly fading away. Hang in there mamas! 🌸", likes: 45, comments: 8, liked: true },
+  { id: '3', author: 'Jessica T.', week: 36, content: "Hospital bag is packed! What is one thing you wish you packed but forgot?", likes: 8, comments: 15, liked: false }
+];
+
+io.on('connection', (socket) => {
+  console.log(`Socket connected: ${socket.id}`);
+
+  // Send initial posts
+  socket.emit('init_posts', mockPosts);
+
+  // Handle toggling like
+  socket.on('toggle_like', (postId) => {
+    mockPosts = mockPosts.map(post => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          liked: !post.liked,
+          likes: post.liked ? post.likes - 1 : post.likes + 1
+        };
+      }
+      return post;
+    });
+    // Broadcast the update to EVERYONE
+    io.emit('posts_updated', mockPosts);
+  });
+
+  // Handle new post
+  socket.on('create_post', (post) => {
+    const newPost = {
+      ...post,
+      id: Math.random().toString(36).substr(2, 9),
+      likes: 0,
+      comments: 0,
+      liked: false,
+    };
+    mockPosts = [newPost, ...mockPosts];
+    io.emit('posts_updated', mockPosts);
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`Socket disconnected: ${socket.id}`);
+  });
+});
 
 // Helper to exclude password from user object
 const excludePassword = (user: any) => {
@@ -211,6 +265,6 @@ app.put('/users/:user_id/onboard', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => {
-  console.log(`Node.js backend running on http://0.0.0.0:${PORT}`);
+httpServer.listen(PORT, () => {
+  console.log(`Node.js backend (with Socket.io) running on http://0.0.0.0:${PORT}`);
 });

@@ -6,43 +6,37 @@ import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { BounceButton } from '../components/BounceButton';
 import { BackgroundMesh } from '../components/BackgroundMesh';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, Feather } from '@expo/vector-icons';
+import { io } from 'socket.io-client';
 
-
-const MOCK_POSTS = [
-  {
-    id: '1',
-    author: 'Sarah M.',
-    week: 24,
-    content: "Is anyone else experiencing wild cravings at week 24? I literally just ate pickles with peanut butter and it was the best thing ever.",
-    likes: 12,
-    comments: 4,
-    liked: false,
-  },
-  {
-    id: '2',
-    author: 'Emily R.',
-    week: 12,
-    content: "Finally made it to the second trimester! The morning sickness is slowly fading away. Hang in there mamas! 🌸",
-    likes: 45,
-    comments: 8,
-    liked: true,
-  },
-  {
-    id: '3',
-    author: 'Jessica T.',
-    week: 36,
-    content: "Hospital bag is packed! What is one thing you wish you packed but forgot?",
-    likes: 8,
-    comments: 15,
-    liked: false,
-  }
-];
+// Connect to the Node.js backend
+// IMPORTANT: In production, this should point to your real backend URL or use environment variables.
+const socket = io('http://127.0.0.1:8000');
 
 export default function CommunityScreen() {
-  const [posts, setPosts] = useState(MOCK_POSTS);
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    // Listen for initial data payload
+    socket.on('init_posts', (data) => {
+      setPosts(data);
+      setLoading(false);
+    });
+
+    // Listen for live updates (e.g. someone else likes a post)
+    socket.on('posts_updated', (data) => {
+      setPosts(data);
+    });
+
+    return () => {
+      socket.off('init_posts');
+      socket.off('posts_updated');
+    };
+  }, []);
 
   const toggleLike = (id: string) => {
+    // Optimistic UI update for instantaneous feedback
     setPosts(prev => prev.map(post => {
       if (post.id === id) {
         return {
@@ -52,10 +46,13 @@ export default function CommunityScreen() {
         };
       }
       return post;
-    }));
+    });
+
+    // Send to backend for real-time broadcast
+    socket.emit('toggle_like', id);
   };
 
-  const renderPost = ({ item, index }: { item: typeof MOCK_POSTS[0], index: number }) => (
+  const renderPost = ({ item, index }: { item: any, index: number }) => (
     <View >
       <Card variant="glass" style={styles.postCard}>
       <View style={styles.postHeader}>
@@ -104,20 +101,35 @@ export default function CommunityScreen() {
           </Typography>
         </View>
 
-        <FlatList
-          data={posts}
-          keyExtractor={item => item.id}
-          renderItem={renderPost}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-        />
-
-        {/* Floating Action Button */}
-        <BounceButton style={styles.fab}>
-          <Ionicons name="add" size={24} color="#fff" />
-        </BounceButton>
+        {loading ? (
+          <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+            <ActivityIndicator size="large" color={theme.colors.primary} />
+          </View>
+        ) : (
+          <FlatList
+            data={posts}
+            keyExtractor={item => item.id}
+            renderItem={renderPost}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
 
       </SafeAreaView>
+
+      {/* Floating Action Button for Real-Time Testing */}
+      <TouchableOpacity 
+        style={styles.fab}
+        onPress={() => {
+          socket.emit('create_post', {
+            author: 'You',
+            week: 28,
+            content: "Just testing the new Real-Time WebSocket connection! This should pop up for everyone instantly. 👋"
+          });
+        }}
+      >
+        <Feather name="plus" size={24} color="#fff" />
+      </TouchableOpacity>
     </View>
   );
 }
