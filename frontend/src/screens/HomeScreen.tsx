@@ -331,7 +331,6 @@ export default function HomeScreen({ navigation }: Props) {
             />
           </View>
 
-                  </FadeSlideIn>
         </ScrollView>
       </SafeAreaView>
     </View>
