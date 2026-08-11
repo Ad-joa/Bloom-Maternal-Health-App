@@ -406,6 +406,73 @@ app.post('/users/:user_id/anc-visits', async (req, res) => {
   }
 });
 
+app.get('/users/:user_id/partner-summary', async (req, res) => {
+  try {
+    const user_id = parseInt(req.params.user_id);
+    
+    // Fetch user and recent logs
+    const user = await prisma.users.findUnique({ where: { id: user_id } });
+    if (!user) return res.status(404).json({ detail: "User not found" });
+
+    const recentLogs = await prisma.symptom_logs.findMany({
+      where: { user_id },
+      orderBy: { created_at: 'desc' },
+      take: 5
+    });
+
+    const recentSymptoms = recentLogs.map(log => log.symptoms).join(', ');
+    const fallbackResponse = {
+      vibe: "She is doing okay, but experiencing some standard pregnancy symptoms.",
+      emoji: "🙂",
+      tags: ["Okay", "Resting"],
+      support_actions: ["Make sure she is drinking plenty of water.", "Offer a gentle back massage.", "Remind her to rest."]
+    };
+
+    if (!recentSymptoms) {
+      return res.json(fallbackResponse);
+    }
+
+    const systemInstruction = `
+      You are an AI generating a dashboard for a pregnant woman's partner.
+      Her name is ${user.name || 'Mama'}. 
+      Recent symptoms she logged: ${recentSymptoms}.
+      
+      Generate a JSON response EXACTLY matching this structure, with no markdown formatting:
+      {
+        "vibe": "A one sentence empathetic summary of how she is feeling today.",
+        "emoji": "A single emoji representing her vibe (e.g. 😴, 🤢, 🙂, 😖)",
+        "tags": ["1-2 word tag", "1-2 word tag"],
+        "support_actions": ["Actionable tip 1", "Actionable tip 2", "Actionable tip 3"]
+      }
+      Make the support actions highly specific to her symptoms.
+    `;
+
+    try {
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: "Generate partner summary JSON",
+        config: {
+          systemInstruction: systemInstruction,
+          responseMimeType: "application/json"
+        }
+      });
+      
+      let parsed = JSON.parse(response.text || '{}');
+      if (!parsed.vibe || !parsed.support_actions) {
+        parsed = fallbackResponse;
+      }
+      res.json(parsed);
+    } catch (aiError) {
+      console.error("Gemini API Error:", aiError);
+      res.json(fallbackResponse);
+    }
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ detail: "Server error" });
+  }
+});
+
 const PORT = process.env.PORT || 8000;
 httpServer.listen(PORT, () => {
   console.log(`Node.js backend (with Socket.io) running on http://0.0.0.0:${PORT}`);

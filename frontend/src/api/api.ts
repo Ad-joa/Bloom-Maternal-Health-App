@@ -174,4 +174,14 @@ export const createAncVisit = async (userId: number, visitData: any) => {
     }
 };
 
+export const getPartnerSummary = async (userId: number) => {
+    try {
+        const response = await apiClient.get(`/users/${userId}/partner-summary`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching partner summary:", error);
+        return null;
+    }
+};
+
 export default apiClient;
