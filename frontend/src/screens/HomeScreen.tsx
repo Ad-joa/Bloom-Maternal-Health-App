@@ -29,6 +29,78 @@ export default function HomeScreen({ navigation }: Props) {
   
   const today = new Date();
   
+  const renderGoalWidget = () => {
+    const goal = user?.primary_goal;
+
+    if (goal === "Healthy Diet") {
+      return (
+        <TouchableOpacity activeOpacity={0.8} style={[styles.goalWidget, { backgroundColor: '#E8F5E9' }]} onPress={() => navigation.navigate('Advisory')}>
+          <View style={[styles.goalIconWrap, { backgroundColor: theme.colors.success }]}>
+            <Ionicons name="nutrition" size={24} color="#fff" />
+          </View>
+          <View style={styles.goalTextWrap}>
+            <Typography variant="caption1" color={theme.colors.success} style={{fontFamily: theme.typography.families.headingBold}}>DAILY FOCUS: HEALTHY DIET</Typography>
+            <Typography variant="subhead" color={theme.colors.textHigh} style={{marginTop: 4}}>Remember your folic acid and stay hydrated today.</Typography>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={theme.colors.success} />
+        </TouchableOpacity>
+      );
+    } else if (goal === "Manage Stress") {
+      return (
+        <TouchableOpacity activeOpacity={0.8} style={[styles.goalWidget, { backgroundColor: '#E3F2FD' }]} onPress={() => navigation.navigate('Advisory')}>
+          <View style={[styles.goalIconWrap, { backgroundColor: theme.colors.info }]}>
+            <Ionicons name="flower" size={24} color="#fff" />
+          </View>
+          <View style={styles.goalTextWrap}>
+            <Typography variant="caption1" color={theme.colors.info} style={{fontFamily: theme.typography.families.headingBold}}>DAILY FOCUS: MANAGE STRESS</Typography>
+            <Typography variant="subhead" color={theme.colors.textHigh} style={{marginTop: 4}}>Take 5 deep breaths. You are doing great, mama.</Typography>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={theme.colors.info} />
+        </TouchableOpacity>
+      );
+    } else if (goal === "Stay Active") {
+      return (
+        <TouchableOpacity activeOpacity={0.8} style={[styles.goalWidget, { backgroundColor: '#FFF3E0' }]} onPress={() => navigation.navigate('Advisory')}>
+          <View style={[styles.goalIconWrap, { backgroundColor: theme.colors.warning }]}>
+            <Ionicons name="fitness" size={24} color="#fff" />
+          </View>
+          <View style={styles.goalTextWrap}>
+            <Typography variant="caption1" color={theme.colors.warning} style={{fontFamily: theme.typography.families.headingBold}}>DAILY FOCUS: STAY ACTIVE</Typography>
+            <Typography variant="subhead" color={theme.colors.textHigh} style={{marginTop: 4}}>Try a 10-minute safe prenatal stretch today.</Typography>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={theme.colors.warning} />
+        </TouchableOpacity>
+      );
+    } else if (goal === "Prepare for Birth") {
+      return (
+        <TouchableOpacity activeOpacity={0.8} style={[styles.goalWidget, { backgroundColor: '#FCE4EC' }]} onPress={() => navigation.navigate('Advisory')}>
+          <View style={[styles.goalIconWrap, { backgroundColor: '#E91E63' }]}>
+            <Ionicons name="medkit" size={24} color="#fff" />
+          </View>
+          <View style={styles.goalTextWrap}>
+            <Typography variant="caption1" color="#E91E63" style={{fontFamily: theme.typography.families.headingBold}}>DAILY FOCUS: PREPARE FOR BIRTH</Typography>
+            <Typography variant="subhead" color={theme.colors.textHigh} style={{marginTop: 4}}>Time to start reviewing your hospital bag checklist.</Typography>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#E91E63" />
+        </TouchableOpacity>
+      );
+    }
+
+    // Fallback if no goal is set
+    return (
+      <TouchableOpacity activeOpacity={0.8} style={[styles.goalWidget, { backgroundColor: theme.colors.primaryLight + '40' }]} onPress={() => navigation.navigate('Profile')}>
+        <View style={[styles.goalIconWrap, { backgroundColor: theme.colors.primary }]}>
+          <Ionicons name="heart" size={24} color="#fff" />
+        </View>
+        <View style={styles.goalTextWrap}>
+          <Typography variant="caption1" color={theme.colors.primary} style={{fontFamily: theme.typography.families.headingBold}}>WELLNESS</Typography>
+          <Typography variant="subhead" color={theme.colors.textHigh} style={{marginTop: 4}}>Set your primary pregnancy goal in your Profile.</Typography>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color={theme.colors.primary} />
+      </TouchableOpacity>
+    );
+  };
+  
   // Generate 7 days around today for the calendar strip
   const calendarDays = Array.from({ length: 7 }).map((_, i) => {
     const d = new Date(today);
@@ -132,40 +204,8 @@ export default function HomeScreen({ navigation }: Props) {
             </View>
           </View>
 
-          {/* Symptoms Cards */}
-          <View style={styles.symptomsRow}>
-            {/* Purple Card */}
-            <TouchableOpacity activeOpacity={0.8} style={[styles.symptomCard, styles.symptomCardPurple]} onPress={() => navigation.navigate('Analysis')}>
-              <View style={styles.symptomIconWrap}>
-                <Ionicons name="snow-outline" size={20} color={theme.colors.primaryDark} />
-              </View>
-              <View>
-                <View style={styles.statusDotRow}>
-                  <View style={[styles.dot, {backgroundColor: '#fff'}]} />
-                  <Typography variant="caption1" color="#fff">Normal</Typography>
-                </View>
-                <Typography variant="title3" color="#fff" style={styles.symptomTitle}>
-                  Back pain
-                </Typography>
-              </View>
-            </TouchableOpacity>
-
-            {/* White Card */}
-            <TouchableOpacity activeOpacity={0.8} style={[styles.symptomCard, styles.symptomCardWhite]} onPress={() => navigation.navigate('Analysis')}>
-              <View style={[styles.symptomIconWrap, {backgroundColor: '#F8F9FA'}]}>
-                <Ionicons name="fitness-outline" size={20} color={theme.colors.textMedium} />
-              </View>
-              <View>
-                <View style={styles.statusDotRow}>
-                  <View style={[styles.dot, {backgroundColor: theme.colors.textMedium}]} />
-                  <Typography variant="caption1" color={theme.colors.textMedium}>Normal</Typography>
-                </View>
-                <Typography variant="title3" color={theme.colors.textHigh} style={styles.symptomTitle}>
-                  Fatigue
-                </Typography>
-              </View>
-            </TouchableOpacity>
-          </View>
+          {/* Daily Focus Goal Widget */}
+          {renderGoalWidget()}
 
           {/* Upcoming & Actions */}
           <View style={[styles.sectionHeader, { marginTop: 0, marginBottom: theme.spacing[3] }]}>
@@ -444,7 +484,26 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing[3],
   },
   actionTitle: {
-    fontFamily: theme.typography.families.headingBold,
+    marginTop: theme.spacing[3],
     marginBottom: 2,
+    fontFamily: theme.typography.families.headingBold,
   },
+  goalWidget: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: theme.spacing[4],
+    borderRadius: theme.radii.lg,
+    marginBottom: theme.spacing[6],
+  },
+  goalIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: theme.spacing[3],
+  },
+  goalTextWrap: {
+    flex: 1,
+  }
 });

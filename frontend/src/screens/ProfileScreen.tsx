@@ -109,6 +109,81 @@ export default function ProfileScreen({ navigation }: any) {
         <Typography variant="body" color={theme.colors.textMedium}>{user?.email || 'user@example.com'}</Typography>
       </View>
 
+      </View>
+
+      <View style={styles.section}>
+        <Typography variant="subhead" color={theme.colors.textMedium} style={styles.sectionLabel}>
+          PREGNANCY DETAILS
+        </Typography>
+        <Card variant="glass" style={styles.menuCard}>
+          <View style={[styles.menuItem, styles.menuItemBorder]}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="flag" size={20} color={theme.colors.primary} />
+              <Typography variant="body" style={styles.menuItemText}>Primary Goal</Typography>
+            </View>
+            <Typography variant="body" color={theme.colors.textMedium}>{user?.primary_goal || 'Not set'}</Typography>
+          </View>
+          <View style={[styles.menuItem, styles.menuItemBorder]}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="calendar" size={20} color={theme.colors.primary} />
+              <Typography variant="body" style={styles.menuItemText}>Due Date</Typography>
+            </View>
+            <Typography variant="body" color={theme.colors.textMedium}>{user?.due_date ? new Date(user.due_date).toLocaleDateString() : 'Not set'}</Typography>
+          </View>
+          <View style={styles.menuItem}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="time" size={20} color={theme.colors.primary} />
+              <Typography variant="body" style={styles.menuItemText}>Trimester</Typography>
+            </View>
+            <Typography variant="body" color={theme.colors.textMedium}>{user?.trimester ? `Trimester ${user.trimester}` : 'Not set'}</Typography>
+          </View>
+        </Card>
+      </View>
+
+      <View style={styles.section}>
+        <Typography variant="subhead" color={theme.colors.textMedium} style={styles.sectionLabel}>
+          HEALTH & LIFESTYLE
+        </Typography>
+        <Card variant="glass" style={styles.menuCard}>
+          <View style={[styles.menuItem, styles.menuItemBorder]}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="nutrition" size={20} color={theme.colors.primary} />
+              <Typography variant="body" style={styles.menuItemText}>Dietary Preferences</Typography>
+            </View>
+            <Typography variant="body" color={theme.colors.textMedium}>{user?.dietary_preferences || 'None'}</Typography>
+          </View>
+          <View style={styles.menuItem}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="medical" size={20} color={theme.colors.primary} />
+              <Typography variant="body" style={styles.menuItemText}>Medical Conditions</Typography>
+            </View>
+            <Typography variant="body" color={theme.colors.textMedium}>{user?.medical_conditions || 'None'}</Typography>
+          </View>
+        </Card>
+      </View>
+
+      <View style={styles.section}>
+        <Typography variant="subhead" color={theme.colors.textMedium} style={styles.sectionLabel}>
+          EMERGENCY CONTACT
+        </Typography>
+        <Card variant="glass" style={styles.menuCard}>
+          <View style={[styles.menuItem, styles.menuItemBorder]}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="person" size={20} color={theme.colors.danger} />
+              <Typography variant="body" style={styles.menuItemText}>Name</Typography>
+            </View>
+            <Typography variant="body" color={theme.colors.textMedium}>{user?.emergency_contact_name || 'Not set'}</Typography>
+          </View>
+          <View style={styles.menuItem}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="call" size={20} color={theme.colors.danger} />
+              <Typography variant="body" style={styles.menuItemText}>Phone</Typography>
+            </View>
+            <Typography variant="body" color={theme.colors.textMedium}>{user?.emergency_contact_phone || 'Not set'}</Typography>
+          </View>
+        </Card>
+      </View>
+
       <View style={styles.section}>
         <Typography variant="subhead" color={theme.colors.textMedium} style={styles.sectionLabel}>
           ACCOUNT
