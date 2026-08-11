@@ -92,7 +92,7 @@ export default function CommunityScreen() {
 
   return (
     <View style={styles.container}>
-      <BackgroundMesh />
+
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         
         <View  style={styles.header}>
@@ -125,6 +125,7 @@ export default function CommunityScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: theme.colors.background,
   },
   safeArea: {
     flex: 1,
@@ -139,7 +140,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: theme.spacing[4],
-    paddingBottom: 100, // Space for FAB
+    paddingBottom: 160, // Space for FAB and Bottom Nav
     gap: theme.spacing[4],
   },
   postCard: {
@@ -181,7 +182,7 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    bottom: theme.spacing[6],
+    bottom: 110, // Avoid bottom nav bar
     right: theme.spacing[6],
     width: 56,
     height: 56,

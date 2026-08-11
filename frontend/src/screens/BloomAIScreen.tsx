@@ -71,7 +71,7 @@ export default function BloomAIScreen() {
 
   return (
     <View style={styles.container}>
-      <BackgroundMesh />
+
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <KeyboardAvoidingView 
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
@@ -179,6 +179,7 @@ export default function BloomAIScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: theme.colors.background,
   },
   safeArea: {
     flex: 1,
@@ -199,7 +200,7 @@ const styles = StyleSheet.create({
   chatContainer: {
     padding: theme.spacing[4],
     gap: theme.spacing[4],
-    paddingBottom: theme.spacing[8],
+    paddingBottom: 120, // Avoid bottom nav bar
   },
   messageRow: {
     flexDirection: 'row',

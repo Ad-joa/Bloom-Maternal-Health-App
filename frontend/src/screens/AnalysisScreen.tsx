@@ -10,7 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 export default function AnalysisScreen() {
   return (
     <View style={styles.container}>
-      <BackgroundMesh />
+
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
@@ -80,6 +80,7 @@ export default function AnalysisScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: theme.colors.background,
   },
   safeArea: {
     flex: 1,
@@ -87,6 +88,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     padding: theme.spacing[5],
+    paddingBottom: 120, // avoid floating bottom tab bar
   },
   header: {
     marginBottom: theme.spacing[6],
