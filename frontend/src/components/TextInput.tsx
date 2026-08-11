@@ -27,7 +27,7 @@ export const TextInput: React.FC<CustomTextInputProps> = ({
       <View style={[styles.nestedWrapper, containerStyle]}>
         <RNTextInput
           style={[styles.input, style]}
-          placeholderTextColor="#C7C7CC"
+          placeholderTextColor="#8E8E93"
           {...props}
         />
       </View>
@@ -45,7 +45,7 @@ export const TextInput: React.FC<CustomTextInputProps> = ({
         {leftIcon && <View style={styles.iconContainer}>{leftIcon}</View>}
         <RNTextInput
           style={[styles.input, style, leftIcon ? { paddingLeft: 8 } : null]}
-          placeholderTextColor="#C7C7CC"
+          placeholderTextColor="#8E8E93"
           {...props}
         />
       </View>
