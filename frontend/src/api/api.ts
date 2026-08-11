@@ -154,4 +154,24 @@ export const onboardUser = async (
     }
 };
 
+export const getAncVisits = async (userId: number) => {
+    try {
+        const response = await apiClient.get(`/users/${userId}/anc-visits`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching ANC visits:", error);
+        return [];
+    }
+};
+
+export const createAncVisit = async (userId: number, visitData: any) => {
+    try {
+        const response = await apiClient.post(`/users/${userId}/anc-visits`, visitData);
+        return response.data;
+    } catch (error) {
+        console.error("Error creating ANC visit:", error);
+        throw error;
+    }
+};
+
 export default apiClient;
