@@ -23,6 +23,7 @@ model users {
   emergency_contact_name  String?
   emergency_contact_phone String?
   symptom_logs            symptom_logs[]
+  anc_visits              anc_visits[]
 }
 
 model symptom_logs {
@@ -33,4 +34,26 @@ model symptom_logs {
   notes      String?
   created_at DateTime? @default(now())
   users      users?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model community_posts {
+  id         String    @id @default(uuid())
+  author     String
+  week       Int?
+  content    String
+  likes      Int       @default(0)
+  comments   Int       @default(0)
+  created_at DateTime  @default(now())
+}
+
+model anc_visits {
+  id         Int       @id @default(autoincrement())
+  user_id    Int
+  date       String
+  time       String
+  doctor     String?
+  notes      String?
+  status     String    @default("scheduled") // scheduled, completed, missed
+  created_at DateTime  @default(now())
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
