@@ -123,8 +123,10 @@ export default function AuthScreen({ navigation }: Props) {
         await new Promise(resolve => setTimeout(resolve, 1500));
         setAuthMode('login');
       }
-    } catch (error) {
-      setErrors({ general: 'Authentication failed. Please try again.' });
+    } catch (error: any) {
+      console.error(error);
+      const message = error?.response?.data?.detail || 'Authentication failed. Please try again.';
+      setErrors({ general: message });
     } finally {
       setIsLoading(false);
     }
