@@ -67,6 +67,7 @@ export default function AuthScreen({ navigation }: Props) {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [registeredUser, setRegisteredUser] = useState<any>(null);
   const { login } = useAuth();
 
   // --- Handlers ---
@@ -115,6 +116,7 @@ export default function AuthScreen({ navigation }: Props) {
             password: formData.password 
           });
           if (response && response.id) {
+             setRegisteredUser(response);
              setRegistrationStep('complete');
           }
         }
@@ -248,8 +250,8 @@ export default function AuthScreen({ navigation }: Props) {
         </Typography>
       </View>
 
-      <TouchableOpacity style={[styles.primaryButton, { marginTop: 24 }]} onPress={() => navigation.navigate('Welcome')}>
-        <Typography variant="headline" color="#FFF">Get Started</Typography>
+      <TouchableOpacity style={[styles.primaryButton, { marginTop: 24 }]} onPress={() => login(registeredUser)}>
+        <Typography variant="headline" color="#FFF">Continue to Setup</Typography>
       </TouchableOpacity>
     </FadeSlideIn>
   );
