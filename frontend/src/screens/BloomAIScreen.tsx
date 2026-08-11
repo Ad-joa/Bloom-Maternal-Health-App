@@ -7,6 +7,7 @@ import { BounceButton } from '../components/BounceButton';
 import { BackgroundMesh } from '../components/BackgroundMesh';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
+import { Send, Sparkles } from 'lucide-react-native';
 
 import { getAdvisory } from '../api/api';
 import { useAuth } from '../context/AuthContext';
@@ -136,7 +137,7 @@ export default function BloomAIScreen() {
                   style={styles.promptChip} 
                   onPress={() => handlePromptPress(prompt)}
                 >
-                  <Ionicons name="sparkles" size={14} color={theme.colors.primaryDark} style={{ marginRight: 6 }} />
+                  <Sparkles size={14} color={theme.colors.primaryDark} style={{ marginRight: 6 }} />
                   <Typography variant="caption1" color={theme.colors.primaryDark}>{prompt}</Typography>
                 </BounceButton>
               ))}
@@ -159,7 +160,7 @@ export default function BloomAIScreen() {
                 style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
                 disabled={!inputText.trim()}
               >
-                <Ionicons name="send" color="#fff" size={20} style={styles.sendIcon} />
+                <Send color="#fff" size={20} style={styles.sendIcon} />
               </BounceButton>
             </View>
           </BlurView>
