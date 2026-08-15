@@ -49,10 +49,10 @@ export default function HomeScreen({ navigation }: Props) {
   };
 
   const chartData = {
-    labels: logs.length > 0 ? logs.slice(-5).map(l => new Date(l.created_at).toLocaleDateString('en-US', {weekday: 'short'})) : ["M", "T", "W", "T", "F"],
+    labels: logs.length > 1 ? logs.slice(-5).map(l => new Date(l.created_at).toLocaleDateString('en-US', {weekday: 'short'})) : ["M", "T", "W", "T", "F"],
     datasets: [
       {
-        data: logs.length > 0 ? logs.slice(-5).map(l => getSeverityScore(l.symptoms)) : [1, 2, 1, 3, 2],
+        data: logs.length > 1 ? logs.slice(-5).map(l => getSeverityScore(l.symptoms)) : [1, 2, 1, 3, 2],
         color: (opacity = 1) => theme.colors.primaryDark,
         strokeWidth: 3
       }
@@ -307,13 +307,14 @@ export default function HomeScreen({ navigation }: Props) {
             <LineChart
               data={chartData}
               width={width - 72} 
-              height={140}
+              height={180}
+              segments={2}
               withInnerLines={false}
               withOuterLines={false}
               chartConfig={{
-                backgroundColor: '#ffffff',
-                backgroundGradientFrom: '#ffffff',
-                backgroundGradientTo: '#ffffff',
+                backgroundColor: 'transparent',
+                backgroundGradientFromOpacity: 0,
+                backgroundGradientToOpacity: 0,
                 decimalPlaces: 0,
                 color: (opacity = 1) => theme.colors.primaryLight,
                 labelColor: (opacity = 1) => theme.colors.textMedium,
@@ -325,8 +326,7 @@ export default function HomeScreen({ navigation }: Props) {
               }}
               bezier
               style={{
-                borderRadius: 16,
-                marginLeft: -20
+                marginLeft: -16
               }}
             />
           </View>
