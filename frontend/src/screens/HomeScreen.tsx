@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 100, // Space for bottom nav
+    paddingBottom: theme.spacing[6],
   },
   header: {
     flexDirection: 'row',

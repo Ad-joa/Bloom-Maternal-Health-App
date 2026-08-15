@@ -22,7 +22,7 @@ import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { Home, Activity, Users, MessageCircle, CalendarDays } from 'lucide-react-native';
-import { StyleSheet, TouchableOpacity, View, Platform } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, Platform, Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { theme } from './src/theme/theme';
 import * as Font from 'expo-font';
@@ -73,21 +73,19 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 function CustomTabBar({ state, navigation }: any) {
   return (
     <View style={{
-      position: 'absolute',
       backgroundColor: '#FFFFFF',
-      bottom: Platform.OS === 'ios' ? 34 : 40,
-      left: 24,
-      right: 24,
-      height: 64,
-      borderRadius: 32,
       flexDirection: 'row',
       justifyContent: 'space-around',
       alignItems: 'center',
+      paddingBottom: Platform.OS === 'ios' ? 24 : 12,
+      paddingTop: 8,
+      borderTopWidth: 1,
+      borderTopColor: 'rgba(0,0,0,0.05)',
       elevation: 10,
       shadowColor: '#000',
-      shadowOffset: { width: 0, height: 10 },
-      shadowOpacity: 0.2,
-      shadowRadius: 20,
+      shadowOffset: { width: 0, height: -4 },
+      shadowOpacity: 0.05,
+      shadowRadius: 10,
     }}>
       {state.routes.map((route: any, index: number) => {
         const isFocused = state.index === index;
@@ -99,22 +97,27 @@ function CustomTabBar({ state, navigation }: any) {
         };
 
         let Icon = Home;
-        if (route.name === 'Home') Icon = Home;
-        if (route.name === 'Analysis') Icon = Activity;
-        if (route.name === 'Community') Icon = Users;
-        if (route.name === 'BloomAI') Icon = MessageCircle;
-        if (route.name === 'Tracker') Icon = CalendarDays;
+        let label = route.name;
+        if (route.name === 'Home') { Icon = Home; label = 'Today'; }
+        if (route.name === 'Analysis') { Icon = Activity; label = 'Analysis'; }
+        if (route.name === 'Community') { Icon = Users; label = 'Community'; }
+        if (route.name === 'BloomAI') { Icon = MessageCircle; label = 'Bloom AI'; }
+        if (route.name === 'Tracker') { Icon = CalendarDays; label = 'Tracker'; }
 
         return (
           <TouchableOpacity key={route.key} onPress={onPress} activeOpacity={0.8} style={{
-            width: 44,
-            height: 44,
-            borderRadius: 22,
-            backgroundColor: isFocused ? 'rgba(192, 132, 252, 0.2)' : 'transparent',
-            justifyContent: 'center',
+            flex: 1,
             alignItems: 'center',
+            justifyContent: 'center',
+            paddingVertical: 4,
           }}>
             <Icon size={24} color={isFocused ? theme.colors.primary : '#9CA3AF'} strokeWidth={isFocused ? 2.5 : 2} />
+            <Text style={{
+              fontSize: 10,
+              color: isFocused ? theme.colors.primary : '#9CA3AF',
+              marginTop: 4,
+              fontFamily: theme.typography.families.bodySemibold
+            }}>{label}</Text>
           </TouchableOpacity>
         );
       })}

@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: theme.spacing[5],
-    paddingBottom: 120, // Avoid bottom nav bar
+    paddingBottom: theme.spacing[6],
   },
   profileHeader: {
     alignItems: 'center',

@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     padding: theme.spacing[5],
-    paddingBottom: 120, // avoid floating bottom tab bar
+    paddingBottom: theme.spacing[6],
   },
   header: {
     marginBottom: theme.spacing[6],
