@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: theme.spacing[4],
-    paddingBottom: 80, // Space for FAB
+    paddingBottom: 160, // Space for FAB and Bottom Nav
     gap: theme.spacing[4],
   },
   postCard: {
