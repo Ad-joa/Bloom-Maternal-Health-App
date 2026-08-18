@@ -23,6 +23,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { Home, Activity, Users, MessageCircle, CalendarDays } from 'lucide-react-native';
 import { StyleSheet, TouchableOpacity, View, Platform, Text } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { theme } from './src/theme/theme';
 import * as Font from 'expo-font';
@@ -74,21 +75,24 @@ function CustomTabBar({ state, navigation }: any) {
   return (
     <View style={{
       position: 'absolute',
-      backgroundColor: '#FFFFFF',
       bottom: Platform.OS === 'ios' ? 34 : 24,
       left: 16,
       right: 16,
-      borderRadius: 32,
-      flexDirection: 'row',
-      justifyContent: 'space-around',
-      alignItems: 'center',
-      paddingVertical: 12,
       elevation: 10,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.1,
       shadowRadius: 12,
     }}>
+      <BlurView intensity={80} tint="light" style={{
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+        overflow: 'hidden',
+        borderRadius: 32,
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        paddingVertical: 12,
+      }}>
       {state.routes.map((route: any, index: number) => {
         const isFocused = state.index === index;
         const onPress = () => {
@@ -123,6 +127,7 @@ function CustomTabBar({ state, navigation }: any) {
           </TouchableOpacity>
         );
       })}
+      </BlurView>
     </View>
   );
 }
