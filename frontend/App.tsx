@@ -73,19 +73,21 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 function CustomTabBar({ state, navigation }: any) {
   return (
     <View style={{
+      position: 'absolute',
       backgroundColor: '#FFFFFF',
+      bottom: Platform.OS === 'ios' ? 34 : 24,
+      left: 16,
+      right: 16,
+      borderRadius: 32,
       flexDirection: 'row',
       justifyContent: 'space-around',
       alignItems: 'center',
-      paddingBottom: Platform.OS === 'ios' ? 32 : 16,
-      paddingTop: 8,
-      borderTopLeftRadius: 24,
-      borderTopRightRadius: 24,
+      paddingVertical: 12,
       elevation: 10,
       shadowColor: '#000',
-      shadowOffset: { width: 0, height: -4 },
-      shadowOpacity: 0.05,
-      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.1,
+      shadowRadius: 12,
     }}>
       {state.routes.map((route: any, index: number) => {
         const isFocused = state.index === index;

@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: theme.spacing[5],
-    paddingBottom: theme.spacing[6],
+    paddingBottom: 120, // Space for floating tab bar
   },
   profileHeader: {
     alignItems: 'center',

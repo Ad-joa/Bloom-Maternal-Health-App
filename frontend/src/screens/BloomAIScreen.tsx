@@ -135,7 +135,7 @@ export default function BloomAIScreen() {
             )}
           </ScrollView>
           
-          <BlurView intensity={80} tint="light" style={[styles.inputArea, { paddingBottom: Platform.OS === 'ios' ? 16 : 24 }]}>
+          <BlurView intensity={80} tint="light" style={[styles.inputArea, { paddingBottom: keyboardVisible ? (Platform.OS === 'ios' ? 16 : 24) : 110 }]}>
             {/* Suggested Prompts */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.promptsContainer}>
               {SUGGESTED_PROMPTS.map((prompt, index) => (

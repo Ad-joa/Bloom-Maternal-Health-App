@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surfaceVariant, // Apple grouped background
     padding: theme.spacing[5],
     paddingTop: theme.spacing[8],
-    paddingBottom: theme.spacing[6],
+    paddingBottom: 120, // Space for floating tab bar
   },
   nudgeCard: {
     backgroundColor: theme.colors.warning + '15',
