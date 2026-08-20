@@ -43,4 +43,29 @@ router.post('/', authenticateToken, async (req: any, res: any) => {
   }
 });
 
+// PUT /anc/:id - Update an ANC visit
+router.put('/:id', authenticateToken, async (req: any, res: any) => {
+  try {
+    const userId = req.user.userId;
+    const visitId = parseInt(req.params.id);
+    const { attendance_status } = req.body;
+    
+    // Ensure the visit belongs to the user
+    const visit = await prisma.anc_visits.findFirst({
+      where: { id: visitId, user_id: userId }
+    });
+    if (!visit) return res.status(404).json({ detail: "Visit not found" });
+
+    const updatedVisit = await prisma.anc_visits.update({
+      where: { id: visitId },
+      data: { status: attendance_status === 'attended' ? 'completed' : visit.status }
+    });
+    
+    res.json(updatedVisit);
+  } catch (error) {
+    console.error("Error updating ANC visit:", error);
+    res.status(500).json({ detail: "Server error updating ANC visit" });
+  }
+});
+
 export default router;
