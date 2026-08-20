@@ -6,12 +6,12 @@ import tokens from '../../design-tokens.json';
 
 export const theme = {
   colors: {
-    // Soft Earth & Teal Palette
-    primary: '#00767E',       // Deep Teal
-    primaryLight: '#CDE2D6',  // Mint/Seafoam
-    primaryDark: '#689D96',   // Slate Teal
+    // Pink Palette (Primary)
+    primary: '#F1959B',       // Salmon Pink
+    primaryLight: '#FBE8E9',  // Light Pink
+    primaryDark: '#D87A80',   // Darker Pink
     
-    accentPink: '#F1959B',    // Salmon Pink
+    accentTeal: '#00767E',    // Deep Teal
     accentOrange: '#EFAC5C',  // Terracotta
     
     background: '#FCF6EA',    // Warm Cream

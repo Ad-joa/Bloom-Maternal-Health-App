@@ -116,15 +116,15 @@ export default function HomeScreen({ navigation }: Props) {
       );
     } else if (goal === "Prepare for Birth") {
       return (
-        <TouchableOpacity activeOpacity={0.8} style={[styles.goalWidget, { backgroundColor: theme.colors.accentPink + '20' }]} onPress={() => navigation.navigate('Advisory')}>
-          <View style={[styles.goalIconWrap, { backgroundColor: theme.colors.accentPink }]}>
+        <TouchableOpacity activeOpacity={0.8} style={[styles.goalWidget, { backgroundColor: theme.colors.accentTeal + '20' }]} onPress={() => navigation.navigate('Advisory')}>
+          <View style={[styles.goalIconWrap, { backgroundColor: theme.colors.accentTeal }]}>
             <Stethoscope size={24} color="#fff" />
           </View>
           <View style={styles.goalTextWrap}>
-            <Typography variant="caption1" color={theme.colors.accentPink} style={{fontFamily: theme.typography.families.headingBold}}>DAILY FOCUS: PREPARE FOR BIRTH</Typography>
+            <Typography variant="caption1" color={theme.colors.accentTeal} style={{fontFamily: theme.typography.families.headingBold}}>DAILY FOCUS: PREPARE FOR BIRTH</Typography>
             <Typography variant="subhead" color={theme.colors.textHigh} style={{marginTop: 4}}>Time to start reviewing your hospital bag checklist.</Typography>
           </View>
-          <ChevronRight size={20} color={theme.colors.accentPink} />
+          <ChevronRight size={20} color={theme.colors.accentTeal} />
         </TouchableOpacity>
       );
     }
