@@ -8,10 +8,9 @@ import { BounceButton } from '../components/BounceButton';
 import { BackgroundMesh } from '../components/BackgroundMesh';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { io } from 'socket.io-client';
+import { getBaseUrl } from '../api/api';
 
-// Connect to the Node.js backend
-// IMPORTANT: In production, this should point to your real backend URL or use environment variables.
-const socket = io('http://127.0.0.1:8000');
+const socket = io(getBaseUrl() || 'http://127.0.0.1:8000');
 
 export default function CommunityScreen() {
   const { theme } = useTheme();
@@ -38,8 +37,6 @@ export default function CommunityScreen() {
   }, []);
 
   const toggleLike = (id: string) => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
     // Optimistic UI update for instantaneous feedback
     setPosts(prev => prev.map(post => {
       if (post.id === id) {
