@@ -8,6 +8,7 @@ import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { GoogleGenAI } from '@google/genai';
+import authRoutes from './routes/auth';
 
 dotenv.config();
 
@@ -88,60 +89,8 @@ io.on('connection', async (socket) => {
   });
 });
 
-// Helper to exclude password from user object
-const excludePassword = (user: any) => {
-  const { hashed_password, ...userWithoutPassword } = user;
-  return userWithoutPassword;
-};
-
-app.get('/', (req, res) => {
-  res.json({ message: "Welcome to the Smart Maternal Health Advisory API (Node.js)" });
-});
-
-app.post('/register', async (req, res) => {
-  try {
-    const { email, password, name } = req.body;
-    
-    const existing = await prisma.users.findUnique({ where: { email } });
-    if (existing) {
-      return res.status(400).json({ detail: "Email already registered" });
-    }
-
-    const hashed_password = await bcrypt.hash(password, 10);
-    const user = await prisma.users.create({
-      data: { email, name, hashed_password }
-    });
-
-    res.json(excludePassword(user));
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ detail: "Server error" });
-  }
-});
-
-app.post('/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    
-    const user = await prisma.users.findUnique({ where: { email } });
-    if (!user || !user.hashed_password) {
-      return res.status(401).json({ detail: "Incorrect email or password" });
-    }
-
-    const valid = await bcrypt.compare(password, user.hashed_password);
-    if (!valid) {
-      return res.status(401).json({ detail: "Incorrect email or password" });
-    }
-
-    res.json({
-      message: "Login successful",
-      user: excludePassword(user)
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ detail: "Server error" });
-  }
-});
+// Modular routes
+app.use('/auth', authRoutes);
 
 app.get('/users/:id', async (req, res) => {
   try {

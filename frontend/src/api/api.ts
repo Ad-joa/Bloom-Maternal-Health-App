@@ -126,7 +126,7 @@ export const getInsights = async (userId: number) => {
 
 export const registerUser = async (userData: any) => {
     try {
-        const response = await apiClient.post('/register', userData);
+        const response = await apiClient.post('/auth/register', userData);
         return response.data;
     } catch (error) {
         console.error("Error registering:", error);
