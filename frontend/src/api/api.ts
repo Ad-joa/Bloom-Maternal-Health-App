@@ -70,18 +70,22 @@ export const loginUser = async (credentials: any) => {
     }
 };
 
-export const saveSymptomLog = async (userId: number, symptoms: string) => {
+export const saveSymptomLog = async (userId: number, logData: any) => {
     try {
-        const response = await apiClient.post(`/users/${userId}/logs`, { symptoms });
+        const response = await apiClient.post(`/users/${userId}/logs`, logData);
         return response.data;
     } catch (error) {
         console.error("Error saving log, attempting to save offline:", error);
-        // Fallback: save to offline queue
         try {
-            const queueStr = await AsyncStorage.getItem(`@offline_logs_${userId}`);
-            const queue = queueStr ? JSON.parse(queueStr) : [];
-            queue.push({ symptoms, timestamp: new Date().toISOString() });
-            await AsyncStorage.setItem(`@offline_logs_${userId}`, JSON.stringify(queue));
+            const { saveSymptomLogLocal } = require('../utils/database');
+            await saveSymptomLogLocal(
+              userId.toString(), 
+              logData.symptoms, 
+              String(logData.severity), 
+              "",
+              logData.blood_pressure,
+              logData.weight
+            );
             return { message: "Saved offline. Will sync when connection is restored." };
         } catch (storageError) {
             console.error("Offline save failed too:", storageError);
@@ -170,6 +174,16 @@ export const createAncVisit = async (userId: number, visitData: any) => {
         return response.data;
     } catch (error) {
         console.error("Error creating ANC visit:", error);
+        throw error;
+    }
+};
+
+export const updateAncVisit = async (userId: number, visitId: number, updateData: any) => {
+    try {
+        const response = await apiClient.put(`/users/${userId}/anc-visits/${visitId}`, updateData);
+        return response.data;
+    } catch (error) {
+        console.error("Error updating ANC visit:", error);
         throw error;
     }
 };

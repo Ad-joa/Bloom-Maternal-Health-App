@@ -6,6 +6,10 @@ import { theme } from '../theme/theme';
 import { Typography } from './Typography';
 import { Button } from './Button';
 
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../App';
+
 type Props = {
   style?: any;
 };
@@ -13,6 +17,7 @@ type Props = {
 export function EmergencyButton({ style }: Props) {
   const [modalVisible, setModalVisible] = useState(false);
   const [pulseAnim] = useState(new Animated.Value(1));
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   React.useEffect(() => {
     Animated.loop(
@@ -32,8 +37,8 @@ export function EmergencyButton({ style }: Props) {
   }, []);
 
   const handleCallHospital = () => {
-    // In a real app, this would use location services to find nearest hospital
-    Linking.openURL('tel:112'); // Ghana emergency number
+    setModalVisible(false);
+    navigation.navigate('EmergencyLocator');
   };
 
   const handleAlertPartner = () => {
@@ -59,7 +64,7 @@ export function EmergencyButton({ style }: Props) {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <View style={styles.alertIconWrap}>
-                <AlertCircle color={theme.colors.error} size={32} />
+                <AlertCircle color={theme.colors.danger} size={32} />
               </View>
               <Typography variant="title2" style={styles.modalTitle}>Emergency Options</Typography>
               <Typography variant="body" color="#666" align="center" style={styles.modalDesc}>
@@ -109,16 +114,16 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: theme.colors.error + '40',
+    backgroundColor: theme.colors.danger + '40',
   },
   iconContainer: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: theme.colors.error,
+    backgroundColor: theme.colors.danger,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: theme.colors.error,
+    shadowColor: theme.colors.danger,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -144,7 +149,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: theme.colors.error + '20',
+    backgroundColor: theme.colors.danger + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,

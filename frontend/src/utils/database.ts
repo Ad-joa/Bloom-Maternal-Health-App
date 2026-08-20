@@ -15,6 +15,8 @@ export const initDatabase = async () => {
         symptoms TEXT NOT NULL,
         severity TEXT NOT NULL,
         notes TEXT,
+        blood_pressure TEXT,
+        weight REAL,
         created_at TEXT NOT NULL,
         is_synced INTEGER DEFAULT 0
       );
@@ -23,13 +25,13 @@ export const initDatabase = async () => {
   return db;
 };
 
-export const saveSymptomLogLocal = async (userId: string, symptoms: string, severity: string, notes: string) => {
+export const saveSymptomLogLocal = async (userId: string, symptoms: string, severity: string, notes: string, bloodPressure?: string, weight?: number) => {
   const database = await initDatabase();
   const createdAt = new Date().toISOString();
   
   const result = await database.runAsync(
-    'INSERT INTO symptom_logs (user_id, symptoms, severity, notes, created_at, is_synced) VALUES (?, ?, ?, ?, ?, 0)',
-    [userId, symptoms, severity, notes, createdAt]
+    'INSERT INTO symptom_logs (user_id, symptoms, severity, notes, blood_pressure, weight, created_at, is_synced) VALUES (?, ?, ?, ?, ?, ?, ?, 0)',
+    [userId, symptoms, severity, notes, bloodPressure || null, weight || null, createdAt]
   );
   return result.lastInsertRowId;
 };
@@ -42,6 +44,8 @@ export const getUnsyncedLogs = async () => {
     symptoms: string;
     severity: string;
     notes: string | null;
+    blood_pressure: string | null;
+    weight: number | null;
     created_at: string;
     is_synced: number;
   }>('SELECT * FROM symptom_logs WHERE is_synced = 0');
