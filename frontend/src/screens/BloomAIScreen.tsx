@@ -18,7 +18,7 @@ interface Message {
   sender: 'ai' | 'user';
 }
 
-export default function BloomAIScreen() {
+export default function BloomAIScreen({ navigation, isNested }: any) {
   const { theme } = useTheme();
   const styles = getStyles(theme);
   const { user } = useAuth();
@@ -79,18 +79,24 @@ export default function BloomAIScreen() {
     "How to manage morning sickness?"
   ];
 
-  return (
-    <View style={styles.container}>
+  const renderContent = () => (
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined} 
+      style={styles.container}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+    >
+      {!isNested && (
+        <View style={styles.header}>
+          <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.headerTitle}>
+            Bloom AI
+          </Typography>
+          <Typography variant="body" color={theme.colors.textMedium}>
+            Your 24/7 intelligent pregnancy guide
+          </Typography>
+        </View>
+      )}
 
-      <SafeAreaView edges={['top']} style={styles.safeArea}>
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined} 
-          style={styles.container}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-        >
-          {/* Custom Header removed in favor of standard tab menu */}
-
-          <ScrollView 
+      <ScrollView 
             ref={scrollViewRef}
             style={styles.scrollView}
             contentContainerStyle={styles.chatContainer}
@@ -172,8 +178,19 @@ export default function BloomAIScreen() {
               </BounceButton>
             </View>
           </BlurView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+        </View>
+    </KeyboardAvoidingView>
+  );
+
+  return (
+    <View style={styles.container}>
+      {isNested ? (
+        renderContent()
+      ) : (
+        <SafeAreaView edges={['top']} style={styles.safeArea}>
+          {renderContent()}
+        </SafeAreaView>
+      )}
     </View>
   );
 }

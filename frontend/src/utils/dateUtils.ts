@@ -2,6 +2,7 @@ export const getDaysUntilDue = (dueDateStr: string): number => {
   if (!dueDateStr) return 0;
   try {
     const due = new Date(dueDateStr);
+    if (isNaN(due.getTime())) return 0;
     const today = new Date();
     const diffTime = due.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -15,6 +16,7 @@ export const getWeeksPregnant = (dueDateStr: string): number => {
   if (!dueDateStr) return 0;
   try {
     const due = new Date(dueDateStr);
+    if (isNaN(due.getTime())) return 0;
     // Average pregnancy is 280 days (40 weeks)
     // If due date is X days away, then days pregnant = 280 - X
     const today = new Date();
