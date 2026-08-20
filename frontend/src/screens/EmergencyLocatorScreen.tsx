@@ -5,7 +5,7 @@ import * as Location from 'expo-location';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, PhoneCall, MapPin } from 'lucide-react-native';
 import { Typography } from '../components/Typography';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Card } from '../components/Card';
 
 // Simulated Ghanaian hospitals/clinics for demonstration
@@ -16,6 +16,8 @@ const MOCK_HOSPITALS = [
 ];
 
 export default function EmergencyLocatorScreen({ navigation }: any) {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,6 +43,8 @@ export default function EmergencyLocatorScreen({ navigation }: any) {
   }, []);
 
   const handleCall = (phone: string) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     Linking.openURL(`tel:${phone.replace(/\s/g, '')}`);
   };
 
@@ -129,7 +133,7 @@ export default function EmergencyLocatorScreen({ navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',

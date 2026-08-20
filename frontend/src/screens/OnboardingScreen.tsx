@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../App';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/Button';
 import { TextInput } from '../components/TextInput';
@@ -26,6 +26,8 @@ type Props = {
 const TOTAL_STEPS = 8;
 
 export default function OnboardingScreen({ navigation }: Props) {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const { user, login } = useAuth();
@@ -50,6 +52,8 @@ export default function OnboardingScreen({ navigation }: Props) {
   const slideAnim = useState(new Animated.Value(0))[0];
 
   const animateTransition = (nextStep: number) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     Animated.parallel([
       Animated.timing(fadeAnim, { toValue: 0, duration: 150, useNativeDriver: true }),
       Animated.timing(slideAnim, { toValue: -20, duration: 150, useNativeDriver: true })
@@ -64,11 +68,15 @@ export default function OnboardingScreen({ navigation }: Props) {
   };
 
   const handleNext = () => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     if (step < TOTAL_STEPS) animateTransition(step + 1);
     else handleComplete();
   };
 
   const handleBack = () => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     if (step > 1) animateTransition(step - 1);
   };
 
@@ -114,6 +122,8 @@ export default function OnboardingScreen({ navigation }: Props) {
   );
 
   const renderStepContent = () => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     switch (step) {
       case 1:
         return (
@@ -259,6 +269,8 @@ export default function OnboardingScreen({ navigation }: Props) {
   };
 
   const isNextDisabled = () => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     if (step === 1 && !dueDate) return true;
     if (step === 2 && !trimester) return true;
     if (step === 3 && isFirstPregnancy === null) return true;
@@ -305,7 +317,7 @@ export default function OnboardingScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: 'transparent' },
   container: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: theme.spacing[4], paddingTop: theme.spacing[2], height: 60 },

@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getAdvisory } from '../api/api';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { Typography } from '../components/Typography';
 import { Send, Sparkles, AlertTriangle, User } from 'lucide-react-native';
@@ -34,6 +34,8 @@ const QUICK_REPLIES = [
 ];
 
 export default function AdvisoryScreen() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
@@ -110,6 +112,8 @@ export default function AdvisoryScreen() {
   };
 
   const renderMessage = ({ item }: { item: Message }) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     const isUser = item.role === 'user';
 
     if (isUser) {
@@ -230,7 +234,7 @@ export default function AdvisoryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

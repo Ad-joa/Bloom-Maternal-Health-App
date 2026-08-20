@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Image, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { Typography } from '../components/Typography';
 import { Apple, Flower, Activity, Heart, ChevronRight, Bell, ChevronDown, ArrowRight, Smile, Clock, Sparkles, Stethoscope, CheckSquare, HeartPulse } from 'lucide-react-native';
@@ -20,6 +20,8 @@ type Props = {
 };
 
 export default function HomeScreen({ navigation }: Props) {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { user } = useAuth();
   const { t } = useTranslation();
   
@@ -43,6 +45,8 @@ export default function HomeScreen({ navigation }: Props) {
   }, [user]);
 
   const getSeverityScore = (symptomsStr: string) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     if (!symptomsStr) return 0;
     if (symptomsStr.toLowerCase().includes('severe') || symptomsStr.toLowerCase().includes('n3') || symptomsStr.toLowerCase().includes('c3')) return 3;
     if (symptomsStr.toLowerCase().includes('moderate') || symptomsStr.toLowerCase().includes('n2') || symptomsStr.toLowerCase().includes('c2')) return 2;
@@ -73,6 +77,8 @@ export default function HomeScreen({ navigation }: Props) {
   const today = new Date();
   
   const renderGoalWidget = () => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     const goal = user?.primary_goal;
 
     if (goal === "Healthy Diet") {
@@ -346,7 +352,7 @@ export default function HomeScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

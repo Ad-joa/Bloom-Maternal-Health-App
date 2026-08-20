@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, AppState, AppStateStatus } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Typography } from './Typography';
 import { BounceButton } from './BounceButton';
 import { Lock } from 'lucide-react-native';
@@ -96,7 +96,7 @@ export const BiometricGate: React.FC<Props> = ({ children }) => {
   return <>{children}</>;
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   lockedContainer: {
     flex: 1,
     backgroundColor: '#fff',

@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, FlatList, Dimensions, Animated } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
 import { BackgroundMesh } from '../components/BackgroundMesh';
 import { Ionicons } from '@expo/vector-icons';
@@ -47,6 +47,8 @@ type WelcomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList,
 type Props = { navigation: WelcomeScreenNavigationProp };
 
 export default function WelcomeScreen({ navigation }: Props) {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const scrollX = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -60,6 +62,8 @@ export default function WelcomeScreen({ navigation }: Props) {
   const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
   const scrollToNext = () => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     if (currentIndex < SLIDES.length - 1) {
       flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
     } else {
@@ -68,6 +72,8 @@ export default function WelcomeScreen({ navigation }: Props) {
   };
 
   const renderItem = ({ item }: { item: typeof SLIDES[0] }) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     return (
       <View style={styles.slide}>
         <View style={styles.slideContent}>
@@ -150,7 +156,7 @@ export default function WelcomeScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',

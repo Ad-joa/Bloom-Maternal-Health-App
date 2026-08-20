@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Animated, Modal, Linking } from 'react-native';
 import { AlertCircle, PhoneCall, MapPin, X } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Typography } from './Typography';
 import { Button } from './Button';
 
@@ -15,6 +15,8 @@ type Props = {
 };
 
 export function EmergencyButton({ style }: Props) {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [modalVisible, setModalVisible] = useState(false);
   const [pulseAnim] = useState(new Animated.Value(1));
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -37,11 +39,15 @@ export function EmergencyButton({ style }: Props) {
   }, []);
 
   const handleCallHospital = () => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     setModalVisible(false);
     navigation.navigate('EmergencyLocator');
   };
 
   const handleAlertPartner = () => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     // Would trigger backend SMS to trusted partner
     alert("Emergency alert SMS sent to your trusted partner.");
   };
@@ -102,7 +108,7 @@ export function EmergencyButton({ style }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   buttonContainer: {
     width: 48,
     height: 48,

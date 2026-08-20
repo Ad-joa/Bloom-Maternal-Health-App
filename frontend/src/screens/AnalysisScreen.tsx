@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,6 +13,8 @@ import { getSymptomLogs } from '../api/api';
 const { width } = Dimensions.get('window');
 
 export default function AnalysisScreen() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { user } = useAuth();
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,6 +31,8 @@ export default function AnalysisScreen() {
   // Transform logs into chart data
   // Assign simple numerical weights to severities: Mild=1, Moderate=2, Severe=3
   const getSeverityScore = (symptomsStr: string) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     if (!symptomsStr) return 0;
     if (symptomsStr.toLowerCase().includes('severe') || symptomsStr.toLowerCase().includes('n3') || symptomsStr.toLowerCase().includes('c3')) return 3;
     if (symptomsStr.toLowerCase().includes('moderate') || symptomsStr.toLowerCase().includes('n2') || symptomsStr.toLowerCase().includes('c2')) return 2;
@@ -117,7 +121,7 @@ export default function AnalysisScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

@@ -7,7 +7,7 @@ import {
   PressableProps,
   StyleProp
 } from 'react-native';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Typography } from './Typography';
 import { BounceButton } from './BounceButton';
 
@@ -63,7 +63,7 @@ export const Button: React.FC<ButtonProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   base: {
     minHeight: 44,
     minWidth: 44,
