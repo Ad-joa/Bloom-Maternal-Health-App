@@ -46,8 +46,6 @@ export default function HomeScreen({ navigation }: Props) {
   }, [user]);
 
   const getSeverityScore = (symptomsStr: string) => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
     if (!symptomsStr) return 0;
     if (symptomsStr.toLowerCase().includes('severe') || symptomsStr.toLowerCase().includes('n3') || symptomsStr.toLowerCase().includes('c3')) return 3;
     if (symptomsStr.toLowerCase().includes('moderate') || symptomsStr.toLowerCase().includes('n2') || symptomsStr.toLowerCase().includes('c2')) return 2;
@@ -78,8 +76,6 @@ export default function HomeScreen({ navigation }: Props) {
   const today = new Date();
   
   const renderGoalWidget = () => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
     const goal = user?.primary_goal;
 
     if (goal === "Healthy Diet") {
