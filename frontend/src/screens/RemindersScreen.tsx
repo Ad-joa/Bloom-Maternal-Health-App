@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Anima
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { scheduleHydrationReminder, scheduleMedicationReminder, registerForPushNotificationsAsync } from '../utils/notifications';
 import * as Notifications from 'expo-notifications';
@@ -13,6 +13,8 @@ import { useAuth } from '../context/AuthContext';
 import { getReminders, createReminder, deleteReminder } from '../api/api';
 
 export default function RemindersScreen() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { user } = useAuth();
   const [remindersList, setRemindersList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -162,7 +164,7 @@ export default function RemindersScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
   scrollContent: { padding: theme.spacing[5] },

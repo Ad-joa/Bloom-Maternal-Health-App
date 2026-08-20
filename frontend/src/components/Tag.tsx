@@ -1,6 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Typography } from './Typography';
 
 export interface TagProps {
@@ -39,7 +39,7 @@ export const Tag: React.FC<TagProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     paddingVertical: theme.spacing[2],
     paddingHorizontal: theme.spacing[4],

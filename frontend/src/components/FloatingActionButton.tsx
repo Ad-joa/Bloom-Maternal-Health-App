@@ -1,6 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet, ViewStyle, View } from 'react-native';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Typography } from './Typography';
 
 export interface FloatingActionButtonProps {
@@ -32,7 +32,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     backgroundColor: theme.colors.primary,
     position: 'absolute',

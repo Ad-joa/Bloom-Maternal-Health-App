@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
@@ -17,10 +17,14 @@ const QUESTIONS = [
 const EMOJIS = ['😭', '😔', '😐', '🙂', '🥰'];
 
 export default function CheckInScreen({ navigation }: any) {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [answers, setAnswers] = useState<Record<number, boolean>>({});
   const [vibe, setVibe] = useState<number | null>(null);
 
   const handleFinish = () => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     // Save to DB and calculate trend
     navigation.goBack();
   };
@@ -90,7 +94,7 @@ export default function CheckInScreen({ navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: theme.spacing[5],

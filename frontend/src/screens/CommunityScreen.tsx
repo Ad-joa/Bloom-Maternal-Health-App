@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Animated, Platform, FlatList, KeyboardAvoidingView, Switch, UIManager, LayoutAnimation, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { BounceButton } from '../components/BounceButton';
@@ -14,6 +14,8 @@ import { io } from 'socket.io-client';
 const socket = io('http://127.0.0.1:8000');
 
 export default function CommunityScreen() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -36,6 +38,8 @@ export default function CommunityScreen() {
   }, []);
 
   const toggleLike = (id: string) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     // Optimistic UI update for instantaneous feedback
     setPosts(prev => prev.map(post => {
       if (post.id === id) {
@@ -134,7 +138,7 @@ export default function CommunityScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

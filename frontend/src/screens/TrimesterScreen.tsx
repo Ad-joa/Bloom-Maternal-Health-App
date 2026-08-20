@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Anima
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp } from '@react-navigation/native';
 import { getTrimesterInfo } from '../api/api';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { ChevronDown, ChevronUp, AlertTriangle, CheckCircle, Baby, Activity } from 'lucide-react-native';
@@ -27,9 +27,13 @@ interface Props {
 }
 
 const AccordionItem = ({ title, icon, children, defaultOpen = false }: any) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   const toggleOpen = () => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setIsOpen(!isOpen);
@@ -54,6 +58,8 @@ const AccordionItem = ({ title, icon, children, defaultOpen = false }: any) => {
 };
 
 export default function TrimesterScreen({ route }: Props) {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { trimesterId } = route.params;
   const [info, setInfo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -161,7 +167,7 @@ export default function TrimesterScreen({ route }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
   },

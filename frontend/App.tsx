@@ -26,7 +26,7 @@ import { Home, Activity, Users, MessageCircle, CalendarDays } from 'lucide-react
 import { StyleSheet, TouchableOpacity, View, Platform, Text } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { theme } from './src/theme/theme';
+import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
 import * as Font from 'expo-font';
 import './src/i18n';
 import * as SplashScreen from 'expo-splash-screen';
@@ -164,6 +164,7 @@ function MainTabs() {
 
 function Navigation() {
   const { isAuthenticated, user } = useAuth();
+  const { theme } = useTheme();
   const needsOnboarding = isAuthenticated && !user?.due_date;
 
   return (
@@ -302,12 +303,14 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="dark" />
-      <AuthProvider>
-        <BiometricGate>
-          <Navigation />
-        </BiometricGate>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <BiometricGate>
+            <Navigation />
+            <StatusBar style="auto" />
+          </BiometricGate>
+        </AuthProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

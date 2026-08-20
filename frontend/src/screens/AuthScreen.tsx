@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { TextInput } from '../components/TextInput';
 import { Typography } from '../components/Typography';
@@ -48,6 +48,8 @@ const calculatePasswordStrength = (password: string): PasswordStrength => {
 };
 
 export default function AuthScreen({ navigation }: Props) {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   // State
   const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [registrationStep, setRegistrationStep] = useState<RegistrationStep>('details');
@@ -72,6 +74,8 @@ export default function AuthScreen({ navigation }: Props) {
 
   // --- Handlers ---
   const handleInputChange = (field: string, value: string | boolean) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
@@ -137,6 +141,8 @@ export default function AuthScreen({ navigation }: Props) {
   const strength = calculatePasswordStrength(formData.password);
   
   const getStrengthColor = (score: number) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     if (score <= 1) return '#FF3B30'; // red
     if (score <= 2) return '#FF9500'; // orange
     if (score <= 3) return '#FFCC00'; // yellow
@@ -146,6 +152,8 @@ export default function AuthScreen({ navigation }: Props) {
 
   // --- Render Sections ---
   const renderPasswordStrength = () => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     if (!formData.password) return null;
     return (
       <View style={styles.strengthContainer}>
@@ -420,7 +428,7 @@ export default function AuthScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   formContainer: {
     gap: 20,
   },

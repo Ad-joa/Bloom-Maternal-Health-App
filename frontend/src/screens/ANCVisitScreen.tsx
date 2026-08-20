@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Modal, Alert } from 'react-native';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { CheckCircle2, CalendarHeart, Plus, Check } from 'lucide-react-native';
@@ -10,6 +10,8 @@ import { TextInput } from '../components/TextInput';
 import { Button } from '../components/Button';
 
 export default function ANCVisitScreen() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { user } = useAuth();
   const [visits, setVisits] = useState<any[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -192,7 +194,7 @@ export default function ANCVisitScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   addBtn: {
     backgroundColor: theme.colors.primary,
     padding: 8,

@@ -5,6 +5,7 @@ import { BackgroundMesh } from '../components/BackgroundMesh';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { useAuth } from '../context/AuthContext';
@@ -16,6 +17,7 @@ import * as Sharing from 'expo-sharing';
 
 export default function ProfileScreen({ navigation }: any) {
   const { user, logout } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const [biometricsEnabled, setBiometricsEnabled] = useState(false);
 
   useEffect(() => {
@@ -98,6 +100,14 @@ export default function ProfileScreen({ navigation }: any) {
     <View style={styles.container}>
 
       <SafeAreaView edges={['top']} style={styles.safeArea}>
+        <View style={styles.header}>
+          <Typography variant="largeTitle" color={theme.colors.primaryDark}>
+            Profile
+          </Typography>
+          <TouchableOpacity style={styles.themeToggle} onPress={toggleTheme}>
+            <Ionicons name={isDark ? "sunny" : "moon"} size={24} color={theme.colors.primaryDark} />
+          </TouchableOpacity>
+        </View>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
       <View style={styles.profileHeader}>
@@ -277,6 +287,19 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
+  },
+  header: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 24,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  themeToggle: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0,0,0,0.05)',
   },
   scrollContent: {
     padding: theme.spacing[5],

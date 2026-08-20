@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
 import { BackgroundMesh } from '../components/BackgroundMesh';
 import { X, Heart, Calendar, Droplets, Moon, Baby, Stethoscope } from 'lucide-react-native';
@@ -14,6 +14,8 @@ import { TextInput } from '../components/TextInput';
 import { Button } from '../components/Button';
 
 export default function PartnerModeScreen({ navigation }: any) {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { user } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [dashboardData, setDashboardData] = useState<any>(null);
@@ -62,6 +64,8 @@ export default function PartnerModeScreen({ navigation }: any) {
   
   // Simple mock mapping for baby size based on weeks
   const getBabySize = (weeks: number) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     if (weeks < 13) return { emoji: '🍋', name: 'Lemon' };
     if (weeks < 27) return { emoji: '🌽', name: 'Ear of Corn' };
     return { emoji: '🍉', name: 'Watermelon' };
@@ -222,7 +226,7 @@ const SupportItem = ({ icon, bg, text }: { icon: React.ReactNode; bg: string; te
 );
 
 // ─── Styles ──────────────────────────────────────────────
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',

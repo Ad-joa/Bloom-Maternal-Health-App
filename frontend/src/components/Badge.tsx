@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Typography } from './Typography';
 
 export interface BadgeProps {
@@ -36,7 +36,7 @@ export const Badge: React.FC<BadgeProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   dot: {
     width: 8,
     height: 8,

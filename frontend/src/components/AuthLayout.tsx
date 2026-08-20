@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Typography } from './Typography';
 import { FadeSlideIn } from './FadeSlideIn';
 import { BackgroundMesh } from './BackgroundMesh';
@@ -14,6 +14,8 @@ interface AuthLayoutProps {
 }
 
 export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   return (
     <View style={styles.container}>
       {/* Edge-to-edge abstract mesh background */}
@@ -58,7 +60,7 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000', // Should be entirely covered by BackgroundMesh

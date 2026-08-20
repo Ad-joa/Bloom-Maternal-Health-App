@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, LayoutAnimation, Platform, UIManager, Alert, ActivityIndicator } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { saveSymptomLog, getInsights } from '../api/api';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
@@ -48,6 +48,8 @@ const SYMPTOMS = [
 ];
 
 export default function DailyLogScreen({ navigation }: any) {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { user } = useAuth();
   
   // Track expanded accordion state
@@ -75,11 +77,15 @@ export default function DailyLogScreen({ navigation }: any) {
   }, [user]);
 
   const toggleExpand = (id: string) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setExpandedSymptom(prev => prev === id ? null : id);
   };
 
   const selectIntensity = (symptomId: string, optionId: string) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setSelections(prev => ({
       ...prev,
@@ -232,7 +238,7 @@ export default function DailyLogScreen({ navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flexGrow: 1,
     backgroundColor: theme.colors.surfaceVariant, // Apple grouped background

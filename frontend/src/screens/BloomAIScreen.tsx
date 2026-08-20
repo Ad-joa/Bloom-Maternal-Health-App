@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Animated, Platform, FlatList, KeyboardAvoidingView, Switch, UIManager, LayoutAnimation, ActivityIndicator, TextInput as RNTextInput, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
 import { BounceButton } from '../components/BounceButton';
 import { BackgroundMesh } from '../components/BackgroundMesh';
@@ -19,6 +19,8 @@ interface Message {
 }
 
 export default function BloomAIScreen() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { user } = useAuth();
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -67,6 +69,8 @@ export default function BloomAIScreen() {
   };
 
   const handlePromptPress = (prompt: string) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
     setInputText(prompt);
   };
 
@@ -176,7 +180,7 @@ export default function BloomAIScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

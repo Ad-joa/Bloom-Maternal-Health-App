@@ -1,10 +1,6 @@
 import tokens from '../../design-tokens.json';
 
-// Note: For a robust app, you would export separate `lightTheme` and `darkTheme`
-// and switch between them using Context and `useColorScheme()`.
-// This is the default Light Theme mapping for immediate usage.
-
-export const theme = {
+export const lightTheme = {
   colors: {
     // Pink Palette (Primary)
     primary: '#F1959B',       // Salmon Pink
@@ -50,46 +46,58 @@ export const theme = {
       footnote: parseInt(tokens.typography.sizes.footnote.value, 10),
       caption1: parseInt(tokens.typography.sizes.caption1.value, 10),
       caption2: parseInt(tokens.typography.sizes.caption2.value, 10),
-    },
-    weights: {
-      regular: tokens.typography.weights.regular.value,
-      medium: tokens.typography.weights.medium.value,
-      semibold: tokens.typography.weights.semibold.value,
-      bold: tokens.typography.weights.bold.value,
     }
   },
   spacing: {
-    1: parseInt(tokens.spacing["1"].value, 10),
-    2: parseInt(tokens.spacing["2"].value, 10),
-    3: parseInt(tokens.spacing["3"].value, 10),
-    4: parseInt(tokens.spacing["4"].value, 10),
-    5: parseInt(tokens.spacing["5"].value, 10),
-    6: parseInt(tokens.spacing["6"].value, 10),
-    7: parseInt(tokens.spacing["7"].value, 10),
-    8: parseInt(tokens.spacing["8"].value, 10),
+    1: 4,
+    2: 8,
+    3: 12,
+    4: 16,
+    5: 20,
+    6: 24,
+    7: 28,
+    8: 32,
+    9: 36,
+    10: 40,
+    // Provide string aliases mapped to numbers for backward compatibility
+    "1": 4, "2": 8, "3": 12, "4": 16, "5": 20,
+    "6": 24, "7": 28, "8": 32, "9": 36, "10": 40
   },
-  radii: {
-    none: parseInt(tokens.radii.none.value, 10),
-    sm: parseInt(tokens.radii.sm.value, 10),
-    md: parseInt(tokens.radii.md.value, 10),
-    lg: parseInt(tokens.radii.lg.value, 10),
-    xl: parseInt(tokens.radii.xl.value, 10),
-    pill: 9999,
-  },
-  shadows: {
-    soft: {
-      shadowColor: '#1C1C1E',
-      shadowOffset: { width: 0, height: 10 },
-      shadowOpacity: 0.05,
-      shadowRadius: 30,
-      elevation: 2,
-    },
-    medium: {
-      shadowColor: '#1C1C1E',
-      shadowOffset: { width: 0, height: 16 },
-      shadowOpacity: 0.08,
-      shadowRadius: 40,
-      elevation: 4,
-    }
+  borderRadius: {
+    sm: 4,
+    md: 8,
+    lg: 12,
+    xl: 16,
+    '2xl': 24,
+    full: 9999,
   }
 };
+
+export const darkTheme = {
+  ...lightTheme,
+  colors: {
+    primary: '#D87A80',
+    primaryLight: '#3E2A2C', 
+    primaryDark: '#F1959B', 
+    
+    accentTeal: '#689D96',    
+    accentOrange: '#EFAC5C',  
+    
+    background: '#121212',    // Deep Dark
+    
+    success: '#34C759',       
+    warning: '#FF9500',       
+    danger: '#FF453A',        
+    info: '#0A84FF',          
+    
+    surface: '#1E1E1E',       // Dark surface
+    surfaceVariant: '#2C2C2E',
+    textHigh: '#F5F5F5',      // Light text
+    textMedium: '#A0A0A5',    // Muted light text
+    border: 'rgba(255, 255, 255, 0.1)', 
+  }
+};
+
+// Default export for backward compatibility during refactor
+export const theme = lightTheme;
+export type Theme = typeof lightTheme;
