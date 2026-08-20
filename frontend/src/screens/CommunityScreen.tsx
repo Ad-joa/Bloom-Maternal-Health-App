@@ -13,8 +13,8 @@ import { getBaseUrl } from '../api/api';
 const socket = io(getBaseUrl() || 'http://127.0.0.1:8000');
 
 export default function CommunityScreen({ navigation, isNested }: any) {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
+  const { theme, isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -146,7 +146,7 @@ export default function CommunityScreen({ navigation, isNested }: any) {
   );
 }
 
-const getStyles = (theme: any) => StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -184,9 +184,9 @@ const getStyles = (theme: any) => StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.6)',
+    borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: theme.spacing[3],
@@ -201,7 +201,7 @@ const getStyles = (theme: any) => StyleSheet.create({
   postFooter: {
     flexDirection: 'row',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.5)',
+    borderTopColor: theme.colors.border,
     paddingTop: theme.spacing[3],
     gap: theme.spacing[6],
   },

@@ -10,15 +10,18 @@ import CommunityFeed from './CommunityScreen';
 import BloomAIChat from './BloomAIScreen';
 
 export default function SupportScreen({ navigation }: any) {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
+  const { theme, isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
   const [activeTab, setActiveTab] = useState<'community' | 'ai'>('community');
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       <LinearGradient 
-        colors={['#FFF5F5', '#FFFFFF', '#FAFAFA']} 
+        colors={isDark
+          ? ['#1A1A1A', '#121212', '#121212']
+          : ['#FFF5F5', '#FFFFFF', '#FAFAFA']
+        } 
         style={StyleSheet.absoluteFillObject}
         start={{x: 0, y: 0}} end={{x: 0, y: 1}}
       />
@@ -64,7 +67,7 @@ export default function SupportScreen({ navigation }: any) {
   );
 }
 
-const getStyles = (theme: any) => StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -87,7 +90,7 @@ const getStyles = (theme: any) => StyleSheet.create({
   },
   segmentedControl: {
     flexDirection: 'row',
-    backgroundColor: theme.colors.border,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
     borderRadius: 100,
     padding: 4,
   },
@@ -98,10 +101,10 @@ const getStyles = (theme: any) => StyleSheet.create({
     borderRadius: 100,
   },
   segmentActive: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.12)' : '#FFF',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOpacity: isDark ? 0.3 : 0.05,
     shadowRadius: 4,
     elevation: 2,
   },

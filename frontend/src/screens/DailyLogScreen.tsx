@@ -20,8 +20,8 @@ const SYMPTOMS_GRID = [
 ];
 
 export default function TrackerScreen({ navigation }: any) {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
+  const { theme, isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
   const { user } = useAuth();
   
   const dueDate = user?.due_date || '';
@@ -87,9 +87,12 @@ export default function TrackerScreen({ navigation }: any) {
       style={styles.container} 
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       <LinearGradient 
-        colors={['#FFF5F5', '#FFFFFF', '#FAFAFA']} 
+        colors={isDark
+          ? ['#1A1A1A', '#121212', '#121212']
+          : ['#FFF5F5', '#FFFFFF', '#FAFAFA']
+        } 
         style={StyleSheet.absoluteFillObject}
         start={{x: 0, y: 0}} end={{x: 0, y: 1}}
       />
@@ -107,8 +110,8 @@ export default function TrackerScreen({ navigation }: any) {
             <View style={styles.nudgeCard}>
               <AlertCircle color="#F59E0B" size={24} />
               <View style={styles.nudgeTextWrap}>
-                <Typography variant="subhead" style={{color: '#92400E', fontFamily: theme.typography.families.headingBold}}>It's been a while!</Typography>
-                <Typography variant="caption1" style={{color: '#B45309'}}>Logging helps your care team monitor your health.</Typography>
+              <Typography variant="subhead" style={{color: isDark ? '#FCD34D' : '#92400E', fontFamily: theme.typography.families.headingBold}}>It's been a while!</Typography>
+                <Typography variant="caption1" style={{color: isDark ? '#FDE68A' : '#B45309'}}>Logging helps your care team monitor your health.</Typography>
               </View>
             </View>
           )}
@@ -167,8 +170,8 @@ export default function TrackerScreen({ navigation }: any) {
                       isSelected && { borderColor: symptom.color, backgroundColor: symptom.color + '10' }
                     ]}
                   >
-                    <View style={[styles.symptomIconBg, { backgroundColor: isSelected ? symptom.color : '#F3F4F6' }]}>
-                      <symptom.icon size={20} color={isSelected ? '#FFF' : '#6B7280'} />
+                    <View style={[styles.symptomIconBg, { backgroundColor: isSelected ? symptom.color : (isDark ? 'rgba(255,255,255,0.1)' : '#F3F4F6') }]}>
+                      <symptom.icon size={20} color={isSelected ? '#FFF' : (isDark ? 'rgba(255,255,255,0.6)' : '#6B7280')} />
                     </View>
                     <Typography variant="subhead" style={[styles.symptomLabel, isSelected && { color: symptom.color, fontFamily: theme.typography.families.headingBold }]}>
                       {symptom.label}
@@ -215,7 +218,7 @@ export default function TrackerScreen({ navigation }: any) {
   );
 }
 
-const getStyles = (theme: any) => StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -248,12 +251,12 @@ const getStyles = (theme: any) => StyleSheet.create({
   nudgeCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FEF3C7',
+    backgroundColor: isDark ? 'rgba(245,158,11,0.15)' : '#FEF3C7',
     padding: 16,
     borderRadius: 16,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#FDE68A',
+    borderColor: isDark ? 'rgba(245,158,11,0.25)' : '#FDE68A',
   },
   nudgeTextWrap: {
     marginLeft: 12,

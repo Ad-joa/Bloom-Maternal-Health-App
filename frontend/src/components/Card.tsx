@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, ViewProps, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 
 export type CardVariant = 'elevated' | 'outlined' | 'filled' | 'glass';
 
@@ -18,18 +18,33 @@ export const Card: React.FC<CardProps> = ({
   children,
   ...props
 }) => {
-  const containerStyle: StyleProp<ViewStyle> = [
-    styles.base,
-    variant === 'elevated' ? styles.elevated : undefined,
-    variant === 'outlined' ? styles.outlined : undefined,
-    variant === 'filled' ? styles.filled : undefined,
-    variant === 'glass' ? styles.glass : undefined,
-    style,
-  ];
+  const { theme, isDark } = useTheme();
+
+  const base: StyleProp<ViewStyle> = {
+    borderRadius: 24,
+    padding: theme.spacing[5],
+    backgroundColor: theme.colors.surface,
+  };
+
+  const variantStyle: StyleProp<ViewStyle> =
+    variant === 'elevated'
+      ? { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: isDark ? 0.3 : 0.08, shadowRadius: 8, elevation: 3 }
+      : variant === 'outlined'
+      ? { borderWidth: 1, borderColor: theme.colors.border, backgroundColor: 'transparent' }
+      : variant === 'filled'
+      ? { backgroundColor: theme.colors.surfaceVariant }
+      : {}; // glass handled separately
+
+  const containerStyle: StyleProp<ViewStyle> = [base, variantStyle, style];
 
   if (variant === 'glass') {
     return (
-      <BlurView intensity={intensity} tint="light" style={containerStyle as any} {...props as any}>
+      <BlurView
+        intensity={isDark ? 30 : intensity}
+        tint={isDark ? 'dark' : 'light'}
+        style={[base, style] as any}
+        {...props as any}
+      >
         {children}
       </BlurView>
     );
@@ -41,28 +56,3 @@ export const Card: React.FC<CardProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  base: {
-    borderRadius: 24, // Apple style highly rounded cards
-    padding: theme.spacing[5],
-    backgroundColor: theme.colors.surface,
-  },
-  elevated: {
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2,
-  },
-  outlined: {
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: 'transparent',
-  },
-  filled: {
-    backgroundColor: theme.colors.surfaceVariant,
-  },
-  glass: {
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    overflow: 'hidden',
-    borderColor: 'rgba(255, 255, 255, 0.6)',
-    borderWidth: 1,
-  }
-});
