@@ -1,6 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
-import { useTheme } from '../theme/ThemeContext';
+import { theme } from '../theme/theme';
 import { Typography } from './Typography';
 
 export interface TagProps {
@@ -39,11 +39,11 @@ export const Tag: React.FC<TagProps> = ({
   );
 };
 
-const getStyles = (theme: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     paddingVertical: theme.spacing[2],
     paddingHorizontal: theme.spacing[4],
-    borderRadius: theme.radii.pill, // Flo App uses highly rounded, pill-like tags
+    borderRadius: theme.borderRadius.full, // Flo App uses highly rounded, pill-like tags
     borderWidth: 1,
     alignSelf: 'flex-start',
     justifyContent: 'center',

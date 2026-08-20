@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, ViewProps, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { useTheme } from '../theme/ThemeContext';
+import { theme } from '../theme/theme';
 
 export type CardVariant = 'elevated' | 'outlined' | 'filled' | 'glass';
 
@@ -42,14 +42,14 @@ export const Card: React.FC<CardProps> = ({
   );
 };
 
-const getStyles = (theme: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   base: {
     borderRadius: 24, // Apple style highly rounded cards
     padding: theme.spacing[5],
     backgroundColor: theme.colors.surface,
   },
   elevated: {
-    ...theme.shadows.soft,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2,
   },
   outlined: {
     borderWidth: 1,

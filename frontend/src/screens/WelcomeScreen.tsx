@@ -1,4 +1,6 @@
 import React, { useRef, useState } from 'react';
+import { Button } from '../components/Button';
+import { theme } from '../theme/theme';
 import { View, StyleSheet, TouchableOpacity, FlatList, Dimensions, Animated } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
@@ -62,18 +64,14 @@ export default function WelcomeScreen({ navigation }: Props) {
   const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
   const scrollToNext = () => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
     if (currentIndex < SLIDES.length - 1) {
       flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
     } else {
-      navigation.navigate('Auth');
+      navigation.navigate('PrivacyConsent' as never);
     }
   };
 
   const renderItem = ({ item }: { item: typeof SLIDES[0] }) => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
     return (
       <View style={styles.slide}>
         <View style={styles.slideContent}>
@@ -132,7 +130,7 @@ export default function WelcomeScreen({ navigation }: Props) {
               return (
                 <Animated.View
                   key={i.toString()}
-                  style={[styles.dot, { width: dotWidth, opacity }]}
+                  style={[styles.dot, { width: dotWidth, opacity, backgroundColor: theme.colors.textHigh }]}
                 />
               );
             })}
@@ -150,6 +148,9 @@ export default function WelcomeScreen({ navigation }: Props) {
               )}
             </View>
           </BounceButton>
+          {currentIndex === SLIDES.length - 1 && (
+             <Button title="I already have an account" variant="secondary" onPress={() => navigation.navigate('Login' as never)} style={{marginTop: 16, width: '100%'}} />
+          )}
         </View>
       </SafeAreaView>
     </View>

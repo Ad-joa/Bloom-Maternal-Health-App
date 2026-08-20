@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, TextProps, StyleSheet } from 'react-native';
-import { useTheme } from '../theme/ThemeContext';
+import { theme } from '../theme/theme';
 
 export type TypographyVariant = 
   | 'largeTitle'
@@ -47,7 +47,7 @@ export const Typography: React.FC<TypographyProps> = ({
 };
 
 // Map variants to specific font families instead of generic weights
-const getStyles = (theme: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   base: {
     // Default base styles
   },

@@ -9,6 +9,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import { scheduleDailyReminder } from '../utils/notifications';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -18,7 +19,9 @@ import * as Sharing from 'expo-sharing';
 export default function ProfileScreen({ navigation }: any) {
   const { user, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
+  const { i18n } = useTranslation();
   const [biometricsEnabled, setBiometricsEnabled] = useState(false);
+  const [selectedLang, setSelectedLang] = useState(i18n.language || 'en');
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -28,10 +31,14 @@ export default function ProfileScreen({ navigation }: any) {
     loadSettings();
   }, []);
 
-
   const toggleBiometrics = async (value: boolean) => {
     setBiometricsEnabled(value);
     await AsyncStorage.setItem('@app_biometrics_enabled', value ? 'true' : 'false');
+  };
+
+  const changeLanguage = (lang: string) => {
+    i18n.changeLanguage(lang);
+    setSelectedLang(lang);
   };
 
   const handleExportPDF = async () => {
@@ -118,6 +125,29 @@ export default function ProfileScreen({ navigation }: any) {
         </BlurView>
         <Typography variant="title2" style={styles.name}>{user?.name || 'Bloom User'}</Typography>
         <Typography variant="body" color={theme.colors.textMedium}>{user?.email || 'user@example.com'}</Typography>
+      </View>
+
+      <View style={styles.section}>
+        <Typography variant="subhead" color={theme.colors.textMedium} style={styles.sectionLabel}>
+          LANGUAGE
+        </Typography>
+        <Card variant="glass" style={styles.menuCard}>
+          <View style={styles.menuItem}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="language" size={20} color={theme.colors.primary} />
+              <Typography variant="body" style={styles.menuItemText}>App Language</Typography>
+            </View>
+            <View style={{flexDirection: 'row', gap: 8}}>
+              {['en', 'twi', 'ga', 'ewe'].map(lang => (
+                <TouchableOpacity key={lang} onPress={() => changeLanguage(lang)} style={{padding: 4, opacity: selectedLang === lang ? 1 : 0.5}}>
+                  <Typography variant="subhead" color={selectedLang === lang ? theme.colors.primary : theme.colors.textMedium}>
+                    {lang.toUpperCase()}
+                  </Typography>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </Card>
       </View>
 
       <View style={styles.section}>

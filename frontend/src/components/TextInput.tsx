@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TextInput as RNTextInput, TextInputProps, StyleSheet, ViewStyle } from 'react-native';
-import { useTheme } from '../theme/ThemeContext';
+import { theme } from '../theme/theme';
 import { Typography } from './Typography';
 
 export interface CustomTextInputProps extends TextInputProps {
@@ -58,7 +58,7 @@ export const TextInput: React.FC<CustomTextInputProps> = ({
   );
 };
 
-const getStyles = (theme: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   wrapper: {
     marginBottom: theme.spacing[4],
   },
