@@ -12,7 +12,7 @@ import AuthScreen from './src/screens/AuthScreen';
 import AnalysisScreen from './src/screens/AnalysisScreen';
 import BloomAIScreen from './src/screens/BloomAIScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
-import CommunityScreen from './src/screens/CommunityScreen';
+import SupportScreen from './src/screens/SupportScreen';
 import ArticleScreen from './src/screens/ArticleScreen';
 import PrivacyConsentScreen from './src/screens/PrivacyConsentScreen';
 import RemindersScreen from './src/screens/RemindersScreen';
@@ -68,10 +68,9 @@ export type RootStackParamList = {
 
 export type MainTabParamList = {
   Home: undefined;
-  Analysis: undefined;
-  Community: undefined;
-  BloomAI: undefined;
   Tracker: undefined;
+  Support: undefined;
+  Profile: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -111,10 +110,9 @@ function CustomTabBar({ state, navigation }: any) {
         let Icon = Home;
         let label = route.name;
         if (route.name === 'Home') { Icon = Home; label = 'Today'; }
-        if (route.name === 'Analysis') { Icon = Activity; label = 'Analysis'; }
-        if (route.name === 'Community') { Icon = Users; label = 'Community'; }
-        if (route.name === 'BloomAI') { Icon = MessageCircle; label = 'Bloom AI'; }
-        if (route.name === 'Tracker') { Icon = CalendarDays; label = 'Tracker'; }
+        if (route.name === 'Tracker') { Icon = Activity; label = 'Tracker'; }
+        if (route.name === 'Support') { Icon = Users; label = 'Support'; }
+        if (route.name === 'Profile') { Icon = MessageCircle; label = 'Profile'; }
 
         return (
           <TouchableOpacity key={route.key} onPress={onPress} activeOpacity={0.8} style={{
@@ -158,10 +156,9 @@ function MainTabs() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Today', headerShown: false }} />
-      <Tab.Screen name="Analysis" component={AnalysisScreen} options={{ title: 'Analysis' }} />
-      <Tab.Screen name="Community" component={CommunityScreen} options={{ title: 'Community' }} />
-      <Tab.Screen name="BloomAI" component={BloomAIScreen} options={{ title: 'Bloom AI' }} />
-      <Tab.Screen name="Tracker" component={DailyLogScreen} options={{ title: 'Tracker' }} />
+      <Tab.Screen name="Tracker" component={DailyLogScreen} options={{ title: 'Tracker', headerShown: false }} />
+      <Tab.Screen name="Support" component={SupportScreen} options={{ title: 'Support', headerShown: false }} />
+      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile', headerShown: false }} />
     </Tab.Navigator>
   );
 }

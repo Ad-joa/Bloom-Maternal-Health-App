@@ -12,7 +12,7 @@ import { getBaseUrl } from '../api/api';
 
 const socket = io(getBaseUrl() || 'http://127.0.0.1:8000');
 
-export default function CommunityScreen() {
+export default function CommunityScreen({ navigation, isNested }: any) {
   const { theme } = useTheme();
   const styles = getStyles(theme);
   const [posts, setPosts] = useState<any[]>([]);
@@ -88,25 +88,24 @@ export default function CommunityScreen() {
     </View>
   );
 
-  return (
-    <View style={styles.container}>
-
-      <SafeAreaView edges={['top']} style={styles.safeArea}>
-        
-        <View  style={styles.header}>
+  const renderContent = () => (
+    <>
+      {!isNested && (
+        <View style={styles.header}>
           <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.headerTitle}>
             Community
           </Typography>
           <Typography variant="body" color={theme.colors.textMedium}>
-            Connect with other expecting mothers
+            Connect with mothers in Week 32
           </Typography>
         </View>
+      )}
 
-        {loading ? (
-          <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-            <ActivityIndicator size="large" color={theme.colors.primary} />
-          </View>
-        ) : (
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+        </View>
+      ) : (
           <FlatList
             data={posts}
             keyExtractor={item => item.id}
@@ -115,8 +114,6 @@ export default function CommunityScreen() {
             showsVerticalScrollIndicator={false}
           />
         )}
-
-      </SafeAreaView>
 
       {/* Floating Action Button for Real-Time Testing */}
       <TouchableOpacity 
@@ -129,8 +126,22 @@ export default function CommunityScreen() {
           });
         }}
       >
-        <Feather name="plus" size={24} color="#fff" />
+        <BounceButton style={styles.fab}>
+          <Ionicons name="add" size={32} color="#fff" />
+        </BounceButton>
       </TouchableOpacity>
+    </>
+  );
+
+  return (
+    <View style={styles.container}>
+      {isNested ? (
+        renderContent()
+      ) : (
+        <SafeAreaView edges={['top']} style={styles.safeArea}>
+          {renderContent()}
+        </SafeAreaView>
+      )}
     </View>
   );
 }
@@ -139,6 +150,11 @@ const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   safeArea: {
     flex: 1,
