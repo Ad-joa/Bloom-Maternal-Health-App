@@ -24,7 +24,8 @@ interface User {
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
-  login: (userData: User) => void;
+  token: string | null;
+  login: (userData: User, token: string) => void;
   logout: () => void;
 }
 
@@ -33,14 +34,17 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadUser = async () => {
       try {
         const storedUser = await AsyncStorage.getItem('@bloom_user');
-        if (storedUser) {
+        const storedToken = await AsyncStorage.getItem('@bloom_token');
+        if (storedUser && storedToken) {
           setUser(JSON.parse(storedUser));
+          setToken(storedToken);
           setIsAuthenticated(true);
         }
       } catch (e) {
@@ -52,10 +56,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loadUser();
   }, []);
 
-  const login = async (userData: User) => {
+  const login = async (userData: User, tokenData: string) => {
     try {
       await AsyncStorage.setItem('@bloom_user', JSON.stringify(userData));
+      await AsyncStorage.setItem('@bloom_token', tokenData);
       setUser(userData);
+      setToken(tokenData);
       setIsAuthenticated(true);
     } catch (e) {
       console.error("Failed to save user to storage", e);
@@ -65,7 +71,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       await AsyncStorage.removeItem('@bloom_user');
+      await AsyncStorage.removeItem('@bloom_token');
       setUser(null);
+      setToken(null);
       setIsAuthenticated(false);
     } catch (e) {
       console.error("Failed to remove user from storage", e);
@@ -75,7 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   if (isLoading) return null;
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, token, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

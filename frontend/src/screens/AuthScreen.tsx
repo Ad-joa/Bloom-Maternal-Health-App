@@ -109,20 +109,18 @@ export default function AuthScreen({ navigation }: Props) {
       if (authMode === 'login') {
         const response = await loginUser({ email: formData.email, password: formData.password });
         if (response && response.user) {
-          login(response.user);
+          login(response.user, response.token);
         }
       } else if (authMode === 'signup') {
         if (registrationStep === 'details') {
-          // Move to verification step (Simulated for now, would actually call register API)
-          const response = await registerUser({ 
+          const dataToSubmit = { 
             name: formData.name, 
             email: formData.email, 
             password: formData.password 
-          });
-          if (response && response.id) {
-             setRegisteredUser(response);
-             setRegistrationStep('complete');
-          }
+          };
+          const response = await registerUser(dataToSubmit);
+          setRegisteredUser(response);
+          setRegistrationStep('complete');
         }
       } else if (authMode === 'reset') {
         // Simulate password reset
@@ -258,7 +256,7 @@ export default function AuthScreen({ navigation }: Props) {
         </Typography>
       </View>
 
-      <TouchableOpacity style={[styles.primaryButton, { marginTop: 24 }]} onPress={() => login(registeredUser)}>
+      <TouchableOpacity style={[styles.primaryButton, { marginTop: 24 }]} onPress={() => login(registeredUser.user, registeredUser.token)}>
         <Typography variant="headline" color="#FFF">Continue to Setup</Typography>
       </TouchableOpacity>
     </FadeSlideIn>

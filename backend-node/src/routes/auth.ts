@@ -32,7 +32,18 @@ router.post('/register', async (req, res) => {
       }
     });
 
-    res.json(excludePassword(user));
+    const expiresIn = user.role === 'clinician' ? '15m' : '7d';
+    const token = jwt.sign(
+      { userId: user.id, role: user.role }, 
+      JWT_SECRET, 
+      { expiresIn }
+    );
+
+    res.json({
+      message: "Registration successful",
+      token,
+      user: excludePassword(user)
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ detail: "Server error" });
