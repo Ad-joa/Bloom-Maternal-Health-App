@@ -63,8 +63,8 @@ export function KickCounter() {
           </TouchableOpacity>
         ) : (
           <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#FEE2E2' }]} onPress={handleStop}>
-            <Square color={theme.colors.error} size={16} />
-            <Typography variant="subhead" color={theme.colors.error} style={{marginLeft: 4}}>Stop</Typography>
+            <Square color={theme.colors.danger} size={16} />
+            <Typography variant="subhead" color={theme.colors.danger} style={{marginLeft: 4}}>Stop</Typography>
           </TouchableOpacity>
         )}
       </View>

@@ -8,7 +8,8 @@ import {
   TouchableOpacity, 
   TextInput,
   ActivityIndicator,
-  Animated
+  Animated,
+  ScrollView
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getAdvisory } from '../api/api';
