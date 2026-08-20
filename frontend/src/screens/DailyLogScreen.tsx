@@ -306,7 +306,7 @@ const getStyles = (theme: any) => StyleSheet.create({
     alignItems: 'center',
     paddingVertical: theme.spacing[3],
     paddingHorizontal: theme.spacing[3],
-    borderRadius: theme.radii.md,
+    borderRadius: theme.borderRadius.md,
     gap: theme.spacing[3],
   },
   optionRowSelected: {
