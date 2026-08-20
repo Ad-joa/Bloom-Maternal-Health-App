@@ -36,27 +36,28 @@ export default function ProfileScreen({ navigation }: any) {
     try {
       const html = `
         <html>
-          <body style="font-family: Helvetica, sans-serif; padding: 40px; color: #333;">
-            <h1 style="color: #FF6B8B; border-bottom: 2px solid #fce7eb; padding-bottom: 10px;">Bloom Medical Report</h1>
-            <p style="font-size: 18px;"><strong>Patient Name:</strong> ${user?.name || 'N/A'}</p>
-            <p style="font-size: 18px;"><strong>Email:</strong> ${user?.email || 'N/A'}</p>
-            <p style="font-size: 16px; color: #666;">Report generated on ${new Date().toLocaleDateString()}</p>
-            
+        <body style="font-family: Helvetica, sans-serif; padding: 40px; color: #333;">
+            <h1 style="color: ${theme.colors.primaryDark}; border-bottom: 2px solid ${theme.colors.primaryLight}; padding-bottom: 10px;">Bloom Medical Report</h1>
+            <div style="margin-bottom: 30px;">
+              <p><strong>Patient:</strong> ${user?.name || 'Unknown'}</p>
+              <p><strong>Due Date:</strong> ${user?.due_date ? new Date(user.due_date).toLocaleDateString() : 'Not Set'}</p>
+              <p style="font-size: 16px; color: #666;">Report generated on ${new Date().toLocaleDateString()}</p>
+            </div>
             <h2 style="margin-top: 40px; color: #444;">Recent Vitals</h2>
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-              <tr style="background-color: #fdf2f4;">
-                <td style="padding: 10px; border: 1px solid #fce7eb;"><strong>Weight</strong></td>
-                <td style="padding: 10px; border: 1px solid #fce7eb;">145 lbs</td>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+              <tr style="background-color: ${theme.colors.surfaceVariant};">
+                <td style="padding: 10px; border: 1px solid ${theme.colors.primaryLight};"><strong>Weight</strong></td>
+                <td style="padding: 10px; border: 1px solid ${theme.colors.primaryLight};">145 lbs</td>
               </tr>
               <tr>
-                <td style="padding: 10px; border: 1px solid #fce7eb;"><strong>Blood Pressure</strong></td>
-                <td style="padding: 10px; border: 1px solid #fce7eb;">120/80</td>
+                <td style="padding: 10px; border: 1px solid ${theme.colors.primaryLight};"><strong>Blood Pressure</strong></td>
+                <td style="padding: 10px; border: 1px solid ${theme.colors.primaryLight};">120/80</td>
               </tr>
             </table>
 
             <h2 style="color: #444;">Recent Symptoms</h2>
-            <p style="font-size: 16px; line-height: 1.5; padding: 15px; background-color: #fdf2f4; border-radius: 8px;">
-              Fatigue, Nausea, Back Pain
+            <p style="font-size: 16px; line-height: 1.5; padding: 15px; background-color: ${theme.colors.background}; border: 1px solid ${theme.colors.primaryLight}; border-radius: 8px;">
+              Patient reported mild nausea in the mornings, well-managed with ginger tea. No severe headaches or blurred vision.
             </p>
             
             <p style="margin-top: 50px; font-style: italic; color: #888; font-size: 12px; text-align: center;">

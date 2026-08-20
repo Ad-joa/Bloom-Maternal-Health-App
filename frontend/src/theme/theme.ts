@@ -6,15 +6,15 @@ import tokens from '../../design-tokens.json';
 
 export const theme = {
   colors: {
-    // Purple Neumorphic Palette
-    primary: '#C084FC',       // Vibrant Purple
-    primaryLight: '#E9D5FF',  // Light Purple
-    primaryDark: '#9333EA',   // Deep Purple
+    // Soft Earth & Teal Palette
+    primary: '#00767E',       // Deep Teal
+    primaryLight: '#CDE2D6',  // Mint/Seafoam
+    primaryDark: '#689D96',   // Slate Teal
     
-    accentPink: '#F4C1BE',    // (kept for compatibility, though less used now)
-    accentPurple: '#C084FC',  
+    accentPink: '#F1959B',    // Salmon Pink
+    accentOrange: '#EFAC5C',  // Terracotta
     
-    background: '#F8F9FA',    // Clean off-white
+    background: '#FCF6EA',    // Warm Cream
     
     success: '#34C759',       
     warning: '#FF9500',       
@@ -22,9 +22,9 @@ export const theme = {
     info: '#007AFF',          
     
     surface: '#FFFFFF',       // Clean white cards
-    surfaceVariant: '#F3F4F6',// Light grey for tags/chips
-    textHigh: '#1C1C1E',      // Almost black
-    textMedium: '#9CA3AF',    // Soft grey
+    surfaceVariant: '#F4E9D0',// Warm Sand for tags/chips
+    textHigh: '#2A3A38',      // Dark slate
+    textMedium: '#8C9A97',    // Muted grey-teal
     border: 'rgba(0, 0, 0, 0.05)', 
   },
   typography: {
