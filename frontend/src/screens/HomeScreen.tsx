@@ -407,7 +407,7 @@ const getStyles = (theme: any) => StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: theme.spacing[2],
     paddingHorizontal: theme.spacing[3],
-    borderRadius: theme.radii.md,
+    borderRadius: theme.borderRadius.md,
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: theme.colors.border,
