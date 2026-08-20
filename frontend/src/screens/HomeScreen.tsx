@@ -1,65 +1,117 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View, StyleSheet, ScrollView, TouchableOpacity,
-  StatusBar, Dimensions, Animated,
+  StatusBar, Dimensions, Animated, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { Typography } from '../components/Typography';
 import {
-  Activity, Droplet, Stethoscope, Heart, Sun,
-  Moon, Zap, ChevronRight, Bell,
+  Activity, Droplets, Stethoscope, Heart, Sun,
+  Moon, Sparkles, Bell, ChevronRight, Zap,
+  Baby, Apple,
 } from 'lucide-react-native';
 import { getWeeksPregnant, getDaysUntilDue } from '../utils/dateUtils';
 import { getAncVisits } from '../api/api';
 import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Circle } from 'react-native-svg';
 
 const { width } = Dimensions.get('window');
+const CARD_WIDTH = width - 48;
 
-// Baby size by week (week → fruit)
-const BABY_SIZE_MAP: Record<number, { fruit: string; size: string }> = {
-  4: { fruit: 'Poppy Seed', size: '1mm' },
-  8: { fruit: 'Raspberry', size: '1.6cm' },
-  12: { fruit: 'Lime', size: '5.4cm' },
-  16: { fruit: 'Avocado', size: '11.6cm' },
-  20: { fruit: 'Banana', size: '25cm' },
-  24: { fruit: 'Ear of Corn', size: '30cm' },
-  28: { fruit: 'Eggplant', size: '37.6cm' },
-  32: { fruit: 'Squash', size: '42.4cm' },
-  36: { fruit: 'Honeydew Melon', size: '47.4cm' },
-  40: { fruit: 'Watermelon', size: '51cm' },
+// ── Data ────────────────────────────────────────────────
+const BABY_SIZE_MAP: Record<number, { emoji: string; fruit: string; size: string }> = {
+  4:  { emoji: '🌸', fruit: 'Poppy Seed',     size: '1 mm' },
+  8:  { emoji: '🍇', fruit: 'Raspberry',       size: '1.6 cm' },
+  12: { emoji: '🍋', fruit: 'Lime',            size: '5.4 cm' },
+  16: { emoji: '🥑', fruit: 'Avocado',         size: '11.6 cm' },
+  20: { emoji: '🍌', fruit: 'Banana',          size: '25 cm' },
+  24: { emoji: '🌽', fruit: 'Ear of Corn',     size: '30 cm' },
+  28: { emoji: '🍆', fruit: 'Eggplant',        size: '37.6 cm' },
+  32: { emoji: '🎃', fruit: 'Squash',          size: '42.4 cm' },
+  36: { emoji: '🍈', fruit: 'Honeydew Melon',  size: '47.4 cm' },
+  40: { emoji: '🍉', fruit: 'Watermelon',      size: '51 cm' },
 };
 
 const getBabySize = (weeks: number) => {
-  const milestones = Object.keys(BABY_SIZE_MAP)
-    .map(Number)
-    .sort((a, b) => a - b);
-  const closest = milestones.reduce((prev, curr) =>
+  const keys = Object.keys(BABY_SIZE_MAP).map(Number).sort((a, b) => a - b);
+  const closest = keys.reduce((prev, curr) =>
     Math.abs(curr - weeks) < Math.abs(prev - weeks) ? curr : prev
   );
-  return BABY_SIZE_MAP[closest] ?? { fruit: 'Squash', size: '42cm' };
+  return BABY_SIZE_MAP[closest] ?? BABY_SIZE_MAP[32];
 };
 
 const DAILY_TIPS = [
-  'Drink at least 8–10 glasses of water today.',
-  'Take a gentle 20-minute walk if you feel up to it.',
-  'Practice 5 minutes of deep belly breathing.',
-  'Eat a calcium-rich snack like yogurt or cheese.',
-  'Rest your feet elevated for 15 minutes this afternoon.',
-  'Call or message a friend who lifts your spirit.',
-  'Take your prenatal vitamin if you haven\'t today.',
+  { tip: 'Drink at least 8–10 glasses of water today.', icon: '💧' },
+  { tip: 'Take a gentle 20-minute walk if you feel up to it.', icon: '🚶‍♀️' },
+  { tip: 'Practice 5 minutes of deep belly breathing.', icon: '🧘‍♀️' },
+  { tip: 'Eat a calcium-rich snack like yogurt or cheese.', icon: '🥛' },
+  { tip: 'Rest with your feet elevated for 15 minutes.', icon: '🛋️' },
+  { tip: 'Connect with a friend who lifts your spirit.', icon: '❤️' },
+  { tip: 'Take your prenatal vitamin if you haven\'t today.', icon: '💊' },
 ];
 
-const TRIMESTER_MILESTONES: Record<number, string> = {
-  1: 'Your baby\'s heart started beating!',
-  2: 'Your baby can hear your voice now.',
-  3: 'Baby is practicing breathing movements.',
+const TRIMESTER_FACTS: Record<number, { title: string; body: string }> = {
+  1: { title: 'Heart Beating', body: 'Your baby\'s heart started beating around week 6.' },
+  2: { title: 'Can Hear You', body: 'Your baby can hear your voice and respond to sounds.' },
+  3: { title: 'Breathing Practice', body: 'Baby is practicing breathing movements to prepare for birth.' },
 };
 
+// ── Circular Progress Ring ───────────────────────────────
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+const RING_SIZE = 180;
+const STROKE = 10;
+const R = (RING_SIZE - STROKE) / 2;
+const CIRCUMFERENCE = 2 * Math.PI * R;
+
+function CircularProgress({ percent, isDark, theme }: { percent: number; isDark: boolean; theme: any }) {
+  const animVal = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(animVal, {
+      toValue: percent,
+      duration: 1400,
+      useNativeDriver: false,
+    }).start();
+  }, [percent]);
+
+  const strokeDashoffset = animVal.interpolate({
+    inputRange: [0, 100],
+    outputRange: [CIRCUMFERENCE, 0],
+  });
+
+  return (
+    <Svg width={RING_SIZE} height={RING_SIZE} style={{ transform: [{ rotate: '-90deg' }] }}>
+      {/* Track */}
+      <Circle
+        cx={RING_SIZE / 2}
+        cy={RING_SIZE / 2}
+        r={R}
+        stroke={isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}
+        strokeWidth={STROKE}
+        fill="none"
+      />
+      {/* Progress */}
+      <AnimatedCircle
+        cx={RING_SIZE / 2}
+        cy={RING_SIZE / 2}
+        r={R}
+        stroke={theme.colors.primaryDark}
+        strokeWidth={STROKE}
+        fill="none"
+        strokeLinecap="round"
+        strokeDasharray={CIRCUMFERENCE}
+        strokeDashoffset={strokeDashoffset}
+      />
+    </Svg>
+  );
+}
+
+// ── Main Screen ──────────────────────────────────────────
 export default function HomeScreen({ navigation }: any) {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
+  const { theme, isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
   const { user } = useAuth();
 
   const dueDate = user?.due_date || '';
@@ -69,20 +121,23 @@ export default function HomeScreen({ navigation }: any) {
   const trimester = weeksPregnant < 13 ? 1 : weeksPregnant < 27 ? 2 : 3;
   const babySize = getBabySize(weeksPregnant);
   const progressPercent = Math.min((weeksPregnant / 40) * 100, 100);
-  const todayTip = DAILY_TIPS[new Date().getDay() % DAILY_TIPS.length];
+
+  const dayIndex = new Date().getDay() % DAILY_TIPS.length;
+  const todayTip = DAILY_TIPS[dayIndex];
+  const trimesterFact = TRIMESTER_FACTS[trimester];
 
   const [nextVisit, setNextVisit] = useState<any>(null);
-  const progressAnim = useState(new Animated.Value(0))[0];
+  const headerAnim = useRef(new Animated.Value(0)).current;
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening';
   const GreetingIcon = hour < 18 ? Sun : Moon;
 
   useEffect(() => {
-    Animated.timing(progressAnim, {
-      toValue: progressPercent,
-      duration: 1200,
-      useNativeDriver: false,
+    Animated.timing(headerAnim, {
+      toValue: 1,
+      duration: 700,
+      useNativeDriver: true,
     }).start();
 
     if (user?.id) {
@@ -95,185 +150,156 @@ export default function HomeScreen({ navigation }: any) {
     }
   }, [user]);
 
-  const barWidth = progressAnim.interpolate({
-    inputRange: [0, 100],
-    outputRange: ['0%', '100%'],
-  });
+  const headerStyle = {
+    opacity: headerAnim,
+    transform: [{ translateY: headerAnim.interpolate({ inputRange: [0, 1], outputRange: [16, 0] }) }],
+  };
+
+  const QUICK_ACTIONS = [
+    { label: 'Log Vitals',  sub: 'BP & Weight',  icon: Activity,     bg: isDark ? '#3B1F1F' : '#FEE2E2', color: '#DC2626', route: 'Tracker' },
+    { label: 'Symptoms',    sub: 'How you feel', icon: Heart,         bg: isDark ? '#1F2A3B' : '#DBEAFE', color: '#2563EB', route: 'Tracker' },
+    { label: 'ANC Visit',   sub: 'Appointments', icon: Stethoscope,  bg: isDark ? '#1A2E1F' : '#D1FAE5', color: '#059669', route: 'ANCVisit' },
+    { label: 'Hydration',   sub: 'Water intake', icon: Droplets,     bg: isDark ? '#1F2D3B' : '#CFFAFE', color: '#0891B2', route: 'Tracker' },
+  ];
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={theme.colors.textHigh === '#F5F5F5' ? 'light-content' : 'dark-content'} />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+
+      {/* Subtle background tint */}
+      <LinearGradient
+        colors={isDark
+          ? ['#1A1212', '#121212']
+          : ['#FDF4F4', '#FAFAFA']}
+        style={StyleSheet.absoluteFillObject}
+        start={{ x: 0, y: 0 }} end={{ x: 0, y: 0.5 }}
+      />
 
       <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+
           {/* ── Header ── */}
-          <View style={styles.header}>
+          <Animated.View style={[styles.header, headerStyle]}>
             <View>
               <View style={styles.greetingRow}>
-                <GreetingIcon size={16} color={theme.colors.primaryDark} />
-                <Typography variant="subhead" style={styles.greetingText}>
-                  {greeting}
-                </Typography>
+                <GreetingIcon size={14} color={theme.colors.primaryDark} />
+                <Typography variant="caption1" style={styles.greetingText}>{greeting}</Typography>
               </View>
               <Typography variant="title1" style={styles.nameText}>
                 {user?.name ? user.name.split(' ')[0] : 'Mama'} 👋
               </Typography>
             </View>
             <TouchableOpacity style={styles.bellBtn} onPress={() => {}}>
-              <Bell size={22} color={theme.colors.textHigh} />
+              <Bell size={20} color={theme.colors.textHigh} strokeWidth={1.8} />
             </TouchableOpacity>
-          </View>
+          </Animated.View>
 
-          {/* ── Pregnancy Progress Hero ── */}
+          {/* ── Hero Card: Circular Progress ── */}
           <View style={styles.heroCard}>
-            {/* Week badge */}
-            <View style={styles.heroTopRow}>
-              <View>
-                <Typography variant="caption1" style={styles.heroLabel}>CURRENT WEEK</Typography>
-                <Typography variant="largeTitle" style={styles.heroWeek}>
-                  {weeksPregnant} <Typography variant="title3" style={styles.heroWeekUnit}>wks</Typography>
-                </Typography>
-              </View>
-              <View style={styles.trimesterBadge}>
-                <Typography variant="caption1" style={styles.trimesterText}>
-                  T{trimester}
-                </Typography>
-              </View>
-            </View>
-
-            {/* Progress bar */}
-            <View style={styles.progressTrack}>
-              <Animated.View style={[styles.progressFill, { width: barWidth }]} />
-            </View>
-            <View style={styles.progressLabels}>
-              <Typography variant="caption2" style={styles.progressLabel}>Week 1</Typography>
-              <Typography variant="caption2" style={styles.progressLabel}>Week 40</Typography>
-            </View>
-
-            {/* Stats row */}
-            <View style={styles.statsRow}>
-              <View style={styles.statItem}>
-                <Typography variant="title2" style={styles.statValue}>{daysLeft}</Typography>
-                <Typography variant="caption1" style={styles.statLabel}>Days Left</Typography>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Typography variant="title2" style={styles.statValue}>{40 - weeksPregnant}</Typography>
-                <Typography variant="caption1" style={styles.statLabel}>Weeks To Go</Typography>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Typography variant="title2" style={styles.statValue}>{Math.round(progressPercent)}%</Typography>
-                <Typography variant="caption1" style={styles.statLabel}>Complete</Typography>
-              </View>
-            </View>
-          </View>
-
-          {/* ── Baby Development Card ── */}
-          <View style={styles.devCard}>
             <LinearGradient
-              colors={[theme.colors.primaryLight, theme.colors.surface]}
-              style={styles.devGradient}
+              colors={isDark
+                ? ['#2A1518', '#1E1010']
+                : ['#FFF0F0', '#FFF8F8']}
+              style={StyleSheet.absoluteFillObject}
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
             />
-            <View style={styles.devContent}>
-              <View>
-                <Typography variant="caption1" style={styles.devLabel}>BABY THIS WEEK</Typography>
-                <Typography variant="title3" style={styles.devFruit}>
-                  Size of a {babySize.fruit}
-                </Typography>
-                <Typography variant="subhead" style={styles.devSize}>{babySize.size} long</Typography>
-                <Typography variant="caption1" style={styles.devMilestone}>
-                  {TRIMESTER_MILESTONES[trimester]}
-                </Typography>
+
+            <View style={styles.heroInner}>
+              {/* Left: Ring */}
+              <View style={styles.ringContainer}>
+                <CircularProgress percent={progressPercent} isDark={isDark} theme={theme} />
+                <View style={styles.ringCenter}>
+                  <Typography variant="largeTitle" style={styles.ringWeek}>{weeksPregnant}</Typography>
+                  <Typography variant="caption1" style={styles.ringLabel}>weeks</Typography>
+                </View>
               </View>
-              <View style={styles.devEmoji}>
-                <Typography style={{ fontSize: 52 }}>🌱</Typography>
+
+              {/* Right: Stats */}
+              <View style={styles.heroStats}>
+                <View style={styles.trimBadge}>
+                  <Typography variant="caption2" style={styles.trimBadgeText}>TRIMESTER {trimester}</Typography>
+                </View>
+
+                <View style={styles.statBlock}>
+                  <Typography variant="title2" style={styles.statNum}>{daysLeft}</Typography>
+                  <Typography variant="caption1" style={styles.statLbl}>days left</Typography>
+                </View>
+
+                <View style={styles.statDivider} />
+
+                <View style={styles.statBlock}>
+                  <Typography variant="title2" style={styles.statNum}>{40 - weeksPregnant}</Typography>
+                  <Typography variant="caption1" style={styles.statLbl}>weeks to go</Typography>
+                </View>
+
+                <View style={styles.statDivider} />
+
+                <View style={styles.statBlock}>
+                  <Typography variant="title2" style={styles.statNum}>{Math.round(progressPercent)}%</Typography>
+                  <Typography variant="caption1" style={styles.statLbl}>complete</Typography>
+                </View>
               </View>
             </View>
           </View>
 
-          {/* ── Daily Tip ── */}
-          <View style={styles.tipCard}>
-            <View style={styles.tipRow}>
-              <View style={styles.tipIconBg}>
-                <Zap size={18} color={theme.colors.accentOrange} />
-              </View>
-              <View style={styles.tipTextWrap}>
-                <Typography variant="caption1" style={styles.tipLabel}>TIP OF THE DAY</Typography>
-                <Typography variant="subhead" style={styles.tipText}>{todayTip}</Typography>
-              </View>
+          {/* ── Baby Development + Tip (side-by-side row) ── */}
+          <View style={styles.rowCards}>
+            {/* Baby Size */}
+            <View style={styles.halfCard}>
+              <LinearGradient
+                colors={isDark ? ['#1A1F2A', '#12161E'] : ['#EFF6FF', '#FFFFFF']}
+                style={StyleSheet.absoluteFillObject}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+              />
+              <Typography variant="caption2" style={styles.halfCardLabel}>BABY SIZE</Typography>
+              <Typography style={styles.halfCardEmoji}>{babySize.emoji}</Typography>
+              <Typography variant="headline" style={styles.halfCardTitle}>{babySize.fruit}</Typography>
+              <Typography variant="caption1" style={styles.halfCardSub}>{babySize.size} long</Typography>
             </View>
+
+            {/* Today's Tip */}
+            <View style={styles.halfCard}>
+              <LinearGradient
+                colors={isDark ? ['#1A1F1A', '#12161A'] : ['#F0FDF4', '#FFFFFF']}
+                style={StyleSheet.absoluteFillObject}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+              />
+              <Typography variant="caption2" style={[styles.halfCardLabel, { color: '#059669' }]}>TODAY'S TIP</Typography>
+              <Typography style={styles.halfCardEmoji}>{todayTip.icon}</Typography>
+              <Typography variant="caption1" style={styles.halfCardTipText}>{todayTip.tip}</Typography>
+            </View>
+          </View>
+
+          {/* ── Weekly Milestone ── */}
+          <View style={styles.milestoneCard}>
+            <View style={styles.milestoneBadge}>
+              <Sparkles size={14} color={theme.colors.primaryDark} />
+              <Typography variant="caption2" style={styles.milestoneBadgeText}>WEEK {weeksPregnant} MILESTONE</Typography>
+            </View>
+            <Typography variant="title3" style={styles.milestoneTitle}>{trimesterFact.title}</Typography>
+            <Typography variant="body" style={styles.milestoneBody}>{trimesterFact.body}</Typography>
           </View>
 
           {/* ── Quick Actions ── */}
-          <Typography variant="title3" style={styles.sectionTitle}>Quick Actions</Typography>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.actionsRow}
-          >
-            <TouchableOpacity
-              style={styles.actionPill}
-              onPress={() => navigation.navigate('Tracker')}
-              activeOpacity={0.75}
-            >
-              <View style={[styles.pillIcon, { backgroundColor: '#FEE2E2' }]}>
-                <Activity size={18} color="#DC2626" />
-              </View>
-              <View>
-                <Typography variant="subhead" style={styles.pillTitle}>Log Vitals</Typography>
-                <Typography variant="caption1" style={styles.pillSub}>BP & Weight</Typography>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.actionPill}
-              onPress={() => navigation.navigate('Tracker')}
-              activeOpacity={0.75}
-            >
-              <View style={[styles.pillIcon, { backgroundColor: '#FEF3C7' }]}>
-                <Heart size={18} color="#D97706" />
-              </View>
-              <View>
-                <Typography variant="subhead" style={styles.pillTitle}>Symptoms</Typography>
-                <Typography variant="caption1" style={styles.pillSub}>How you feel</Typography>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.actionPill}
-              onPress={() => navigation.navigate('ANCVisit')}
-              activeOpacity={0.75}
-            >
-              <View style={[styles.pillIcon, { backgroundColor: '#D1FAE5' }]}>
-                <Stethoscope size={18} color="#059669" />
-              </View>
-              <View>
-                <Typography variant="subhead" style={styles.pillTitle}>ANC Visit</Typography>
-                <Typography variant="caption1" style={styles.pillSub}>
-                  {nextVisit ? 'Upcoming' : 'Schedule'}
-                </Typography>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.actionPill}
-              onPress={() => navigation.navigate('Support')}
-              activeOpacity={0.75}
-            >
-              <View style={[styles.pillIcon, { backgroundColor: '#EDE9FE' }]}>
-                <Droplet size={18} color="#7C3AED" />
-              </View>
-              <View>
-                <Typography variant="subhead" style={styles.pillTitle}>Ask Bloom</Typography>
-                <Typography variant="caption1" style={styles.pillSub}>AI Support</Typography>
-              </View>
-            </TouchableOpacity>
-          </ScrollView>
+          <View style={styles.sectionHeader}>
+            <Typography variant="title3" style={styles.sectionTitle}>Quick Actions</Typography>
+          </View>
+          <View style={styles.actionsGrid}>
+            {QUICK_ACTIONS.map((action) => (
+              <TouchableOpacity
+                key={action.label}
+                style={styles.actionCard}
+                onPress={() => navigation.navigate(action.route)}
+                activeOpacity={0.75}
+              >
+                <View style={[styles.actionIcon, { backgroundColor: action.bg }]}>
+                  <action.icon size={20} color={action.color} strokeWidth={2} />
+                </View>
+                <Typography variant="subhead" style={styles.actionLabel}>{action.label}</Typography>
+                <Typography variant="caption2" style={styles.actionSub}>{action.sub}</Typography>
+              </TouchableOpacity>
+            ))}
+          </View>
 
           {/* ── Next Appointment ── */}
           {nextVisit && (
@@ -282,16 +308,21 @@ export default function HomeScreen({ navigation }: any) {
               onPress={() => navigation.navigate('ANCVisit')}
               activeOpacity={0.8}
             >
-              <View>
-                <Typography variant="caption1" style={styles.apptLabel}>NEXT APPOINTMENT</Typography>
-                <Typography variant="headline" style={styles.apptDate}>
-                  {nextVisit.scheduled_date || nextVisit.date || 'Upcoming Visit'}
-                </Typography>
-                <Typography variant="caption1" style={styles.apptFacility}>
-                  {nextVisit.facility || 'Clinic Visit'}
-                </Typography>
+              <View style={styles.apptLeft}>
+                <View style={styles.apptIconBg}>
+                  <Stethoscope size={18} color={theme.colors.primaryDark} />
+                </View>
+                <View>
+                  <Typography variant="caption1" style={styles.apptLabel}>NEXT APPOINTMENT</Typography>
+                  <Typography variant="headline" style={styles.apptDate}>
+                    {nextVisit.scheduled_date || nextVisit.date || 'Upcoming Visit'}
+                  </Typography>
+                  <Typography variant="caption1" style={styles.apptFacility}>
+                    {nextVisit.facility || 'Clinic Visit'}
+                  </Typography>
+                </View>
               </View>
-              <ChevronRight size={20} color={theme.colors.primaryDark} />
+              <ChevronRight size={18} color={theme.colors.textMedium} />
             </TouchableOpacity>
           )}
 
@@ -301,16 +332,11 @@ export default function HomeScreen({ navigation }: any) {
   );
 }
 
-const getStyles = (theme: any) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
+// ── Styles ────────────────────────────────────────────────
+const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: theme.colors.background },
   safeArea: { flex: 1 },
-  scrollContent: {
-    paddingTop: 8,
-    paddingBottom: 140,
-  },
+  scrollContent: { paddingBottom: 140 },
 
   // Header
   header: {
@@ -318,29 +344,27 @@ const getStyles = (theme: any) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
-    marginBottom: 20,
+    paddingTop: 8,
+    paddingBottom: 20,
   },
-  greetingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 4,
-  },
+  greetingRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 3 },
   greetingText: {
-    color: theme.colors.textMedium,
-    fontFamily: theme.typography.families.bodyMedium,
+    color: theme.colors.primaryDark,
+    fontFamily: theme.typography.families.headingSemibold,
+    letterSpacing: 0.5,
     textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    fontSize: 11,
   },
   nameText: {
     color: theme.colors.textHigh,
     fontFamily: theme.typography.families.headingBold,
     fontSize: 26,
+    letterSpacing: -0.5,
   },
   bellBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     backgroundColor: theme.colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
@@ -348,223 +372,213 @@ const getStyles = (theme: any) => StyleSheet.create({
     borderColor: theme.colors.border,
   },
 
-  // Hero progress card
+  // Hero Card
   heroCard: {
     marginHorizontal: 24,
     marginBottom: 16,
-    padding: 24,
-    backgroundColor: theme.colors.surface,
     borderRadius: 28,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.04,
-    shadowRadius: 12,
-    elevation: 3,
-  },
-  heroTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 20,
-  },
-  heroLabel: {
-    color: theme.colors.textMedium,
-    letterSpacing: 1.5,
-    marginBottom: 4,
-  },
-  heroWeek: {
-    color: theme.colors.textHigh,
-    fontFamily: theme.typography.families.headingBold,
-    fontSize: 48,
-    lineHeight: 52,
-    letterSpacing: -1,
-  },
-  heroWeekUnit: {
-    color: theme.colors.textMedium,
-    fontFamily: theme.typography.families.bodyRegular,
-    fontSize: 18,
-  },
-  trimesterBadge: {
-    backgroundColor: theme.colors.primaryLight,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 100,
-  },
-  trimesterText: {
-    color: theme.colors.primaryDark,
-    fontFamily: theme.typography.families.headingBold,
-    letterSpacing: 1,
-  },
-  progressTrack: {
-    height: 8,
-    backgroundColor: theme.colors.border,
-    borderRadius: 100,
-    overflow: 'hidden',
-    marginBottom: 8,
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 100,
-    backgroundColor: theme.colors.primaryDark,
-  },
-  progressLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  progressLabel: {
-    color: theme.colors.textMedium,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-  },
-  statItem: { alignItems: 'center' },
-  statValue: {
-    color: theme.colors.textHigh,
-    fontFamily: theme.typography.families.headingBold,
-    fontSize: 24,
-  },
-  statLabel: {
-    color: theme.colors.textMedium,
-    marginTop: 2,
-  },
-  statDivider: {
-    width: 1,
-    height: 32,
-    backgroundColor: theme.colors.border,
-  },
-
-  // Baby dev card
-  devCard: {
-    marginHorizontal: 24,
-    marginBottom: 16,
-    borderRadius: 24,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(241,149,155,0.2)',
+    shadowColor: theme.colors.primaryDark,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: isDark ? 0.3 : 0.1,
+    shadowRadius: 24,
+    elevation: 6,
   },
-  devGradient: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  devContent: {
+  heroInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     padding: 24,
+    gap: 20,
   },
-  devLabel: {
-    color: theme.colors.primaryDark,
-    letterSpacing: 1.5,
-    marginBottom: 6,
-  },
-  devFruit: {
-    color: theme.colors.textHigh,
-    fontFamily: theme.typography.families.headingBold,
-    marginBottom: 2,
-  },
-  devSize: {
-    color: theme.colors.textMedium,
-    marginBottom: 8,
-  },
-  devMilestone: {
-    color: theme.colors.textMedium,
-    fontStyle: 'italic',
-    maxWidth: 180,
-  },
-  devEmoji: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: theme.colors.surface,
+  ringContainer: {
+    width: RING_SIZE,
+    height: RING_SIZE,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+  },
+  ringCenter: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ringWeek: {
+    color: theme.colors.textHigh,
+    fontFamily: theme.typography.families.headingBold,
+    fontSize: 42,
+    letterSpacing: -2,
+    lineHeight: 46,
+  },
+  ringLabel: {
+    color: theme.colors.textMedium,
+    fontFamily: theme.typography.families.bodyRegular,
+    fontSize: 12,
+  },
+  heroStats: {
+    flex: 1,
+    gap: 4,
+  },
+  trimBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: isDark ? 'rgba(216,122,128,0.2)' : theme.colors.primaryLight,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 100,
+    marginBottom: 12,
+  },
+  trimBadgeText: {
+    color: theme.colors.primaryDark,
+    fontFamily: theme.typography.families.headingBold,
+    fontSize: 10,
+    letterSpacing: 0.8,
+  },
+  statBlock: { marginVertical: 2 },
+  statNum: {
+    color: theme.colors.textHigh,
+    fontFamily: theme.typography.families.headingBold,
+    fontSize: 22,
+    letterSpacing: -0.5,
+  },
+  statLbl: {
+    color: theme.colors.textMedium,
+    fontFamily: theme.typography.families.bodyRegular,
+    fontSize: 11,
+  },
+  statDivider: {
+    height: 1,
+    backgroundColor: theme.colors.border,
+    marginVertical: 6,
   },
 
-  // Tip card
-  tipCard: {
+  // Row Cards
+  rowCards: {
+    flexDirection: 'row',
+    marginHorizontal: 24,
+    marginBottom: 16,
+    gap: 12,
+  },
+  halfCard: {
+    flex: 1,
+    borderRadius: 24,
+    overflow: 'hidden',
+    padding: 18,
+    borderWidth: 1,
+    borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+    minHeight: 160,
+    justifyContent: 'flex-end',
+  },
+  halfCardLabel: {
+    color: theme.colors.primaryDark,
+    fontFamily: theme.typography.families.headingBold,
+    fontSize: 9,
+    letterSpacing: 1.2,
+    marginBottom: 6,
+  },
+  halfCardEmoji: {
+    fontSize: 36,
+    marginBottom: 8,
+    alignSelf: 'flex-start',
+  },
+  halfCardTitle: {
+    color: theme.colors.textHigh,
+    fontFamily: theme.typography.families.headingBold,
+    fontSize: 14,
+    marginBottom: 2,
+  },
+  halfCardSub: {
+    color: theme.colors.textMedium,
+    fontSize: 12,
+  },
+  halfCardTipText: {
+    color: theme.colors.textHigh,
+    fontFamily: theme.typography.families.bodyMedium,
+    fontSize: 12,
+    lineHeight: 18,
+  },
+
+  // Milestone
+  milestoneCard: {
     marginHorizontal: 24,
     marginBottom: 28,
     padding: 20,
     backgroundColor: theme.colors.surface,
-    borderRadius: 20,
+    borderRadius: 24,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
-  tipRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  tipIconBg: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.colors.surfaceVariant,
+  milestoneBadge: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 5,
+    marginBottom: 10,
   },
-  tipTextWrap: { flex: 1 },
-  tipLabel: {
-    color: theme.colors.accentOrange,
-    letterSpacing: 1.2,
-    marginBottom: 4,
+  milestoneBadgeText: {
+    color: theme.colors.primaryDark,
+    fontFamily: theme.typography.families.headingBold,
+    fontSize: 10,
+    letterSpacing: 1,
   },
-  tipText: {
+  milestoneTitle: {
     color: theme.colors.textHigh,
-    fontFamily: theme.typography.families.bodyMedium,
-    lineHeight: 20,
+    fontFamily: theme.typography.families.headingBold,
+    marginBottom: 6,
+  },
+  milestoneBody: {
+    color: theme.colors.textMedium,
+    fontFamily: theme.typography.families.bodyRegular,
+    lineHeight: 22,
   },
 
-  // Section title
+  // Section header
+  sectionHeader: {
+    paddingHorizontal: 24,
+    marginBottom: 14,
+  },
   sectionTitle: {
     color: theme.colors.textHigh,
     fontFamily: theme.typography.families.headingBold,
-    marginHorizontal: 24,
-    marginBottom: 14,
   },
 
-  // Actions
-  actionsRow: {
+  // Actions Grid
+  actionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     paddingHorizontal: 24,
     gap: 12,
-    paddingBottom: 4,
     marginBottom: 24,
   },
-  actionPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+  actionCard: {
+    width: (width - 60) / 2,
     backgroundColor: theme.colors.surface,
-    borderRadius: 100,
-    paddingVertical: 10,
-    paddingLeft: 10,
-    paddingRight: 20,
+    borderRadius: 22,
+    padding: 18,
     borderWidth: 1,
     borderColor: theme.colors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 6,
-    elevation: 1,
+    shadowOpacity: isDark ? 0.2 : 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  pillIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  actionIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 14,
   },
-  pillTitle: {
+  actionLabel: {
     color: theme.colors.textHigh,
-    fontFamily: theme.typography.families.headingSemibold,
-    marginBottom: 1,
+    fontFamily: theme.typography.families.headingBold,
+    fontSize: 14,
+    marginBottom: 2,
   },
-  pillSub: { color: theme.colors.textMedium },
+  actionSub: {
+    color: theme.colors.textMedium,
+    fontSize: 11,
+  },
 
   // Appointment
   apptCard: {
@@ -573,22 +587,34 @@ const getStyles = (theme: any) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: theme.colors.surface,
-    borderRadius: 20,
-    padding: 20,
+    borderRadius: 22,
+    padding: 18,
     borderWidth: 1,
     borderColor: theme.colors.border,
     borderLeftWidth: 4,
     borderLeftColor: theme.colors.primaryDark,
+    marginBottom: 8,
+  },
+  apptLeft: { flexDirection: 'row', alignItems: 'center', gap: 14, flex: 1 },
+  apptIconBg: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: isDark ? 'rgba(216,122,128,0.15)' : theme.colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   apptLabel: {
     color: theme.colors.primaryDark,
-    letterSpacing: 1.2,
-    marginBottom: 4,
+    fontFamily: theme.typography.families.headingBold,
+    fontSize: 10,
+    letterSpacing: 1,
+    marginBottom: 2,
   },
   apptDate: {
     color: theme.colors.textHigh,
     fontFamily: theme.typography.families.headingBold,
-    marginBottom: 2,
+    marginBottom: 1,
   },
-  apptFacility: { color: theme.colors.textMedium },
+  apptFacility: { color: theme.colors.textMedium, fontSize: 12 },
 });
