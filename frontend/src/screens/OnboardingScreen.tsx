@@ -13,6 +13,7 @@ import { BounceButton } from '../components/BounceButton';
 import { LinearGradient } from 'expo-linear-gradient';
 import { onboardUser } from '../api/api';
 import { ChevronLeft } from 'lucide-react-native';
+import { TermLoader } from '../components/TermLoader';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -31,6 +32,7 @@ export default function OnboardingScreen({ navigation }: Props) {
   const { user, token, login } = useAuth();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [isDeterminingTerm, setIsDeterminingTerm] = useState(false);
 
   // Form State
   const [dueDate, setDueDate] = useState('');
@@ -66,6 +68,12 @@ export default function OnboardingScreen({ navigation }: Props) {
   };
 
   const handleNext = () => {
+    if (step === 1 && dueDate) {
+      setIsDeterminingTerm(true);
+      // The TermLoader component handles the timeout and calls onComplete
+      return;
+    }
+    
     if (step < TOTAL_STEPS) animateTransition(step + 1);
     else handleComplete();
   };
@@ -270,40 +278,46 @@ export default function OnboardingScreen({ navigation }: Props) {
   };
 
   return (
-    <LinearGradient colors={[theme.colors.background, theme.colors.surfaceVariant, theme.colors.primaryLight]} style={styles.container}>
+    <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.container}
-        >
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={handleBack} disabled={step === 1} style={{ opacity: step === 1 ? 0.3 : 1 }}>
-              <ChevronLeft color={theme.colors.textHigh} size={28} />
-            </TouchableOpacity>
-            {renderProgressDots()}
-            <View style={{ width: 28 }} />
-          </View>
+        
+        {isDeterminingTerm ? (
+          <TermLoader onComplete={() => {
+            setIsDeterminingTerm(false);
+            animateTransition(2);
+          }} />
+        ) : (
+          <KeyboardAvoidingView 
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            style={styles.container}
+          >
+            {/* Header */}
+            <View style={styles.header}>
+              <TouchableOpacity onPress={handleBack} style={[styles.backBtn, step === 1 && {opacity: 0}]} disabled={step === 1}>
+                <ChevronLeft color={theme.colors.textHigh} size={28} />
+              </TouchableOpacity>
+              {renderProgressDots()}
+              <View style={{width: 28}} />
+            </View>
 
-          {/* Animated Content */}
-          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-            <Animated.View style={{ opacity: fadeAnim, transform: [{ translateX: slideAnim }] }}>
-              {renderStepContent()}
-            </Animated.View>
-          </ScrollView>
+            <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+              <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+                {renderStepContent()}
+              </Animated.View>
+            </ScrollView>
 
-          {/* Footer */}
-          <View style={styles.footer}>
-            <Button 
-              title={step < TOTAL_STEPS ? "Continue" : "Complete Setup"} 
-              onPress={handleNext} 
-              loading={loading}
-              disabled={isNextDisabled() || loading}
-            />
-          </View>
-        </KeyboardAvoidingView>
+            {/* Footer */}
+            <View style={styles.footer}>
+              <Button 
+                title={loading ? "Saving..." : (step === TOTAL_STEPS ? "Complete Profile" : "Continue")} 
+                onPress={handleNext}
+                disabled={loading}
+              />
+            </View>
+          </KeyboardAvoidingView>
+        )}
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
