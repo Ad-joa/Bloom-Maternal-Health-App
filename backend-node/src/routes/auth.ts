@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
 
 // Helper to exclude password
-const excludePassword = (user: any) => {
+export const excludePassword = (user: any) => {
   const { hashed_password, ...userWithoutPassword } = user;
   return userWithoutPassword;
 };

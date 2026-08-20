@@ -8,7 +8,7 @@ import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { GoogleGenAI } from '@google/genai';
-import authRoutes from './routes/auth';
+import authRoutes, { excludePassword } from './routes/auth';
 import logsRoutes from './routes/logs';
 
 dotenv.config();
