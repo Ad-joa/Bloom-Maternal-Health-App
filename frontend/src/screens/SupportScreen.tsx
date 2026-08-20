@@ -67,7 +67,7 @@ export default function SupportScreen({ navigation }: any) {
 const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: theme.colors.background,
   },
   safeArea: {
     flex: 1,
@@ -87,7 +87,7 @@ const getStyles = (theme: any) => StyleSheet.create({
   },
   segmentedControl: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(0,0,0,0.04)',
+    backgroundColor: theme.colors.border,
     borderRadius: 100,
     padding: 4,
   },
@@ -98,7 +98,7 @@ const getStyles = (theme: any) => StyleSheet.create({
     borderRadius: 100,
   },
   segmentActive: {
-    backgroundColor: '#FFF',
+    backgroundColor: theme.colors.surface,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,

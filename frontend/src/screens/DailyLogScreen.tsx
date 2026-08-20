@@ -218,7 +218,7 @@ export default function TrackerScreen({ navigation }: any) {
 const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: theme.colors.background,
   },
   safeArea: {
     flex: 1,
@@ -243,7 +243,7 @@ const getStyles = (theme: any) => StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 24,
-    paddingBottom: 140, // padding for bottom tabs
+    paddingBottom: 140,
   },
   nudgeCard: {
     flexDirection: 'row',
@@ -268,7 +268,7 @@ const getStyles = (theme: any) => StyleSheet.create({
     marginBottom: 16,
   },
   glassCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -276,7 +276,7 @@ const getStyles = (theme: any) => StyleSheet.create({
     shadowRadius: 12,
     elevation: 2,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.02)',
+    borderColor: theme.colors.border,
     overflow: 'hidden',
   },
   inputRow: {
@@ -290,7 +290,7 @@ const getStyles = (theme: any) => StyleSheet.create({
   divider: {
     width: 1,
     height: '60%',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: theme.colors.border,
   },
   inputLabel: {
     color: theme.colors.textMedium,
@@ -313,7 +313,7 @@ const getStyles = (theme: any) => StyleSheet.create({
   },
   symptomCard: {
     width: '48%',
-    backgroundColor: '#FFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 20,
     padding: 16,
     marginBottom: 16,
