@@ -24,22 +24,22 @@ const SLIDES = [
     id: '2',
     title: 'Track Vitals & Baby Growth',
     description: 'Log your symptoms, mood, and daily vitals. Keep a beautiful record as your baby grows.',
-    icon: <Ionicons name="medical" size={64} color="#007AFF" />,
-    iconBg: '#E5F1FF',
+    icon: <Ionicons name="medical" size={64} color={theme.colors.primaryDark} />,
+    iconBg: theme.colors.primaryLight,
   },
   {
     id: '3',
     title: 'Ghanaian Context',
     description: 'Local nutrition advice, ANC reminders, and culturally relevant insights for Ghanaian mothers.',
-    icon: <Ionicons name="leaf" size={64} color="#E07A5F" />,
-    iconBg: '#FFF0EF',
+    icon: <Ionicons name="leaf" size={64} color={theme.colors.primary} />,
+    iconBg: theme.colors.surfaceVariant,
   },
   {
     id: '4',
     title: 'Always Available',
     description: 'Works entirely offline. Your data syncs securely only when you are back on Wi-Fi.',
-    icon: <Ionicons name="shield-checkmark" size={64} color="#8A5A99" />,
-    iconBg: '#F3EFFC',
+    icon: <Ionicons name="shield-checkmark" size={64} color={theme.colors.accentOrange} />,
+    iconBg: theme.colors.surfaceVariant,
   },
 ];
 

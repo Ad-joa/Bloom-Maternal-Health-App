@@ -75,7 +75,7 @@ export default function HomeScreen({ navigation }: Props) {
 
     if (goal === "Healthy Diet") {
       return (
-        <TouchableOpacity activeOpacity={0.8} style={[styles.goalWidget, { backgroundColor: '#E8F5E9' }]} onPress={() => navigation.navigate('Advisory')}>
+        <TouchableOpacity activeOpacity={0.8} style={[styles.goalWidget, { backgroundColor: theme.colors.success + '20' }]} onPress={() => navigation.navigate('Advisory')}>
           <View style={[styles.goalIconWrap, { backgroundColor: theme.colors.success }]}>
             <Apple size={24} color="#fff" />
           </View>
@@ -88,7 +88,7 @@ export default function HomeScreen({ navigation }: Props) {
       );
     } else if (goal === "Manage Stress") {
       return (
-        <TouchableOpacity activeOpacity={0.8} style={[styles.goalWidget, { backgroundColor: '#E3F2FD' }]} onPress={() => navigation.navigate('Advisory')}>
+        <TouchableOpacity activeOpacity={0.8} style={[styles.goalWidget, { backgroundColor: theme.colors.info + '20' }]} onPress={() => navigation.navigate('Advisory')}>
           <View style={[styles.goalIconWrap, { backgroundColor: theme.colors.info }]}>
             <Flower size={24} color="#fff" />
           </View>
@@ -101,28 +101,28 @@ export default function HomeScreen({ navigation }: Props) {
       );
     } else if (goal === "Stay Active") {
       return (
-        <TouchableOpacity activeOpacity={0.8} style={[styles.goalWidget, { backgroundColor: '#FFF3E0' }]} onPress={() => navigation.navigate('Advisory')}>
-          <View style={[styles.goalIconWrap, { backgroundColor: theme.colors.warning }]}>
+        <TouchableOpacity activeOpacity={0.8} style={[styles.goalWidget, { backgroundColor: theme.colors.accentOrange + '20' }]} onPress={() => navigation.navigate('Advisory')}>
+          <View style={[styles.goalIconWrap, { backgroundColor: theme.colors.accentOrange }]}>
             <Activity size={24} color="#fff" />
           </View>
           <View style={styles.goalTextWrap}>
-            <Typography variant="caption1" color={theme.colors.warning} style={{fontFamily: theme.typography.families.headingBold}}>DAILY FOCUS: STAY ACTIVE</Typography>
+            <Typography variant="caption1" color={theme.colors.accentOrange} style={{fontFamily: theme.typography.families.headingBold}}>DAILY FOCUS: STAY ACTIVE</Typography>
             <Typography variant="subhead" color={theme.colors.textHigh} style={{marginTop: 4}}>Try a 10-minute safe prenatal stretch today.</Typography>
           </View>
-          <ChevronRight size={20} color={theme.colors.warning} />
+          <ChevronRight size={20} color={theme.colors.accentOrange} />
         </TouchableOpacity>
       );
     } else if (goal === "Prepare for Birth") {
       return (
-        <TouchableOpacity activeOpacity={0.8} style={[styles.goalWidget, { backgroundColor: '#FCE4EC' }]} onPress={() => navigation.navigate('Advisory')}>
-          <View style={[styles.goalIconWrap, { backgroundColor: '#E91E63' }]}>
+        <TouchableOpacity activeOpacity={0.8} style={[styles.goalWidget, { backgroundColor: theme.colors.accentPink + '20' }]} onPress={() => navigation.navigate('Advisory')}>
+          <View style={[styles.goalIconWrap, { backgroundColor: theme.colors.accentPink }]}>
             <Stethoscope size={24} color="#fff" />
           </View>
           <View style={styles.goalTextWrap}>
-            <Typography variant="caption1" color="#E91E63" style={{fontFamily: theme.typography.families.headingBold}}>DAILY FOCUS: PREPARE FOR BIRTH</Typography>
+            <Typography variant="caption1" color={theme.colors.accentPink} style={{fontFamily: theme.typography.families.headingBold}}>DAILY FOCUS: PREPARE FOR BIRTH</Typography>
             <Typography variant="subhead" color={theme.colors.textHigh} style={{marginTop: 4}}>Time to start reviewing your hospital bag checklist.</Typography>
           </View>
-          <ChevronRight size={20} color="#E91E63" />
+          <ChevronRight size={20} color={theme.colors.accentPink} />
         </TouchableOpacity>
       );
     }

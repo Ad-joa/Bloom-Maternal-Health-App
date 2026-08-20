@@ -80,7 +80,7 @@ export default function TrimesterScreen({ route }: Props) {
 
   if (loading) {
     return (
-      <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.center}>
+      <LinearGradient colors={[theme.colors.background, theme.colors.surfaceVariant, theme.colors.primaryLight]} style={styles.center}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
       </LinearGradient>
     );
@@ -96,7 +96,7 @@ export default function TrimesterScreen({ route }: Props) {
   ];
 
   return (
-    <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.container}>
+    <LinearGradient colors={[theme.colors.background, theme.colors.surfaceVariant, theme.colors.primaryLight]} style={styles.container}>
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           

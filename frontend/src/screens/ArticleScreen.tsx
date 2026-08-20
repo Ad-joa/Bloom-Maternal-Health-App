@@ -34,7 +34,7 @@ export default function ArticleScreen({ route, navigation }: Props) {
   }, []);
 
   return (
-    <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.container}>
+    <LinearGradient colors={[theme.colors.background, theme.colors.surfaceVariant, theme.colors.primaryLight]} style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Placeholder for an article header image */}
         <View style={[styles.headerImagePlaceholder, { opacity: fadeAnim }]}>
