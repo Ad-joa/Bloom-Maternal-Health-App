@@ -63,6 +63,7 @@ export type RootStackParamList = {
   PartnerMode: undefined;
   CheckIn: undefined;
   EmergencyLocator: undefined;
+  PrivacyConsent: undefined;
 };
 
 export type MainTabParamList = {
@@ -193,6 +194,11 @@ function Navigation() {
             <Stack.Screen
               name="Auth"
               component={AuthScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="PrivacyConsent"
+              component={PrivacyConsentScreen}
               options={{ headerShown: false }}
             />
           </>

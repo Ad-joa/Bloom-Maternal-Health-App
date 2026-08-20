@@ -1,95 +1,246 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, StyleSheet, ScrollView, TouchableOpacity, StatusBar } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Typography } from '../components/Typography';
 import { Button } from '../components/Button';
-import { theme } from '../theme/theme';
-import { ShieldCheck, CheckSquare, Square } from 'lucide-react-native';
+import { useTheme } from '../theme/ThemeContext';
+import { ShieldCheck, CheckSquare, Square, ChevronLeft } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 
 export default function PrivacyConsentScreen({ navigation }: any) {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
+  const insets = useSafeAreaInsets();
   const [agreed, setAgreed] = useState(false);
 
   const handleProceed = () => {
     if (agreed) {
-      navigation.navigate('Onboarding'); // Or wherever they go next
+      navigation.navigate('Auth'); 
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <ShieldCheck size={48} color={theme.colors.primary} />
-        <Typography variant="title2" style={{ marginTop: 16 }}>Privacy & Consent</Typography>
-      </View>
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" />
       
-      <ScrollView contentContainerStyle={styles.content}>
-        <Typography variant="body" color={theme.colors.textMedium} style={{ marginBottom: 16 }}>
-          In compliance with the Ghana Data Protection Act (Act 843), we are committed to protecting your personal information.
-        </Typography>
-
-        <Typography variant="headline" style={{ marginTop: 16, marginBottom: 8 }}>1. Data Collection</Typography>
-        <Typography variant="body" color={theme.colors.textMedium}>
-          We collect your health data (vitals, symptoms) solely for the purpose of providing personalized maternal health guidance and tracking.
-        </Typography>
-
-        <Typography variant="headline" style={{ marginTop: 16, marginBottom: 8 }}>2. Data Encryption</Typography>
-        <Typography variant="body" color={theme.colors.textMedium}>
-          Your data is encrypted securely on your device and when transmitted to our cloud servers. Only you and authorized healthcare providers can access it.
-        </Typography>
-
-        <Typography variant="headline" style={{ marginTop: 16, marginBottom: 8 }}>3. Your Rights</Typography>
-        <Typography variant="body" color={theme.colors.textMedium}>
-          You have the right to access, modify, or permanently delete your data at any time from the Profile settings.
-        </Typography>
-
-        <TouchableOpacity style={styles.checkboxContainer} onPress={() => setAgreed(!agreed)} activeOpacity={0.8}>
-          {agreed ? <CheckSquare color={theme.colors.primary} size={24} /> : <Square color={theme.colors.textMedium} size={24} />}
-          <Typography variant="subhead" style={{ marginLeft: 12, flex: 1, color: theme.colors.textHigh }}>
-            I have read and agree to the Data Privacy Terms.
-          </Typography>
+      {/* Rich Gradient Background */}
+      <LinearGradient 
+        colors={['#FFF5F5', theme.colors.primaryLight + '30', '#FFFFFF']} 
+        style={StyleSheet.absoluteFillObject}
+        start={{x: 0, y: 0}}
+        end={{x: 1, y: 1}}
+      />
+      
+      {/* Custom Header with Back Button */}
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+        <TouchableOpacity 
+          style={styles.backButton} 
+          onPress={() => navigation.goBack()}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <ChevronLeft size={28} color={theme.colors.primaryDark} />
         </TouchableOpacity>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        
+        {/* Title Section */}
+        <View style={styles.titleSection}>
+          <LinearGradient 
+            colors={[theme.colors.primary, theme.colors.primaryDark]} 
+            style={styles.iconContainer}
+            start={{x: 0, y: 0}} end={{x: 1, y: 1}}
+          >
+            <ShieldCheck size={48} color="#FFF" strokeWidth={1.5} />
+          </LinearGradient>
+          
+          <Typography variant="largeTitle" style={styles.mainTitle}>
+            Privacy & Consent
+          </Typography>
+          <Typography variant="body" style={styles.subtitle}>
+            In compliance with the Ghana Data Protection Act (Act 843), we are committed to protecting your personal information.
+          </Typography>
+        </View>
+
+        {/* Policies Section - Glassmorphism */}
+        <View style={styles.glassWrapper}>
+          <BlurView intensity={80} tint="light" style={styles.policyContainer}>
+            <View style={styles.policyItem}>
+              <Typography variant="title2" style={styles.policyTitle}>1. Data Collection</Typography>
+              <Typography variant="body" style={styles.policyText}>
+                We collect your health data (vitals, symptoms) solely for the purpose of providing personalized maternal health guidance and tracking.
+              </Typography>
+            </View>
+
+            <View style={styles.policyItem}>
+              <Typography variant="title2" style={styles.policyTitle}>2. Data Encryption</Typography>
+              <Typography variant="body" style={styles.policyText}>
+                Your data is encrypted securely on your device and when transmitted to our cloud servers. Only you and authorized healthcare providers can access it.
+              </Typography>
+            </View>
+
+            <View style={styles.policyItem}>
+              <Typography variant="title2" style={styles.policyTitle}>3. Your Rights</Typography>
+              <Typography variant="body" style={styles.policyText}>
+                You have the right to access, modify, or permanently delete your data at any time from the Profile settings.
+              </Typography>
+            </View>
+          </BlurView>
+        </View>
       </ScrollView>
 
-      <View style={styles.footer}>
+      {/* Sticky Bottom Area */}
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 24) }]}>
+        <TouchableOpacity 
+          style={styles.checkboxContainer} 
+          onPress={() => setAgreed(!agreed)} 
+          activeOpacity={0.7}
+        >
+          {agreed ? (
+            <CheckSquare color={theme.colors.primary} size={28} strokeWidth={2.5} />
+          ) : (
+            <Square color={theme.colors.textMedium} size={28} strokeWidth={2} />
+          )}
+          <Typography variant="subhead" style={styles.checkboxText}>
+            I have read, understood, and agree to the Data Privacy Terms.
+          </Typography>
+        </TouchableOpacity>
+
         <Button 
           title="Accept & Continue" 
           onPress={handleProceed} 
           disabled={!agreed} 
-          style={{width: "100%"}} 
+          style={styles.continueButton} 
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: '#FFF', 
   },
   header: {
-    padding: 24,
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+    backgroundColor: 'transparent',
+    zIndex: 10,
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.8)',
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    justifyContent: 'center',
+    shadowColor: theme.colors.primaryDark,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
   },
   content: {
-    padding: 24,
+    paddingHorizontal: 24,
+    paddingTop: 8,
+    paddingBottom: 40,
+  },
+  titleSection: {
+    marginBottom: 40,
+    alignItems: 'center',
+  },
+  iconContainer: {
+    width: 88,
+    height: 88,
+    borderRadius: 32, // Apple-style squircle radius
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+    shadowColor: theme.colors.primaryDark,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  mainTitle: {
+    fontSize: 32,
+    lineHeight: 40,
+    color: theme.colors.primaryDark,
+    marginBottom: 16,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  subtitle: {
+    color: theme.colors.textHigh,
+    lineHeight: 24,
+    fontSize: 17,
+    textAlign: 'center',
+  },
+  glassWrapper: {
+    borderRadius: 32,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.6)',
+    shadowColor: theme.colors.primaryDark,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.05,
+    shadowRadius: 24,
+    elevation: 4,
+  },
+  policyContainer: {
+    padding: 32,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)', 
+  },
+  policyItem: {
+    marginBottom: 32,
+  },
+  policyTitle: {
+    color: theme.colors.primaryDark,
+    fontSize: 20,
+    marginBottom: 8,
+  },
+  policyText: {
+    color: theme.colors.textHigh,
+    lineHeight: 24,
+    fontSize: 16,
+  },
+  footer: {
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.03)',
   },
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 32,
-    backgroundColor: theme.colors.surface,
-    padding: 16,
-    borderRadius: 12,
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 20,
+    marginBottom: 24,
+    shadowColor: theme.colors.primaryDark,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 2,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: 'rgba(255,255,255,0.8)',
   },
-  footer: {
-    padding: 24,
-    backgroundColor: theme.colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
+  checkboxText: {
+    marginLeft: 16,
+    flex: 1,
+    color: theme.colors.textHigh,
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  continueButton: {
+    width: "100%",
+    shadowColor: theme.colors.primaryDark,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
   }
 });
