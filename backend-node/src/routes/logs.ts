@@ -1,24 +1,9 @@
 import express from 'express';
-import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
+import { authenticateToken } from '../middleware/authMiddleware';
 
 const router = express.Router();
 const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
-
-// Middleware to verify JWT token
-const authenticateToken = (req: any, res: any, next: any) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  
-  if (token == null) return res.status(401).json({ detail: "Token missing" });
-
-  jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
-    if (err) return res.status(403).json({ detail: "Token invalid or expired" });
-    req.user = user;
-    next();
-  });
-};
 
 // GET /logs - Fetch recent logs for the authenticated user
 router.get('/', authenticateToken, async (req: any, res: any) => {

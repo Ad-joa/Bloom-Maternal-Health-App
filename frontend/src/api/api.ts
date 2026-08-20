@@ -175,13 +175,13 @@ export const onboardUser = async (
     }
 };
 
-export const getAncVisits = async (userId: number) => {
+export const getAncVisits = async () => {
     try {
-        const response = await apiClient.get(`/users/${userId}/anc-visits`);
+        const response = await apiClient.get(`/anc`);
         return response.data;
     } catch (error) {
         console.error("Error fetching ANC visits:", error);
-        return [];
+        throw error;
     }
 };
 
@@ -195,9 +195,9 @@ export const createSymptomLog = async (userId: number, logData: any) => {
     }
 };
 
-export const createAncVisit = async (userId: number, visitData: any) => {
+export const createAncVisit = async (visitData: any) => {
     try {
-        const response = await apiClient.post(`/users/${userId}/anc-visits`, visitData);
+        const response = await apiClient.post(`/anc`, visitData);
         return response.data;
     } catch (error) {
         console.error("Error creating ANC visit:", error);

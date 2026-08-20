@@ -28,9 +28,9 @@ const TOTAL_STEPS = 8;
 export default function OnboardingScreen({ navigation }: Props) {
   const { theme } = useTheme();
   const styles = getStyles(theme);
+  const { user, token, login } = useAuth();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const { user, login } = useAuth();
 
   // Form State
   const [dueDate, setDueDate] = useState('');
@@ -52,8 +52,6 @@ export default function OnboardingScreen({ navigation }: Props) {
   const slideAnim = useState(new Animated.Value(0))[0];
 
   const animateTransition = (nextStep: number) => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
     Animated.parallel([
       Animated.timing(fadeAnim, { toValue: 0, duration: 150, useNativeDriver: true }),
       Animated.timing(slideAnim, { toValue: -20, duration: 150, useNativeDriver: true })
@@ -100,10 +98,10 @@ export default function OnboardingScreen({ navigation }: Props) {
         if (height) payload.height = height;
 
         const updatedUser = await onboardUser(user.id, payload);
-        login(updatedUser);
+        login(updatedUser, token || '');
       } catch (error) {
         console.error(error);
-        login(user); // fallback
+        login(user, token || ''); // fallback
       } finally {
         setLoading(false);
       }
