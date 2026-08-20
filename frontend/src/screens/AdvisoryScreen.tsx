@@ -92,7 +92,7 @@ export default function AdvisoryScreen() {
     setLoading(true);
 
     try {
-      const response = await getAdvisory([text.trim()], user?.id);
+      const response = await getAdvisory([text.trim()]);
       const adviceStr = typeof response.advice === 'string' ? response.advice : response.advice?.text;
       
       // Basic client-side danger check just for UI styling (the backend also checks this)

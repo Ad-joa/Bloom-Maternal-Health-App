@@ -11,6 +11,7 @@ import { GoogleGenAI } from '@google/genai';
 import authRoutes, { excludePassword } from './routes/auth';
 import logsRoutes from './routes/logs';
 import ancRoutes from './routes/anc';
+import { authenticateToken } from './middleware/authMiddleware';
 
 dotenv.config();
 
@@ -118,9 +119,10 @@ app.get('/trimester/:trimester_id', (req, res) => {
   res.json(data);
 });
 
-app.post('/advisory', async (req, res) => {
+app.post('/advisory', authenticateToken, async (req: any, res: any) => {
   try {
-    const { symptoms, user_id } = req.body;
+    const { symptoms } = req.body;
+    const user_id = req.user.userId;
     let context = null;
     let userDetails = "";
 

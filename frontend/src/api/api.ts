@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Define EXPO_PUBLIC_API_URL in a frontend/.env file.
 import Constants from 'expo-constants';
 
-const getBaseUrl = () => {
+export const getBaseUrl = () => {
     if (process.env.EXPO_PUBLIC_API_URL) {
         return process.env.EXPO_PUBLIC_API_URL;
     }
@@ -65,11 +65,9 @@ export const getTrimesterInfo = async (trimesterId: number) => {
     }
 };
 
-export const getAdvisory = async (symptoms: string[], userId?: number) => {
+export const getAdvisory = async (symptoms: string[]) => {
     try {
-        const payload: any = { symptoms };
-        if (userId) payload.user_id = userId;
-        const response = await apiClient.post('/advisory', payload);
+        const response = await apiClient.post('/advisory', { symptoms });
         return response.data;
     } catch (error) {
         console.error("Error fetching advisory:", error);
