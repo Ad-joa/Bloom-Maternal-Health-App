@@ -1,6 +1,6 @@
 import NetInfo from '@react-native-community/netinfo';
 import { getUnsyncedLogs, markLogsAsSynced } from './database';
-import api from '../api/api';
+import { syncSymptoms } from '../api/api';
 
 export const startSyncEngine = () => {
   // Listen for network changes
@@ -26,7 +26,7 @@ const syncOfflineData = async () => {
     console.log(`SyncEngine: Found ${unsyncedLogs.length} unsynced logs. Pushing to backend...`);
     
     // Push the batch to the backend
-    const response = await api.post('/sync/symptoms', { logs: unsyncedLogs });
+    const response = await syncSymptoms(unsyncedLogs);
     
     if (response.data.success) {
       // Mark as synced locally
