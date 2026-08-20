@@ -38,6 +38,23 @@ const apiClient = axios.create({
     },
 });
 
+apiClient.interceptors.request.use(
+    async (config) => {
+        try {
+            const token = await AsyncStorage.getItem('@bloom_token');
+            if (token && config.headers) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+        } catch (error) {
+            console.error("Error reading token from storage:", error);
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
 export const getTrimesterInfo = async (trimesterId: number) => {
     try {
         const response = await apiClient.get(`/trimester/${trimesterId}`);
@@ -72,7 +89,7 @@ export const loginUser = async (credentials: any) => {
 
 export const saveSymptomLog = async (userId: number, logData: any) => {
     try {
-        const response = await apiClient.post(`/users/${userId}/logs`, logData);
+        const response = await apiClient.post(`/logs`, logData);
         return response.data;
     } catch (error) {
         console.error("Error saving log, attempting to save offline:", error);
@@ -96,11 +113,11 @@ export const saveSymptomLog = async (userId: number, logData: any) => {
 
 export const getSymptomLogs = async (userId: number) => {
     try {
-        const response = await apiClient.get(`/users/${userId}/logs`);
+        const response = await apiClient.get(`/logs`);
         return response.data;
     } catch (error) {
         console.error("Error fetching logs:", error);
-        return [];
+        throw error;
     }
 };
 
@@ -165,6 +182,16 @@ export const getAncVisits = async (userId: number) => {
     } catch (error) {
         console.error("Error fetching ANC visits:", error);
         return [];
+    }
+};
+
+export const createSymptomLog = async (userId: number, logData: any) => {
+    try {
+        const response = await apiClient.post(`/logs`, logData);
+        return response.data;
+    } catch (error) {
+        console.error("Error creating log:", error);
+        throw error;
     }
 };
 
