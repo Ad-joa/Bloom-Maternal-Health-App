@@ -10,6 +10,8 @@ import { FadeSlideIn } from '../components/FadeSlideIn';
 import { getWeeksPregnant, getDaysUntilDue } from '../utils/dateUtils';
 import { LineChart } from 'react-native-chart-kit';
 import { getSymptomLogs, getAncVisits } from '../api/api';
+import { EmergencyButton } from '../components/EmergencyButton';
+import { KickCounter } from '../components/KickCounter';
 
 const { width } = Dimensions.get('window');
 
@@ -181,6 +183,13 @@ export default function HomeScreen({ navigation }: Props) {
               <View style={styles.notificationDot} />
             </TouchableOpacity>
           </View>
+
+          {/* Kick Counter for 3rd Trimester */}
+          {currentTrimester === 3 && (
+            <FadeSlideIn delay={350} duration={500} direction="up">
+              <KickCounter />
+            </FadeSlideIn>
+          )}
 
           {/* Flo-Style Calendar Strip */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.calendarStrip}>

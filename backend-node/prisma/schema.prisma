@@ -22,6 +22,10 @@ model users {
   dietary_preferences     String?
   emergency_contact_name  String?
   emergency_contact_phone String?
+  blood_group             String?
+  height                  String?
+  last_period_date        String?
+  role                    String         @default("mother") // "mother", "nurse", "admin"
   partner_code            String?        @unique
   linked_user_id          Int?
   symptom_logs            symptom_logs[]
