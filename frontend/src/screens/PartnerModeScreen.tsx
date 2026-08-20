@@ -8,26 +8,27 @@ import { BackgroundMesh } from '../components/BackgroundMesh';
 import { X, Heart, Calendar, Droplets, Moon, Baby, Stethoscope } from 'lucide-react-native';
 import { FadeSlideIn } from '../components/FadeSlideIn';
 import { useAuth } from '../context/AuthContext';
-import { getPartnerSummary, getAncVisits } from '../api/api';
+import { getPartnerDashboard, getProfile, linkPartner } from '../api/api';
 import { getWeeksPregnant, getDaysUntilDue } from '../utils/dateUtils';
+import { TextInput } from '../components/TextInput';
+import { Button } from '../components/Button';
 
 export default function PartnerModeScreen({ navigation }: any) {
   const { user } = useAuth();
-  const [summary, setSummary] = useState<any>(null);
-  const [nextVisit, setNextVisit] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [dashboardData, setDashboardData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-
+  const [linkCode, setLinkCode] = useState('');
+  
   useEffect(() => {
     const loadData = async () => {
       if (user?.id) {
         try {
-          const [summaryData, visits] = await Promise.all([
-            getPartnerSummary(user.id),
-            getAncVisits(user.id)
-          ]);
-          setSummary(summaryData);
-          if (visits && visits.length > 0) {
-            setNextVisit(visits.find((v: any) => v.status === 'scheduled'));
+          const prof = await getProfile(user.id);
+          setProfile(prof);
+          if (prof.linked_user_id) {
+            const data = await getPartnerDashboard(user.id);
+            setDashboardData(data);
           }
         } catch (e) {
           console.error("Error loading partner mode data", e);
@@ -39,6 +40,24 @@ export default function PartnerModeScreen({ navigation }: any) {
     loadData();
   }, [user]);
 
+  const handleLink = async () => {
+    try {
+      if (user?.id && linkCode) {
+        setLoading(true);
+        await linkPartner(user.id, linkCode);
+        const prof = await getProfile(user.id);
+        setProfile(prof);
+        const data = await getPartnerDashboard(user.id);
+        setDashboardData(data);
+        setLoading(false);
+      }
+    } catch (e) {
+      setLoading(false);
+      alert("Invalid code or connection error.");
+    }
+  };
+
+  const isLinked = !!profile?.linked_user_id;
   const weeksPregnant = user?.due_date ? getWeeksPregnant(user.due_date) : 24;
   
   // Simple mock mapping for baby size based on weeks
@@ -56,6 +75,32 @@ export default function PartnerModeScreen({ navigation }: any) {
       </View>
     );
   }
+
+  if (!isLinked) {
+    return (
+      <View style={styles.container}>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={{ flex: 1, padding: 24, justifyContent: 'center' }}>
+            <Typography variant="largeTitle" align="center" style={{ marginBottom: 16 }}>Partner Sync</Typography>
+            <Typography variant="body" align="center" style={{ marginBottom: 32 }}>
+              To sync accounts, ask your partner for their 6-digit code or enter a code below.
+            </Typography>
+            <Typography variant="headline" align="center" color={theme.colors.primary} style={{ marginBottom: 32 }}>
+              Your Sync Code: {profile?.partner_code || user?.id?.toString().padStart(6, '0')}
+            </Typography>
+            <TextInput 
+              placeholder="Enter Partner's Code"
+              value={linkCode}
+              onChangeText={setLinkCode}
+            />
+            <Button title="Link Accounts" onPress={handleLink} style={{ marginTop: 16 }} />
+            <Button title="Back" onPress={() => navigation.goBack()} variant="secondary" style={{ marginTop: 16 }} />
+          </View>
+        </SafeAreaView>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <BackgroundMesh />
@@ -117,51 +162,20 @@ export default function PartnerModeScreen({ navigation }: any) {
                     <Heart size={20} color="#FF9500" strokeWidth={2.5} />
                   </View>
                   <Typography variant="headline" color={theme.colors.textHigh} style={styles.vibeTitle}>
-                    General Vibe Today
+                    Recent Logs
                   </Typography>
                 </View>
                 <View style={styles.vibeBody}>
-                  <Typography style={styles.vibeEmoji}>{summary?.emoji || '🙂'}</Typography>
                   <View style={styles.vibeTextWrap}>
-                    <Typography variant="body" color="#3A3A3C" style={styles.vibeDesc}>
-                      {summary?.vibe || 'She is feeling generally good today, though slightly fatigued.'}
-                    </Typography>
-                    <View style={styles.moodPillRow}>
-                      {summary?.tags?.map((tag: string, index: number) => (
-                        <View key={index} style={[styles.moodPill, { backgroundColor: index % 2 === 0 ? 'rgba(232, 248, 242, 0.8)' : 'rgba(255, 240, 239, 0.8)' }]}>
-                          <Typography variant="caption2" color={index % 2 === 0 ? theme.colors.primaryDark : "#E07A5F"}>{tag}</Typography>
-                        </View>
-                      ))}
-                    </View>
+                    {dashboardData?.symptom_logs?.length > 0 ? dashboardData.symptom_logs.map((log: any, idx: number) => (
+                      <Typography key={idx} variant="body" color="#3A3A3C" style={styles.vibeDesc}>
+                        • {log.symptoms}
+                      </Typography>
+                    )) : (
+                      <Typography variant="body" color="#3A3A3C" style={styles.vibeDesc}>No recent logs.</Typography>
+                    )}
                   </View>
                 </View>
-              </BlurView>
-            </View>
-          </FadeSlideIn>
-
-          {/* How to Support Section */}
-          <FadeSlideIn delay={400} duration={500} direction="up">
-            <Typography variant="caption1" color="#8E8E93" style={styles.sectionLabel}>HOW TO SUPPORT HER TODAY</Typography>
-            <View style={styles.cardWrapper}>
-              <BlurView intensity={80} tint="light" style={styles.supportCard}>
-                {summary?.support_actions?.map((action: string, index: number) => {
-                  const icons = [
-                    <Droplets size={18} color="#007AFF" strokeWidth={2.5} />,
-                    <Moon size={18} color="#AF52DE" strokeWidth={2.5} />,
-                    <Heart size={18} color={theme.colors.primaryDark} strokeWidth={2.5} />
-                  ];
-                  const bgs = ["rgba(235, 245, 255, 0.8)", "rgba(243, 239, 252, 0.8)", "rgba(232, 248, 242, 0.8)"];
-                  return (
-                    <React.Fragment key={index}>
-                      <SupportItem 
-                        icon={icons[index % icons.length]} 
-                        bg={bgs[index % bgs.length]} 
-                        text={action} 
-                      />
-                      {index < summary.support_actions.length - 1 && <View style={styles.supportDivider} />}
-                    </React.Fragment>
-                  );
-                })}
               </BlurView>
             </View>
           </FadeSlideIn>
@@ -171,15 +185,15 @@ export default function PartnerModeScreen({ navigation }: any) {
             <Typography variant="caption1" color="#8E8E93" style={styles.sectionLabel}>NEXT HOSPITAL VISIT</Typography>
             <View style={styles.cardWrapper}>
               <BlurView intensity={80} tint="light" style={styles.visitCard}>
-                {nextVisit ? (
+                {dashboardData?.anc_visits?.[0] ? (
                   <View style={styles.visitRow}>
                     <View style={styles.visitDateBadge}>
-                      <Typography variant="title3" color="#FFF" style={styles.visitDay}>{nextVisit.date.split(' ')[0].replace(/[^0-9]/g, '') || nextVisit.date.split(' ')[0]}</Typography>
-                      <Typography variant="caption2" color="rgba(255,255,255,0.8)">{nextVisit.date.split(' ')[1] ? nextVisit.date.split(' ')[1].substring(0, 3).toUpperCase() : 'APP'}</Typography>
+                      <Typography variant="title3" color="#FFF" style={styles.visitDay}>{dashboardData.anc_visits[0].date.split(' ')[0].replace(/[^0-9]/g, '') || dashboardData.anc_visits[0].date.split(' ')[0]}</Typography>
+                      <Typography variant="caption2" color="rgba(255,255,255,0.8)">{dashboardData.anc_visits[0].date.split(' ')[1] ? dashboardData.anc_visits[0].date.split(' ')[1].substring(0, 3).toUpperCase() : 'APP'}</Typography>
                     </View>
                     <View style={styles.visitInfo}>
-                      <Typography variant="headline" color={theme.colors.textHigh} style={{ fontSize: 17 }}>{nextVisit.date}, {nextVisit.time}</Typography>
-                      <Typography variant="footnote" color="#636366" style={{ marginTop: 4 }}>{nextVisit.doctor || 'Routine Checkup'}</Typography>
+                      <Typography variant="headline" color={theme.colors.textHigh} style={{ fontSize: 17 }}>{dashboardData.anc_visits[0].date}, {dashboardData.anc_visits[0].time}</Typography>
+                      <Typography variant="footnote" color="#636366" style={{ marginTop: 4 }}>{dashboardData.anc_visits[0].doctor || 'Routine Checkup'}</Typography>
                     </View>
                   </View>
                 ) : (

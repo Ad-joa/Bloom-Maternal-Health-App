@@ -184,4 +184,64 @@ export const getPartnerSummary = async (userId: number) => {
     }
 };
 
+export const getReminders = async (userId: number) => {
+    try {
+        const response = await apiClient.get(`/users/${userId}/reminders`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching reminders:", error);
+        return [];
+    }
+};
+
+export const createReminder = async (userId: number, reminderData: any) => {
+    try {
+        const response = await apiClient.post(`/users/${userId}/reminders`, reminderData);
+        return response.data;
+    } catch (error) {
+        console.error("Error creating reminder:", error);
+        throw error;
+    }
+};
+
+export const deleteReminder = async (userId: number, reminderId: number) => {
+    try {
+        const response = await apiClient.delete(`/users/${userId}/reminders/${reminderId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error deleting reminder:", error);
+        throw error;
+    }
+};
+
+export const linkPartner = async (userId: number, code: string) => {
+    try {
+        const response = await apiClient.post(`/users/${userId}/partner/link`, { code });
+        return response.data;
+    } catch (error) {
+        console.error("Error linking partner:", error);
+        throw error;
+    }
+};
+
+export const getPartnerDashboard = async (userId: number) => {
+    try {
+        const response = await apiClient.get(`/users/${userId}/partner/dashboard`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching partner dashboard:", error);
+        throw error;
+    }
+};
+
+export const getProfile = async (userId: number) => {
+    try {
+        const response = await apiClient.get(`/users/${userId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching profile:", error);
+        throw error;
+    }
+};
+
 export default apiClient;
