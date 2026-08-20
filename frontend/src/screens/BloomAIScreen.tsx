@@ -178,7 +178,6 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
               </BounceButton>
             </View>
           </BlurView>
-        </View>
     </KeyboardAvoidingView>
   );
 

@@ -1,23 +1,21 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, Easing, Dimensions, Image } from 'react-native';
+import { View, StyleSheet, Animated, Easing, Dimensions } from 'react-native';
+import LottieView from 'lottie-react-native';
 import { Typography } from './Typography';
 import { useTheme } from '../theme/ThemeContext';
 
 const { width } = Dimensions.get('window');
 const RING_SIZE = width * 0.65;
-const IMAGE_SIZE = RING_SIZE - 24;
 
 export function TermLoader({ onComplete }: { onComplete: () => void }) {
   const { theme } = useTheme();
   const styles = getStyles(theme);
 
-  // Animations
   const spinAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.88)).current;
   const containerOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Fade in the entire loader
+    // Fade in the loader
     Animated.timing(containerOpacity, {
       toValue: 1,
       duration: 600,
@@ -34,22 +32,14 @@ export function TermLoader({ onComplete }: { onComplete: () => void }) {
       })
     ).start();
 
-    // Slowly grow the belly image to simulate the "term growth" effect
-    Animated.timing(scaleAnim, {
-      toValue: 1.08,
-      duration: 2800,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
-
-    // After 3 seconds, fade out then call onComplete
+    // After 3.2 seconds, fade out then advance
     const exitTimer = setTimeout(() => {
       Animated.timing(containerOpacity, {
         toValue: 0,
         duration: 400,
         useNativeDriver: true,
       }).start(() => onComplete());
-    }, 3000);
+    }, 3200);
 
     return () => clearTimeout(exitTimer);
   }, []);
@@ -61,33 +51,29 @@ export function TermLoader({ onComplete }: { onComplete: () => void }) {
 
   return (
     <Animated.View style={[styles.container, { opacity: containerOpacity }]}>
-      {/* Outer Ring Track */}
+      {/* Ring + Lottie layer */}
       <View style={styles.ringContainer}>
-        {/* Static track (grey) */}
+        {/* Static grey track */}
         <View style={styles.trackRing} />
 
-        {/* Spinning progress arc (orange, Amila-style) */}
+        {/* Spinning orange progress arc */}
         <Animated.View
-          style={[
-            styles.progressArc,
-            { transform: [{ rotate: spin }] },
-          ]}
+          style={[styles.progressArc, { transform: [{ rotate: spin }] }]}
         />
 
-        {/* Inner circle with image */}
-        <View style={styles.imageMask}>
-          <Animated.Image
-            source={require('../../assets/baby.png')}
-            style={[
-              styles.bellyImage,
-              { transform: [{ scale: scaleAnim }] },
-            ]}
+        {/* Lottie belly animation inside the ring */}
+        <View style={styles.lottieWrapper}>
+          <LottieView
+            source={require('../../assets/belly.json')}
+            autoPlay
+            loop={false}
+            style={styles.lottie}
             resizeMode="cover"
           />
         </View>
       </View>
 
-      {/* Loading text */}
+      {/* Text */}
       <View style={styles.textContainer}>
         <Typography variant="title2" style={styles.loadingText}>
           Determine your term...
@@ -125,22 +111,23 @@ const getStyles = (theme: any) =>
       height: RING_SIZE,
       borderRadius: RING_SIZE / 2,
       borderWidth: 7,
-      // Orange arc - 3 sides transparent, 1 solid
       borderTopColor: '#F97316',
       borderRightColor: '#F97316',
       borderBottomColor: 'transparent',
       borderLeftColor: 'transparent',
     },
-    imageMask: {
-      width: IMAGE_SIZE,
-      height: IMAGE_SIZE,
-      borderRadius: IMAGE_SIZE / 2,
+    lottieWrapper: {
+      width: RING_SIZE - 24,
+      height: RING_SIZE - 24,
+      borderRadius: (RING_SIZE - 24) / 2,
       overflow: 'hidden',
-      backgroundColor: '#FFF5F0',
+      backgroundColor: '#FFFAF5',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
-    bellyImage: {
-      width: '100%',
-      height: '100%',
+    lottie: {
+      width: RING_SIZE - 24,
+      height: RING_SIZE - 24,
     },
     textContainer: {
       marginTop: 48,
