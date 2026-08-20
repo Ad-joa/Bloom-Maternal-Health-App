@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { theme } from './src/theme/theme';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from './src/screens/HomeScreen';
@@ -77,6 +76,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 function CustomTabBar({ state, navigation }: any) {
+  const { theme, isDark } = useTheme();
   return (
     <View style={{
       position: 'absolute',
@@ -86,18 +86,23 @@ function CustomTabBar({ state, navigation }: any) {
       elevation: 10,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.1,
+      shadowOpacity: isDark ? 0.4 : 0.1,
       shadowRadius: 12,
     }}>
-      <BlurView intensity={80} tint="light" style={{
-        backgroundColor: 'rgba(255, 255, 255, 0.7)',
-        overflow: 'hidden',
-        borderRadius: 32,
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        paddingVertical: 12,
-      }}>
+      <BlurView
+        intensity={isDark ? 40 : 80}
+        tint={isDark ? 'dark' : 'light'}
+        style={{
+          backgroundColor: isDark ? 'rgba(18,18,18,0.85)' : 'rgba(255,255,255,0.82)',
+          overflow: 'hidden',
+          borderRadius: 32,
+          flexDirection: 'row',
+          justifyContent: 'space-around',
+          alignItems: 'center',
+          paddingVertical: 12,
+          borderWidth: 1,
+          borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+        }}>
       {state.routes.map((route: any, index: number) => {
         const isFocused = state.index === index;
         const onPress = () => {
@@ -114,6 +119,9 @@ function CustomTabBar({ state, navigation }: any) {
         if (route.name === 'Support') { Icon = Users; label = 'Support'; }
         if (route.name === 'Profile') { Icon = MessageCircle; label = 'Profile'; }
 
+        const activeColor = theme.colors.primaryDark;
+        const inactiveColor = isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)';
+
         return (
           <TouchableOpacity key={route.key} onPress={onPress} activeOpacity={0.8} style={{
             flex: 1,
@@ -121,12 +129,14 @@ function CustomTabBar({ state, navigation }: any) {
             justifyContent: 'center',
             paddingVertical: 4,
           }}>
-            <Icon size={24} color={isFocused ? theme.colors.primary : '#9CA3AF'} strokeWidth={isFocused ? 2.5 : 2} />
+            <Icon size={24} color={isFocused ? activeColor : inactiveColor} strokeWidth={isFocused ? 2.5 : 1.8} />
             <Text style={{
               fontSize: 10,
-              color: isFocused ? theme.colors.primary : '#9CA3AF',
+              color: isFocused ? activeColor : inactiveColor,
               marginTop: 4,
-              fontFamily: theme.typography.families.bodySemibold
+              fontFamily: isFocused
+                ? theme.typography.families.headingBold
+                : theme.typography.families.bodyRegular,
             }}>{label}</Text>
           </TouchableOpacity>
         );
@@ -137,12 +147,12 @@ function CustomTabBar({ state, navigation }: any) {
 }
 
 function MainTabs() {
+  const { theme } = useTheme();
   return (
     <Tab.Navigator
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={({ route, navigation }) => ({
-
-        headerStyle: { backgroundColor: '#F8F9FA', shadowOpacity: 0, elevation: 0 },
+        headerStyle: { backgroundColor: theme.colors.background, shadowOpacity: 0, elevation: 0 },
         headerTintColor: theme.colors.textHigh,
         headerTitleStyle: { fontFamily: theme.typography.families.headingBold },
         headerRight: () => (

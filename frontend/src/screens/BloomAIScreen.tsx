@@ -19,8 +19,8 @@ interface Message {
 }
 
 export default function BloomAIScreen({ navigation, isNested }: any) {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
+  const { theme, isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
   const { user } = useAuth();
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -194,7 +194,7 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
   );
 }
 
-const getStyles = (theme: any) => StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -207,7 +207,7 @@ const getStyles = (theme: any) => StyleSheet.create({
     paddingTop: theme.spacing[2],
     paddingBottom: theme.spacing[2],
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.05)',
+    borderBottomColor: theme.colors.border,
   },
   headerTitle: {
     fontFamily: theme.typography.families.headingBold,
@@ -262,9 +262,9 @@ const getStyles = (theme: any) => StyleSheet.create({
     borderBottomRightRadius: 4,
   },
   bubbleAI: {
-    backgroundColor: 'rgba(255, 255, 255, 0.65)',
+    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.9)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.8)',
+    borderColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.06)',
     borderBottomLeftRadius: 4,
   },
   loadingBubble: {
@@ -275,7 +275,7 @@ const getStyles = (theme: any) => StyleSheet.create({
     paddingTop: theme.spacing[2],
     backgroundColor: 'transparent',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.05)',
+    borderTopColor: theme.colors.border,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -285,9 +285,9 @@ const getStyles = (theme: any) => StyleSheet.create({
   },
   inputWrapper: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.92)',
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.08)',
+    borderColor: theme.colors.border,
     borderRadius: 24,
     minHeight: 48,
     maxHeight: 120,

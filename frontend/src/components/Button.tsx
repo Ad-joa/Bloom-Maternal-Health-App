@@ -1,13 +1,12 @@
 import React from 'react';
-import { 
-  StyleSheet, 
-  ActivityIndicator, 
-  ViewStyle, 
-  TextStyle,
+import {
+  ActivityIndicator,
+  ViewStyle,
   PressableProps,
-  StyleProp
+  StyleProp,
+  View,
 } from 'react-native';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Typography } from './Typography';
 import { BounceButton } from './BounceButton';
 
@@ -27,23 +26,41 @@ export const Button: React.FC<ButtonProps> = ({
   style,
   ...props
 }) => {
+  const { theme, isDark } = useTheme();
+
   const isPrimary = variant === 'primary';
   const isSecondary = variant === 'secondary';
   const isTertiary = variant === 'tertiary';
-
   const isDisabled = disabled || loading;
 
-  const containerStyle: StyleProp<ViewStyle>[] = [
-    styles.base,
-    isPrimary ? styles.primary : undefined,
-    isSecondary ? styles.secondary : undefined,
-    isTertiary ? styles.tertiary : undefined,
-    isDisabled ? styles.disabled : undefined,
-    style as StyleProp<ViewStyle>,
-  ];
+  const base: ViewStyle = {
+    minHeight: 52,
+    minWidth: 44,
+    borderRadius: 100, // Pill style
+    paddingVertical: theme.spacing[3],
+    paddingHorizontal: theme.spacing[5],
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+  };
 
-  let textColor = isPrimary ? theme.colors.surface : theme.colors.primary;
-  if (isDisabled && !isPrimary) textColor = theme.colors.textMedium;
+  const variantStyle: ViewStyle = isPrimary
+    ? { backgroundColor: isDisabled ? theme.colors.border : theme.colors.primaryDark }
+    : isSecondary
+    ? {
+        backgroundColor: 'transparent',
+        borderWidth: 1.5,
+        borderColor: theme.colors.primaryDark,
+      }
+    : { backgroundColor: 'transparent' }; // tertiary
+
+  const containerStyle: StyleProp<ViewStyle> = [base, variantStyle, style as StyleProp<ViewStyle>];
+
+  const textColor = isPrimary
+    ? '#FFF'
+    : isDisabled
+    ? theme.colors.textMedium
+    : theme.colors.primaryDark;
 
   return (
     <BounceButton
@@ -62,32 +79,3 @@ export const Button: React.FC<ButtonProps> = ({
     </BounceButton>
   );
 };
-
-const styles = StyleSheet.create({
-  base: {
-    minHeight: 44,
-    minWidth: 44,
-    borderRadius: theme.borderRadius.md,
-    paddingVertical: theme.spacing[3],
-    paddingHorizontal: theme.spacing[5],
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-  primary: {
-    backgroundColor: theme.colors.primary,
-  },
-  secondary: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: theme.colors.primary,
-  },
-  tertiary: {
-    backgroundColor: 'transparent',
-    paddingVertical: theme.spacing[2],
-    paddingHorizontal: theme.spacing[2],
-  },
-  disabled: {
-    opacity: 0.6,
-  },
-});

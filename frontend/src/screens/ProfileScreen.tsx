@@ -1,24 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Animated, Platform, FlatList, KeyboardAvoidingView, Switch, UIManager, LayoutAnimation, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Switch, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BackgroundMesh } from '../components/BackgroundMesh';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import { theme } from '../theme/theme';
 import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
-import { scheduleDailyReminder } from '../utils/notifications';
-import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 
 export default function ProfileScreen({ navigation }: any) {
   const { user, logout } = useAuth();
-  const { isDark, toggleTheme } = useTheme();
+  const { theme, isDark, toggleTheme } = useTheme();
+  const styles = getStyles(theme, isDark);
   const { i18n } = useTranslation();
   const [biometricsEnabled, setBiometricsEnabled] = useState(false);
   const [selectedLang, setSelectedLang] = useState(i18n.language || 'en');
@@ -63,246 +60,202 @@ export default function ProfileScreen({ navigation }: any) {
                 <td style="padding: 10px; border: 1px solid ${theme.colors.primaryLight};">120/80</td>
               </tr>
             </table>
-
             <h2 style="color: #444;">Recent Symptoms</h2>
             <p style="font-size: 16px; line-height: 1.5; padding: 15px; background-color: ${theme.colors.background}; border: 1px solid ${theme.colors.primaryLight}; border-radius: 8px;">
               Patient reported mild nausea in the mornings, well-managed with ginger tea. No severe headaches or blurred vision.
             </p>
-            
             <p style="margin-top: 50px; font-style: italic; color: #888; font-size: 12px; text-align: center;">
               Generated securely by Bloom Maternal Health App
             </p>
           </body>
         </html>
       `;
-      
       const { uri } = await Print.printToFileAsync({ html });
       await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
     } catch (e) {
-      console.error("Error generating PDF:", e);
+      console.error('Error generating PDF:', e);
     }
   };
 
   const menuItems = [
-    { title: 'Personal Information', icon: <Ionicons name="settings-sharp" size={20} color={theme.colors.textMedium} />, route: 'Profile' },
-    { title: 'ANC Visits', icon: <Ionicons name="calendar" size={20} color={theme.colors.textMedium} />, route: 'ANCVisit' },
-    { title: 'Partner Mode', icon: <Ionicons name="people" size={20} color={theme.colors.textMedium} />, route: 'PartnerMode' },
-    { 
-      title: 'Daily Reminders', 
-      icon: <Ionicons name="notifications" size={20} color={theme.colors.textMedium} />,
-      isToggle: false,
-      onPress: () => navigation.navigate('Reminders')
-    },
-    { 
-      title: 'App Lock (FaceID/TouchID)', 
-      icon: <Ionicons name="lock-closed" size={20} color={theme.colors.textMedium} />,
+    { title: 'ANC Visits', icon: 'calendar', route: 'ANCVisit' },
+    { title: 'Partner Mode', icon: 'people', route: 'PartnerMode' },
+    { title: 'Daily Reminders', icon: 'notifications', onPress: () => navigation.navigate('Reminders') },
+    {
+      title: 'App Lock (FaceID/TouchID)',
+      icon: 'lock-closed',
       isToggle: true,
       value: biometricsEnabled,
-      onToggle: toggleBiometrics
+      onToggle: toggleBiometrics,
     },
-    { title: 'Help & Support', icon: <Ionicons name="help-circle" size={20} color={theme.colors.textMedium} />, route: 'Profile' },
+    { title: 'Help & Support', icon: 'help-circle', onPress: () => {} },
   ];
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
 
-      <SafeAreaView edges={['top']} style={styles.safeArea}>
+        {/* Header */}
         <View style={styles.header}>
-          <Typography variant="largeTitle" color={theme.colors.primaryDark}>
-            Profile
-          </Typography>
+          <Typography variant="largeTitle" style={styles.headerTitle}>Profile</Typography>
           <TouchableOpacity style={styles.themeToggle} onPress={toggleTheme}>
-            <Ionicons name={isDark ? "sunny" : "moon"} size={24} color={theme.colors.primaryDark} />
+            <Ionicons name={isDark ? 'sunny' : 'moon'} size={22} color={theme.colors.primaryDark} />
           </TouchableOpacity>
         </View>
+
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
-      <View style={styles.profileHeader}>
-        <BlurView intensity={80} tint="light" style={styles.avatarLarge}>
-          <Typography variant="largeTitle" color={theme.colors.primaryDark}>
-            {user?.name ? user.name[0].toUpperCase() : 'B'}
-          </Typography>
-        </BlurView>
-        <Typography variant="title2" style={styles.name}>{user?.name || 'Bloom User'}</Typography>
-        <Typography variant="body" color={theme.colors.textMedium}>{user?.email || 'user@example.com'}</Typography>
-      </View>
-
-      <View style={styles.section}>
-        <Typography variant="subhead" color={theme.colors.textMedium} style={styles.sectionLabel}>
-          LANGUAGE
-        </Typography>
-        <Card variant="glass" style={styles.menuCard}>
-          <View style={styles.menuItem}>
-            <View style={styles.menuItemLeft}>
-              <Ionicons name="language" size={20} color={theme.colors.primary} />
-              <Typography variant="body" style={styles.menuItemText}>App Language</Typography>
+          {/* Avatar & Name */}
+          <View style={styles.profileHeader}>
+            <View style={styles.avatarLarge}>
+              <Typography variant="largeTitle" style={{ color: '#FFF', fontFamily: theme.typography.families.headingBold }}>
+                {user?.name ? user.name[0].toUpperCase() : 'B'}
+              </Typography>
             </View>
-            <View style={{flexDirection: 'row', gap: 8}}>
-              {['en', 'twi', 'ga', 'ewe'].map(lang => (
-                <TouchableOpacity key={lang} onPress={() => changeLanguage(lang)} style={{padding: 4, opacity: selectedLang === lang ? 1 : 0.5}}>
-                  <Typography variant="subhead" color={selectedLang === lang ? theme.colors.primary : theme.colors.textMedium}>
-                    {lang.toUpperCase()}
-                  </Typography>
+            <Typography variant="title2" style={styles.name}>{user?.name || 'Bloom User'}</Typography>
+            <Typography variant="body" style={styles.email}>{user?.email || 'user@example.com'}</Typography>
+          </View>
+
+          {/* Language */}
+          <View style={styles.section}>
+            <Typography variant="caption1" style={styles.sectionLabel}>LANGUAGE</Typography>
+            <View style={styles.menuCard}>
+              <View style={styles.menuItem}>
+                <View style={styles.menuItemLeft}>
+                  <Ionicons name="language" size={20} color={theme.colors.primaryDark} />
+                  <Typography variant="body" style={styles.menuItemText}>App Language</Typography>
+                </View>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  {['en', 'twi', 'ga', 'ewe'].map(lang => (
+                    <TouchableOpacity key={lang} onPress={() => changeLanguage(lang)} style={{ padding: 4 }}>
+                      <Typography
+                        variant="subhead"
+                        style={[styles.langChip, selectedLang === lang && styles.langChipActive]}
+                      >
+                        {lang.toUpperCase()}
+                      </Typography>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* Pregnancy Details */}
+          <View style={styles.section}>
+            <Typography variant="caption1" style={styles.sectionLabel}>PREGNANCY DETAILS</Typography>
+            <View style={styles.menuCard}>
+              {[
+                { icon: 'flag', label: 'Primary Goal', value: user?.primary_goal || 'Not set' },
+                { icon: 'calendar', label: 'Due Date', value: user?.due_date ? new Date(user.due_date).toLocaleDateString() : 'Not set' },
+                { icon: 'time', label: 'Trimester', value: user?.trimester ? `Trimester ${user.trimester}` : 'Not set' },
+                { icon: 'water', label: 'Last Period', value: user?.last_period_date ? new Date(user.last_period_date).toLocaleDateString() : 'Not set', danger: true },
+                { icon: 'medkit', label: 'Blood Group', value: user?.blood_group || 'Not set' },
+                { icon: 'body', label: 'Height', value: user?.height || 'Not set' },
+              ].map((row, i, arr) => (
+                <View key={row.label} style={[styles.menuItem, i < arr.length - 1 && styles.menuItemBorder]}>
+                  <View style={styles.menuItemLeft}>
+                    <Ionicons name={row.icon as any} size={20} color={row.danger ? theme.colors.danger : theme.colors.primaryDark} />
+                    <Typography variant="body" style={styles.menuItemText}>{row.label}</Typography>
+                  </View>
+                  <Typography variant="body" style={styles.menuItemValue}>{row.value}</Typography>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {/* Health & Lifestyle */}
+          <View style={styles.section}>
+            <Typography variant="caption1" style={styles.sectionLabel}>HEALTH & LIFESTYLE</Typography>
+            <View style={styles.menuCard}>
+              {[
+                { icon: 'nutrition', label: 'Dietary Preferences', value: user?.dietary_preferences || 'None' },
+                { icon: 'medical', label: 'Medical Conditions', value: user?.medical_conditions || 'None' },
+              ].map((row, i, arr) => (
+                <View key={row.label} style={[styles.menuItem, i < arr.length - 1 && styles.menuItemBorder]}>
+                  <View style={styles.menuItemLeft}>
+                    <Ionicons name={row.icon as any} size={20} color={theme.colors.primaryDark} />
+                    <Typography variant="body" style={styles.menuItemText}>{row.label}</Typography>
+                  </View>
+                  <Typography variant="body" style={styles.menuItemValue}>{row.value}</Typography>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {/* Emergency Contact */}
+          <View style={styles.section}>
+            <Typography variant="caption1" style={styles.sectionLabel}>EMERGENCY CONTACT</Typography>
+            <View style={styles.menuCard}>
+              {[
+                { icon: 'person', label: 'Name', value: user?.emergency_contact_name || 'Not set' },
+                { icon: 'call', label: 'Phone', value: user?.emergency_contact_phone || 'Not set' },
+              ].map((row, i, arr) => (
+                <View key={row.label} style={[styles.menuItem, i < arr.length - 1 && styles.menuItemBorder]}>
+                  <View style={styles.menuItemLeft}>
+                    <Ionicons name={row.icon as any} size={20} color={theme.colors.danger} />
+                    <Typography variant="body" style={styles.menuItemText}>{row.label}</Typography>
+                  </View>
+                  <Typography variant="body" style={styles.menuItemValue}>{row.value}</Typography>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {/* Account Settings */}
+          <View style={styles.section}>
+            <Typography variant="caption1" style={styles.sectionLabel}>ACCOUNT</Typography>
+            <View style={styles.menuCard}>
+              {menuItems.map((item, index) => (
+                <TouchableOpacity
+                  key={item.title}
+                  style={[styles.menuItem, index !== menuItems.length - 1 && styles.menuItemBorder]}
+                  onPress={item.onPress || (item.route ? () => navigation.navigate(item.route!) : undefined)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.menuItemLeft}>
+                    <Ionicons name={item.icon as any} size={20} color={theme.colors.textMedium} />
+                    <Typography variant="body" style={styles.menuItemText}>{item.title}</Typography>
+                  </View>
+                  {item.isToggle ? (
+                    <Switch
+                      value={item.value}
+                      onValueChange={item.onToggle}
+                      trackColor={{ false: theme.colors.border, true: theme.colors.primaryDark }}
+                      thumbColor="#fff"
+                    />
+                  ) : (
+                    <Ionicons name="chevron-forward" size={20} color={theme.colors.textMedium} />
+                  )}
                 </TouchableOpacity>
               ))}
             </View>
           </View>
-        </Card>
-      </View>
 
-      <View style={styles.section}>
-        <Typography variant="subhead" color={theme.colors.textMedium} style={styles.sectionLabel}>
-          PREGNANCY DETAILS
-        </Typography>
-        <Card variant="glass" style={styles.menuCard}>
-          <View style={[styles.menuItem, styles.menuItemBorder]}>
-            <View style={styles.menuItemLeft}>
-              <Ionicons name="flag" size={20} color={theme.colors.primary} />
-              <Typography variant="body" style={styles.menuItemText}>Primary Goal</Typography>
+          {/* Medical Export */}
+          <View style={styles.section}>
+            <Typography variant="caption1" style={styles.sectionLabel}>MEDICAL</Typography>
+            <View style={styles.menuCard}>
+              <TouchableOpacity style={styles.menuItem} onPress={handleExportPDF} activeOpacity={0.7}>
+                <View style={styles.menuItemLeft}>
+                  <Ionicons name="document-text" size={20} color={theme.colors.primaryDark} />
+                  <Typography variant="body" style={[styles.menuItemText, { color: theme.colors.primaryDark }]}>
+                    Export Medical Report (PDF)
+                  </Typography>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={theme.colors.primaryDark} />
+              </TouchableOpacity>
             </View>
-            <Typography variant="body" color={theme.colors.textMedium}>{user?.primary_goal || 'Not set'}</Typography>
           </View>
-          <View style={[styles.menuItem, styles.menuItemBorder]}>
-            <View style={styles.menuItemLeft}>
-              <Ionicons name="calendar" size={20} color={theme.colors.primary} />
-              <Typography variant="body" style={styles.menuItemText}>Due Date</Typography>
-            </View>
-            <Typography variant="body" color={theme.colors.textMedium}>{user?.due_date ? new Date(user.due_date).toLocaleDateString() : 'Not set'}</Typography>
-          </View>
-          <View style={styles.menuItem}>
-            <View style={styles.menuItemLeft}>
-              <Ionicons name="time" size={20} color={theme.colors.primary} />
-              <Typography variant="body" style={styles.menuItemText}>Trimester</Typography>
-            </View>
-            <Typography variant="body" color={theme.colors.textMedium}>{user?.trimester ? `Trimester ${user.trimester}` : 'Not set'}</Typography>
-          </View>
-          <View style={[styles.menuItem, styles.menuItemBorder, { borderTopWidth: 1, borderColor: 'rgba(0,0,0,0.05)' }]}>
-            <View style={styles.menuItemLeft}>
-              <Ionicons name="water" size={20} color={theme.colors.danger} />
-              <Typography variant="body" style={styles.menuItemText}>Last Period (LMP)</Typography>
-            </View>
-            <Typography variant="body" color={theme.colors.textMedium}>{user?.last_period_date ? new Date(user.last_period_date).toLocaleDateString() : 'Not set'}</Typography>
-          </View>
-          <View style={[styles.menuItem, styles.menuItemBorder]}>
-            <View style={styles.menuItemLeft}>
-              <Ionicons name="medkit" size={20} color={theme.colors.primary} />
-              <Typography variant="body" style={styles.menuItemText}>Blood Group</Typography>
-            </View>
-            <Typography variant="body" color={theme.colors.textMedium}>{user?.blood_group || 'Not set'}</Typography>
-          </View>
-          <View style={styles.menuItem}>
-            <View style={styles.menuItemLeft}>
-              <Ionicons name="body" size={20} color={theme.colors.primary} />
-              <Typography variant="body" style={styles.menuItemText}>Height</Typography>
-            </View>
-            <Typography variant="body" color={theme.colors.textMedium}>{user?.height || 'Not set'}</Typography>
-          </View>
-        </Card>
-      </View>
 
-      <View style={styles.section}>
-        <Typography variant="subhead" color={theme.colors.textMedium} style={styles.sectionLabel}>
-          HEALTH & LIFESTYLE
-        </Typography>
-        <Card variant="glass" style={styles.menuCard}>
-          <View style={[styles.menuItem, styles.menuItemBorder]}>
-            <View style={styles.menuItemLeft}>
-              <Ionicons name="nutrition" size={20} color={theme.colors.primary} />
-              <Typography variant="body" style={styles.menuItemText}>Dietary Preferences</Typography>
+          {/* Logout */}
+          <TouchableOpacity onPress={logout} style={styles.logoutButton} activeOpacity={0.8}>
+            <View style={styles.logoutCard}>
+              <Ionicons name="log-out" size={20} color={theme.colors.danger} />
+              <Typography variant="body" style={styles.logoutText}>Log Out</Typography>
             </View>
-            <Typography variant="body" color={theme.colors.textMedium}>{user?.dietary_preferences || 'None'}</Typography>
-          </View>
-          <View style={styles.menuItem}>
-            <View style={styles.menuItemLeft}>
-              <Ionicons name="medical" size={20} color={theme.colors.primary} />
-              <Typography variant="body" style={styles.menuItemText}>Medical Conditions</Typography>
-            </View>
-            <Typography variant="body" color={theme.colors.textMedium}>{user?.medical_conditions || 'None'}</Typography>
-          </View>
-        </Card>
-      </View>
-
-      <View style={styles.section}>
-        <Typography variant="subhead" color={theme.colors.textMedium} style={styles.sectionLabel}>
-          EMERGENCY CONTACT
-        </Typography>
-        <Card variant="glass" style={styles.menuCard}>
-          <View style={[styles.menuItem, styles.menuItemBorder]}>
-            <View style={styles.menuItemLeft}>
-              <Ionicons name="person" size={20} color={theme.colors.danger} />
-              <Typography variant="body" style={styles.menuItemText}>Name</Typography>
-            </View>
-            <Typography variant="body" color={theme.colors.textMedium}>{user?.emergency_contact_name || 'Not set'}</Typography>
-          </View>
-          <View style={styles.menuItem}>
-            <View style={styles.menuItemLeft}>
-              <Ionicons name="call" size={20} color={theme.colors.danger} />
-              <Typography variant="body" style={styles.menuItemText}>Phone</Typography>
-            </View>
-            <Typography variant="body" color={theme.colors.textMedium}>{user?.emergency_contact_phone || 'Not set'}</Typography>
-          </View>
-        </Card>
-      </View>
-
-      <View style={styles.section}>
-        <Typography variant="subhead" color={theme.colors.textMedium} style={styles.sectionLabel}>
-          ACCOUNT
-        </Typography>
-
-        <Card variant="glass" style={styles.menuCard}>
-          {menuItems.map((item, index) => (
-            <TouchableOpacity
-              key={item.title}
-              style={[
-                styles.menuItem,
-                index !== menuItems.length - 1 && styles.menuItemBorder
-              ]}
-              onPress={item.onPress || (item.route ? () => item.route !== 'Profile' ? navigation.navigate(item.route) : null : undefined)}
-            >
-              <View style={styles.menuItemLeft}>
-                {item.icon}
-                <Typography variant="body" style={styles.menuItemText}>{item.title}</Typography>
-              </View>
-              {item.isToggle ? (
-                <Switch 
-                  value={item.value} 
-                  onValueChange={item.onToggle}
-                  trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
-                  thumbColor="#fff"
-                />
-              ) : (
-                <Ionicons name="chevron-forward" size={20} color={theme.colors.textMedium} />
-              )}
-            </TouchableOpacity>
-          ))}
-        </Card>
-      </View>
-
-      <View style={styles.section}>
-        <Typography variant="subhead" color={theme.colors.textMedium} style={styles.sectionLabel}>
-          MEDICAL
-        </Typography>
-        <Card variant="glass" style={styles.menuCard}>
-          <TouchableOpacity style={styles.menuItem} onPress={handleExportPDF}>
-            <View style={styles.menuItemLeft}>
-              <Ionicons name="document-text" size={20} color={theme.colors.primaryDark} />
-              <Typography variant="body" color={theme.colors.primaryDark} style={styles.menuItemText}>
-                Export Medical Report (PDF)
-              </Typography>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={theme.colors.primaryDark} />
           </TouchableOpacity>
-        </Card>
-      </View>
-
-      <TouchableOpacity onPress={logout} style={styles.logoutButton}>
-        <Card variant="glass" style={styles.logoutCard}>
-          <Ionicons name="log-out" size={20} color={theme.colors.danger} />
-          <Typography variant="body" color={theme.colors.danger} style={styles.logoutText}>
-            Log Out
-          </Typography>
-        </Card>
-      </TouchableOpacity>
 
         </ScrollView>
       </SafeAreaView>
@@ -310,67 +263,91 @@ export default function ProfileScreen({ navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  safeArea: {
-    flex: 1,
-  },
+  safeArea: { flex: 1 },
   header: {
     paddingHorizontal: 24,
-    paddingTop: 24,
-    paddingBottom: 24,
+    paddingTop: 16,
+    paddingBottom: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  headerTitle: {
+    fontSize: 40,
+    lineHeight: 44,
+    color: theme.colors.textHigh,
+    fontFamily: theme.typography.families.headingBold,
+    letterSpacing: -1,
+  },
   themeToggle: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.05)',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: theme.colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   scrollContent: {
-    padding: theme.spacing[5],
-    paddingBottom: 120, // Space for floating tab bar
+    paddingHorizontal: 24,
+    paddingBottom: 140,
   },
   profileHeader: {
     alignItems: 'center',
-    marginVertical: theme.spacing[8],
+    marginVertical: 24,
   },
   avatarLarge: {
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    overflow: 'hidden',
-    borderColor: 'rgba(255, 255, 255, 0.6)',
-    borderWidth: 1,
+    backgroundColor: theme.colors.primaryDark,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: theme.spacing[4],
+    marginBottom: 16,
+    shadowColor: theme.colors.primaryDark,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 6,
   },
   name: {
-    marginBottom: theme.spacing[1],
+    color: theme.colors.textHigh,
+    fontFamily: theme.typography.families.headingBold,
+    marginBottom: 4,
+  },
+  email: {
+    color: theme.colors.textMedium,
   },
   section: {
-    marginBottom: theme.spacing[6],
+    marginBottom: 24,
   },
   sectionLabel: {
-    marginBottom: theme.spacing[2],
-    marginLeft: theme.spacing[2],
+    color: theme.colors.textMedium,
+    fontFamily: theme.typography.families.headingBold,
+    letterSpacing: 1.2,
+    marginBottom: 8,
+    marginLeft: 4,
   },
   menuCard: {
-    padding: 0,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 20,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: theme.spacing[4],
+    padding: 16,
     backgroundColor: 'transparent',
+    minHeight: 52,
   },
   menuItemBorder: {
     borderBottomWidth: 1,
@@ -379,23 +356,43 @@ const styles = StyleSheet.create({
   menuItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing[3],
+    gap: 12,
+    flex: 1,
   },
   menuItemText: {
-    marginTop: 2, // optical alignment
+    color: theme.colors.textHigh,
+    fontFamily: theme.typography.families.bodyMedium,
+  },
+  menuItemValue: {
+    color: theme.colors.textMedium,
+    maxWidth: 140,
+    textAlign: 'right',
+  },
+  langChip: {
+    color: theme.colors.textMedium,
+    fontFamily: theme.typography.families.headingSemibold,
+    fontSize: 11,
+  },
+  langChipActive: {
+    color: theme.colors.primaryDark,
+    fontFamily: theme.typography.families.headingBold,
   },
   logoutButton: {
-    marginTop: 'auto',
-    marginBottom: theme.spacing[8],
+    marginBottom: 16,
   },
   logoutCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: theme.spacing[2],
-    padding: theme.spacing[4],
+    gap: 8,
+    backgroundColor: isDark ? 'rgba(255,59,48,0.12)' : '#FFF1F0',
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: isDark ? 'rgba(255,59,48,0.2)' : '#FECACA',
   },
   logoutText: {
-    fontFamily: theme.typography.families.bodySemibold,
-  }
+    color: theme.colors.danger,
+    fontFamily: theme.typography.families.headingBold,
+  },
 });
