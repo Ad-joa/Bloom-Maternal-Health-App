@@ -22,8 +22,11 @@ model users {
   dietary_preferences     String?
   emergency_contact_name  String?
   emergency_contact_phone String?
+  partner_code            String?        @unique
+  linked_user_id          Int?
   symptom_logs            symptom_logs[]
   anc_visits              anc_visits[]
+  reminders               reminders[]
 }
 
 model symptom_logs {
@@ -57,3 +60,15 @@ model anc_visits {
   created_at DateTime  @default(now())
   users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
+
+model reminders {
+  id         Int       @id @default(autoincrement())
+  user_id    Int
+  title      String
+  type       String    // medication, hydration, appointment, generic
+  time       String    // HH:mm format
+  is_active  Boolean   @default(true)
+  created_at DateTime  @default(now())
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+

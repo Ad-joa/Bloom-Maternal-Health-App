@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Animated, Platform, FlatList, KeyboardAvoidingView, Switch, UIManager, LayoutAnimation, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Typography } from '../components/Typography';
@@ -9,41 +9,80 @@ import { scheduleHydrationReminder, scheduleMedicationReminder, registerForPushN
 import * as Notifications from 'expo-notifications';
 
 import { Bell, Droplet, Pill } from 'lucide-react-native';
+import { useAuth } from '../context/AuthContext';
+import { getReminders, createReminder, deleteReminder } from '../api/api';
 
 export default function RemindersScreen() {
-  const [hydrationEnabled, setHydrationEnabled] = useState(false);
-  const [medicationEnabled, setMedicationEnabled] = useState(false);
-  const [generalEnabled, setGeneralEnabled] = useState(false);
+  const { user } = useAuth();
+  const [remindersList, setRemindersList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Derive switch states from backend data
+  const hydrationReminder = remindersList.find(r => r.type === 'hydration');
+  const medicationReminder = remindersList.find(r => r.type === 'medication');
+  const generalReminder = remindersList.find(r => r.type === 'generic');
+
+  const hydrationEnabled = !!hydrationReminder?.is_active;
+  const medicationEnabled = !!medicationReminder?.is_active;
+  const generalEnabled = !!generalReminder?.is_active;
+
+  useEffect(() => {
+    const fetchReminders = async () => {
+      if (user?.id) {
+        const data = await getReminders(user.id);
+        setRemindersList(data || []);
+      }
+      setLoading(false);
+    };
+    fetchReminders();
+  }, [user]);
 
   const handleToggleHydration = async (value: boolean) => {
-    setHydrationEnabled(value);
+    if (!user?.id) return;
+    
     if (value) {
       const hasPermission = await registerForPushNotificationsAsync();
       if (hasPermission) {
-        // Schedule for 10:00 AM as default
-        await scheduleHydrationReminder(10, 0);
-      } else {
-        setHydrationEnabled(false);
+        await scheduleHydrationReminder(10, 0); // Local notification
+        const newRem = await createReminder(user.id, { title: "Stay Hydrated", type: "hydration", time: "10:00" });
+        setRemindersList(prev => [...prev, newRem]);
       }
     } else {
-      // In a real app we would cancel specifically this one, 
-      // but for demo we will just clear all or keep it simple.
-      await Notifications.cancelAllScheduledNotificationsAsync();
+      if (hydrationReminder) {
+        await deleteReminder(user.id, hydrationReminder.id);
+        setRemindersList(prev => prev.filter(r => r.id !== hydrationReminder.id));
+      }
     }
   };
 
   const handleToggleMedication = async (value: boolean) => {
-    setMedicationEnabled(value);
+    if (!user?.id) return;
+    
     if (value) {
       const hasPermission = await registerForPushNotificationsAsync();
       if (hasPermission) {
-        // Schedule for 8:00 AM
         await scheduleMedicationReminder(8, 0);
-      } else {
-        setMedicationEnabled(false);
+        const newRem = await createReminder(user.id, { title: "Prenatal Vitamins", type: "medication", time: "08:00" });
+        setRemindersList(prev => [...prev, newRem]);
       }
     } else {
-      await Notifications.cancelAllScheduledNotificationsAsync();
+      if (medicationReminder) {
+        await deleteReminder(user.id, medicationReminder.id);
+        setRemindersList(prev => prev.filter(r => r.id !== medicationReminder.id));
+      }
+    }
+  };
+
+  const handleToggleGeneral = async (value: boolean) => {
+    if (!user?.id) return;
+    if (value) {
+      const newRem = await createReminder(user.id, { title: "Daily Check-in", type: "generic", time: "12:00" });
+      setRemindersList(prev => [...prev, newRem]);
+    } else {
+      if (generalReminder) {
+        await deleteReminder(user.id, generalReminder.id);
+        setRemindersList(prev => prev.filter(r => r.id !== generalReminder.id));
+      }
     }
   };
 
@@ -111,7 +150,7 @@ export default function RemindersScreen() {
               </View>
               <Switch 
                 value={generalEnabled} 
-                onValueChange={setGeneralEnabled}
+                onValueChange={handleToggleGeneral}
                 trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
               />
             </Card>

@@ -143,6 +143,17 @@ app.post('/login', async (req, res) => {
   }
 });
 
+app.get('/users/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const user = await prisma.users.findUnique({ where: { id } });
+    if (!user) return res.status(404).json({ detail: "User not found" });
+    res.json(excludePassword(user));
+  } catch (error) {
+    res.status(500).json({ detail: "Server error" });
+  }
+});
+
 app.get('/trimester/:trimester_id', (req, res) => {
   const id = parseInt(req.params.trimester_id);
   const data = getTrimesterData(id);
@@ -470,6 +481,103 @@ app.get('/users/:user_id/partner-summary', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ detail: "Server error" });
+  }
+});
+
+// --- ANC Visits ---
+app.get('/users/:id/anc-visits', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const visits = await (prisma as any).anc_visits.findMany({ where: { user_id: userId }, orderBy: { created_at: 'desc' } });
+    res.json(visits);
+  } catch (e) {
+    res.status(500).json({ error: "Failed to fetch visits" });
+  }
+});
+
+app.post('/users/:id/anc-visits', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const { date, time, doctor, notes } = req.body;
+    const visit = await (prisma as any).anc_visits.create({
+      data: { user_id: userId, date, time, doctor, notes }
+    });
+    res.json(visit);
+  } catch (e) {
+    res.status(500).json({ error: "Failed to create visit" });
+  }
+});
+
+// --- Reminders ---
+app.get('/users/:id/reminders', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const reminders = await (prisma as any).reminders.findMany({ where: { user_id: userId } });
+    res.json(reminders);
+  } catch (e) {
+    res.status(500).json({ error: "Failed to fetch reminders" });
+  }
+});
+
+app.post('/users/:id/reminders', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const { title, type, time } = req.body;
+    const reminder = await (prisma as any).reminders.create({
+      data: { user_id: userId, title, type, time }
+    });
+    res.json(reminder);
+  } catch (e) {
+    res.status(500).json({ error: "Failed to create reminder" });
+  }
+});
+
+app.delete('/users/:id/reminders/:reminder_id', async (req, res) => {
+  try {
+    const reminderId = parseInt(req.params.reminder_id);
+    await (prisma as any).reminders.delete({ where: { id: reminderId } });
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: "Failed to delete reminder" });
+  }
+});
+
+// --- Partner Mode ---
+app.post('/users/:id/partner/link', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const { code } = req.body;
+    
+    const partner = await (prisma as any).users.findUnique({ where: { partner_code: code } });
+    if (!partner) return res.status(404).json({ error: "Invalid partner code" });
+    if (partner.id === userId) return res.status(400).json({ error: "Cannot link to yourself" });
+
+    await (prisma as any).users.update({ where: { id: userId }, data: { linked_user_id: partner.id } });
+    await (prisma as any).users.update({ where: { id: partner.id }, data: { linked_user_id: userId } });
+    
+    res.json({ success: true, partnerName: partner.name });
+  } catch (e) {
+    res.status(500).json({ error: "Failed to link partner" });
+  }
+});
+
+app.get('/users/:id/partner/dashboard', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const user = await (prisma as any).users.findUnique({ where: { id: userId } });
+    if (!user || !user.linked_user_id) return res.status(404).json({ error: "No partner linked" });
+
+    const partnerData = await (prisma as any).users.findUnique({
+      where: { id: user.linked_user_id },
+      include: {
+        symptom_logs: { take: 5, orderBy: { created_at: 'desc' } },
+        anc_visits: { where: { status: 'scheduled' }, orderBy: { created_at: 'asc' } }
+      }
+    });
+
+    res.json(partnerData);
+  } catch (e) {
+    res.status(500).json({ error: "Failed to fetch partner dashboard" });
   }
 });
 
