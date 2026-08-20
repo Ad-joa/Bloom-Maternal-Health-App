@@ -149,7 +149,7 @@ export default function WelcomeScreen({ navigation }: Props) {
             </View>
           </BounceButton>
           {currentIndex === SLIDES.length - 1 && (
-             <Button title="I already have an account" variant="secondary" onPress={() => navigation.navigate('Login' as never)} style={{marginTop: 16, width: '100%'}} />
+             <Button title="I already have an account" variant="secondary" onPress={() => navigation.navigate('Auth' as never)} style={{marginTop: 16, width: '100%'}} />
           )}
         </View>
       </SafeAreaView>
