@@ -1,29 +1,29 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { Baby, Play, Square, RotateCcw } from 'lucide-react-native';
-import { useTheme } from '../theme/ThemeContext';
+import { theme } from '../theme/theme';
 import { Typography } from './Typography';
 import { Card } from './Card';
 
 export function KickCounter() {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
+
+
   const [isActive, setIsActive] = useState(false);
   const [kicks, setKicks] = useState(0);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [scaleAnim] = useState(new Animated.Value(1));
 
   const handleStart = () => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
+
+
     setIsActive(true);
     setStartTime(new Date());
     setKicks(0);
   };
 
   const handleStop = () => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
+
+
     setIsActive(false);
     // In a real app, we would save to backend here
     alert(`Session saved! You counted ${kicks} kicks.`);
@@ -32,8 +32,8 @@ export function KickCounter() {
   };
 
   const handleKick = () => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
+
+
     if (!isActive) return;
     setKicks(prev => prev + 1);
     
@@ -87,7 +87,7 @@ export function KickCounter() {
   );
 }
 
-const getStyles = (theme: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   card: {
     backgroundColor: '#FFF',
     marginBottom: theme.spacing[4],

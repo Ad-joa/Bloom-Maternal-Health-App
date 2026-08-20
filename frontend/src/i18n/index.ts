@@ -59,12 +59,62 @@ const es = {
   }
 };
 
+// Twi Translations (Ghana)
+const twi = {
+  translation: {
+    welcome: {
+      title: 'Bloom',
+      subtitle: 'Wo apɔwmuden kwan, AI aboa wo wɔ anammɔn biara mu.',
+      getStarted: 'Hyɛ Ase',
+      logIn: 'Kɔ Mu',
+    },
+    home: {
+      trimester: 'BOSOME MPƐN',
+      week: 'Dapɛn',
+      untilDue: 'nna aka a wobɛwo',
+      welcome: 'Akwaaba',
+      setupProfile: 'Hyehyɛ wo profile.',
+      quickActions: 'Nneɛma a Wobɛyɛ Ntama',
+      dailyReflection: 'Da Biara Dwumadi',
+      insightsTitle: 'Afotuo • Ɛnnɛ',
+      babySize: 'Abofra no kɛseɛ te sɛ',
+    },
+    actions: {
+      log: 'Kyerɛw',
+      symptoms: 'Yareɛ nsenia',
+      ai: 'Bloom AI',
+      checkin: 'Hwɛ Mu',
+    }
+  }
+};
+
+// Ga Translations (Ghana)
+const ga = {
+  translation: {
+    welcome: { title: 'Bloom', subtitle: 'O gbɔmɔtso hewalɛ gbɛ, AI yeɔ ebuao.', getStarted: 'Je Shishi', logIn: 'Bote Mli' },
+    home: { trimester: 'NYƆŊI ETE', week: 'Otsii', untilDue: 'gbii ni eshwɛ', welcome: 'Awaa wa', setupProfile: 'To o profile he gbɛjianɔ.', quickActions: 'Nitsumɔi', dailyReflection: 'Daa Gbi', insightsTitle: 'Ŋaawoo • Ŋmɛnɛ', babySize: 'Gbekɛ lɛ kɛlɛ ji' },
+    actions: { log: 'Ŋma', symptoms: 'Hela okadii', ai: 'Bloom AI', checkin: 'Kwɛ Mli' }
+  }
+};
+
+// Ewe Translations (Ghana)
+const ewe = {
+  translation: {
+    welcome: { title: 'Bloom', subtitle: 'Wò lãmesẽ mɔzazã, AI le kpekpem ɖe ŋuwò.', getStarted: 'Dze Egɔme', logIn: 'Ge Ɖe Eme' },
+    home: { trimester: 'ƔLETI ETƆ̃', week: 'Kwasiɖa', untilDue: 'ŋkeke siwo susɔ', welcome: 'Woezɔ', setupProfile: 'Trɔ wò nɔnɔme.', quickActions: 'Dɔwɔwɔwo', dailyReflection: 'Gbesiagbe', insightsTitle: 'Aɖaŋuɖoɖo • Egbe', babySize: 'Vi la lolo abe' },
+    actions: { log: 'Ŋlɔ', symptoms: 'Dɔléle dzesiwo', ai: 'Bloom AI', checkin: 'Kpɔ Eme' }
+  }
+};
+
 i18n
   .use(initReactI18next)
   .init({
     resources: {
       en,
       es,
+      twi,
+      ga,
+      ewe
     },
     lng: 'en', // Default language
     fallbackLng: 'en',

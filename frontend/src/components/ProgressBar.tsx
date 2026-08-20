@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
-import { useTheme } from '../theme/ThemeContext';
+import { theme } from '../theme/theme';
 
 export interface ProgressBarProps {
   progress: number; // 0 to 100
@@ -36,7 +36,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   );
 };
 
-const getStyles = (theme: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   track: {
     width: '100%',
     overflow: 'hidden',

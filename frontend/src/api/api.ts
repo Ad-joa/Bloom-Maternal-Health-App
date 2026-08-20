@@ -62,7 +62,7 @@ export const getAdvisory = async (symptoms: string[], userId?: number) => {
 
 export const loginUser = async (credentials: any) => {
     try {
-        const response = await apiClient.post('/login', credentials);
+        const response = await apiClient.post('/auth/login', credentials);
         return response.data;
     } catch (error) {
         console.error("Error logging in:", error);

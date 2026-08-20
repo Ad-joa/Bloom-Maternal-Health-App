@@ -16,7 +16,8 @@ import { getAdvisory } from '../api/api';
 import { useTheme } from '../theme/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { Typography } from '../components/Typography';
-import { Send, Sparkles, AlertTriangle, User } from 'lucide-react-native';
+import { Send, Sparkles, AlertTriangle, User, Volume2 } from 'lucide-react-native';
+import * as Speech from 'expo-speech';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -72,6 +73,11 @@ export default function AdvisoryScreen() {
     }
   }, [loading]);
 
+  const handleSpeak = (text: string) => {
+    Speech.stop();
+    Speech.speak(text);
+  };
+
   const handleSend = async (text: string) => {
     if (!text.trim()) return;
 
@@ -113,8 +119,6 @@ export default function AdvisoryScreen() {
   };
 
   const renderMessage = ({ item }: { item: Message }) => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
     const isUser = item.role === 'user';
 
     if (isUser) {
@@ -144,6 +148,9 @@ export default function AdvisoryScreen() {
           <Typography variant="body" color={theme.colors.textHigh} style={{lineHeight: 22}}>
             {item.text}
           </Typography>
+          <TouchableOpacity style={styles.speakButton} onPress={() => handleSpeak(item.text)}>
+            <Volume2 size={16} color={theme.colors.textMedium} />
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -318,6 +325,11 @@ const getStyles = (theme: any) => StyleSheet.create({
     backgroundColor: '#FFF0F0',
     borderWidth: 1,
     borderColor: theme.colors.danger + '40',
+  },
+  speakButton: {
+    marginTop: 8,
+    alignSelf: 'flex-end',
+    padding: 4,
   },
   quickRepliesContainer: {
     paddingVertical: theme.spacing[2],

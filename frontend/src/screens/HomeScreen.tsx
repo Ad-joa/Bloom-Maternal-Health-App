@@ -5,13 +5,14 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { Typography } from '../components/Typography';
-import { Apple, Flower, Activity, Heart, ChevronRight, Bell, ChevronDown, ArrowRight, Smile, Clock, Sparkles, Stethoscope, CheckSquare, HeartPulse } from 'lucide-react-native';
+import { Apple, Flower, Activity, Heart, ChevronRight, Bell, ChevronDown, ArrowRight, Smile, Clock, Sparkles, Stethoscope, CheckSquare, HeartPulse, Volume2 } from 'lucide-react-native';
 import { FadeSlideIn } from '../components/FadeSlideIn';
 import { getWeeksPregnant, getDaysUntilDue } from '../utils/dateUtils';
 import { LineChart } from 'react-native-chart-kit';
 import { getSymptomLogs, getAncVisits } from '../api/api';
 import { EmergencyButton } from '../components/EmergencyButton';
 import { KickCounter } from '../components/KickCounter';
+import * as Speech from 'expo-speech';
 
 const { width } = Dimensions.get('window');
 
@@ -145,7 +146,9 @@ export default function HomeScreen({ navigation }: Props) {
           <Typography variant="caption1" color={theme.colors.primary} style={{fontFamily: theme.typography.families.headingBold}}>WELLNESS</Typography>
           <Typography variant="subhead" color={theme.colors.textHigh} style={{marginTop: 4}}>Set your primary pregnancy goal in your Profile.</Typography>
         </View>
-        <ChevronRight size={20} color={theme.colors.primary} />
+        <TouchableOpacity style={{padding: 8}} onPress={() => Speech.speak("Set your primary pregnancy goal in your Profile.")}>
+          <Volume2 size={20} color={theme.colors.primary} />
+        </TouchableOpacity>
       </TouchableOpacity>
     );
   };
@@ -315,7 +318,7 @@ export default function HomeScreen({ navigation }: Props) {
             </TouchableOpacity>
           </View>
           
-          <View style={{ marginHorizontal: theme.spacing[5], marginBottom: theme.spacing[6], backgroundColor: '#fff', borderRadius: 24, padding: theme.spacing[4], ...theme.shadows.medium }}>
+          <View style={{ marginHorizontal: theme.spacing[5], marginBottom: theme.spacing[6], backgroundColor: '#fff', borderRadius: 24, padding: theme.spacing[4], shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 4 }}>
             <Typography variant="subhead" color={theme.colors.textMedium} style={{marginBottom: theme.spacing[2]}}>
               Symptom Intensity (Last 5 Logs)
             </Typography>

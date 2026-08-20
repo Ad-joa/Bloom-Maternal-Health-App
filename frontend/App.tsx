@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { theme } from './src/theme/theme';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from './src/screens/HomeScreen';
@@ -13,6 +14,7 @@ import BloomAIScreen from './src/screens/BloomAIScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import CommunityScreen from './src/screens/CommunityScreen';
 import ArticleScreen from './src/screens/ArticleScreen';
+import PrivacyConsentScreen from './src/screens/PrivacyConsentScreen';
 import RemindersScreen from './src/screens/RemindersScreen';
 import ANCVisitScreen from './src/screens/ANCVisitScreen';
 import PartnerModeScreen from './src/screens/PartnerModeScreen';
@@ -27,6 +29,7 @@ import { StyleSheet, TouchableOpacity, View, Platform, Text } from 'react-native
 import { BlurView } from 'expo-blur';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
+// removed dupe theme
 import * as Font from 'expo-font';
 import './src/i18n';
 import * as SplashScreen from 'expo-splash-screen';

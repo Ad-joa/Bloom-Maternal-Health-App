@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Modal, TouchableOpacity, Animated } from 'react-native';
-import { useTheme } from '../theme/ThemeContext';
+import { theme } from '../theme/theme';
 import { Typography } from './Typography';
 import { Card } from './Card';
 import { Button } from './Button';
@@ -39,8 +39,8 @@ interface Props {
 }
 
 export const RemindersPopup = ({ visible, onClose }: Props) => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
+
+
   const [tip, setTip] = useState(TIPS[0]);
   const [fadeAnim] = useState(new Animated.Value(0));
 
@@ -95,7 +95,7 @@ export const RemindersPopup = ({ visible, onClose }: Props) => {
   );
 };
 
-const getStyles = (theme: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
