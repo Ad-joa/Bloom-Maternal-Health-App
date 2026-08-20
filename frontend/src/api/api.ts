@@ -185,6 +185,16 @@ export const getAncVisits = async () => {
     }
 };
 
+export const syncSymptoms = async (logs: any[]) => {
+    try {
+        const response = await apiClient.post(`/sync/symptoms`, { logs });
+        return response;
+    } catch (error) {
+        console.error("Error syncing symptoms:", error);
+        throw error;
+    }
+};
+
 export const createSymptomLog = async (userId: number, logData: any) => {
     try {
         const response = await apiClient.post(`/logs`, logData);
@@ -205,9 +215,9 @@ export const createAncVisit = async (visitData: any) => {
     }
 };
 
-export const updateAncVisit = async (userId: number, visitId: number, updateData: any) => {
+export const updateAncVisit = async (visitId: number, updateData: any) => {
     try {
-        const response = await apiClient.put(`/users/${userId}/anc-visits/${visitId}`, updateData);
+        const response = await apiClient.put(`/anc/${visitId}`, updateData);
         return response.data;
     } catch (error) {
         console.error("Error updating ANC visit:", error);

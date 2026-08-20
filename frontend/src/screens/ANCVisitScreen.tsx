@@ -23,7 +23,7 @@ export default function ANCVisitScreen() {
 
   const loadVisits = async () => {
     if (user?.id) {
-      const data = await getAncVisits(user.id);
+      const data = await getAncVisits();
       setVisits(data || []);
     }
   };
@@ -39,7 +39,7 @@ export default function ANCVisitScreen() {
     }
     try {
       if (user?.id) {
-        await createAncVisit(user.id, { date: newDate, time: newTime, doctor: newDoctor });
+        await createAncVisit({ date: newDate, time: newTime, doctor: newDoctor });
         setModalVisible(false);
         setNewDate('');
         setNewTime('');
@@ -54,7 +54,7 @@ export default function ANCVisitScreen() {
   const handleMarkAttended = async (visitId: number) => {
     try {
       if (user?.id) {
-        await updateAncVisit(user.id, visitId, { attendance_status: 'attended' });
+        await updateAncVisit(visitId, { attendance_status: 'attended' });
         loadVisits();
       }
     } catch (e) {
