@@ -10,6 +10,7 @@ import { Server } from 'socket.io';
 import { GoogleGenAI } from '@google/genai';
 import authRoutes, { excludePassword } from './routes/auth';
 import logsRoutes from './routes/logs';
+import ancRoutes from './routes/anc';
 
 dotenv.config();
 
@@ -93,6 +94,7 @@ io.on('connection', async (socket) => {
 // Modular routes
 app.use('/auth', authRoutes);
 app.use('/logs', logsRoutes);
+app.use('/anc', ancRoutes);
 
 app.get('/users/:id', async (req, res) => {
   try {

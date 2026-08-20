@@ -37,7 +37,7 @@ export default function HomeScreen({ navigation }: Props) {
   React.useEffect(() => {
     if (user?.id) {
       getSymptomLogs(user.id).then(data => setLogs(data || []));
-      getAncVisits(user.id).then(data => {
+      getAncVisits().then(data => {
         const visits = data || [];
         const upcoming = visits.find((v: any) => v.status === 'scheduled');
         setNextVisit(upcoming);
