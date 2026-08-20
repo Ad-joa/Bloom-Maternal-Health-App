@@ -15,6 +15,10 @@ interface User {
   dietary_preferences?: string;
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
+  blood_group?: string;
+  height?: string;
+  last_period_date?: string;
+  role?: string;
 }
 
 interface AuthContextType {

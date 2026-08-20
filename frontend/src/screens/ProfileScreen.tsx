@@ -138,7 +138,7 @@ export default function ProfileScreen({ navigation }: any) {
           </View>
           <View style={[styles.menuItem, styles.menuItemBorder, { borderTopWidth: 1, borderColor: 'rgba(0,0,0,0.05)' }]}>
             <View style={styles.menuItemLeft}>
-              <Ionicons name="water" size={20} color={theme.colors.error} />
+              <Ionicons name="water" size={20} color={theme.colors.danger} />
               <Typography variant="body" style={styles.menuItemText}>Last Period (LMP)</Typography>
             </View>
             <Typography variant="body" color={theme.colors.textMedium}>{user?.last_period_date ? new Date(user.last_period_date).toLocaleDateString() : 'Not set'}</Typography>
