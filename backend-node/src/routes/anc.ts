@@ -11,7 +11,7 @@ router.get('/', authenticateToken, async (req: any, res: any) => {
     const userId = req.user.userId;
     const visits = await prisma.anc_visits.findMany({
       where: { user_id: userId },
-      orderBy: { scheduled_date: 'asc' }
+      orderBy: { created_at: 'desc' }
     });
     res.json(visits);
   } catch (error) {
@@ -24,15 +24,17 @@ router.get('/', authenticateToken, async (req: any, res: any) => {
 router.post('/', authenticateToken, async (req: any, res: any) => {
   try {
     const userId = req.user.userId;
-    const { clinic_name, scheduled_date, attended, notes } = req.body;
+    const { date, time, doctor, notes, status, attendance_status } = req.body;
     
     const newVisit = await prisma.anc_visits.create({
       data: {
         user_id: userId,
-        clinic_name: clinic_name || 'Community Clinic',
-        scheduled_date: scheduled_date ? new Date(scheduled_date) : new Date(),
-        status: attended ? 'completed' : 'scheduled',
+        date: date || new Date().toISOString().split('T')[0],
+        time: time || '09:00',
+        doctor: doctor || 'Community Clinic',
         notes: notes || '',
+        status: status || 'scheduled',
+        attendance_status: attendance_status || 'pending'
       }
     });
     
@@ -48,7 +50,7 @@ router.put('/:id', authenticateToken, async (req: any, res: any) => {
   try {
     const userId = req.user.userId;
     const visitId = parseInt(req.params.id);
-    const { attendance_status } = req.body;
+    const { attendance_status, status } = req.body;
     
     // Ensure the visit belongs to the user
     const visit = await prisma.anc_visits.findFirst({
@@ -58,7 +60,10 @@ router.put('/:id', authenticateToken, async (req: any, res: any) => {
 
     const updatedVisit = await prisma.anc_visits.update({
       where: { id: visitId },
-      data: { status: attendance_status === 'attended' ? 'completed' : visit.status }
+      data: { 
+        attendance_status: attendance_status || visit.attendance_status,
+        status: status || visit.status
+      }
     });
     
     res.json(updatedVisit);
