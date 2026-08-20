@@ -39,6 +39,9 @@ model symptom_logs {
   symptoms   String?
   severity   String?
   notes      String?
+  blood_pressure String?
+  weight      Float?
+  is_synced   Boolean  @default(true)
   created_at DateTime? @default(now())
   users      users?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
@@ -61,6 +64,7 @@ model anc_visits {
   doctor     String?
   notes      String?
   status     String    @default("scheduled") // scheduled, completed, missed
+  attendance_status String @default("pending") // pending, attended, missed
   created_at DateTime  @default(now())
   users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
