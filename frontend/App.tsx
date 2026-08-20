@@ -17,6 +17,7 @@ import RemindersScreen from './src/screens/RemindersScreen';
 import ANCVisitScreen from './src/screens/ANCVisitScreen';
 import PartnerModeScreen from './src/screens/PartnerModeScreen';
 import CheckInScreen from './src/screens/CheckInScreen';
+import EmergencyLocatorScreen from './src/screens/EmergencyLocatorScreen';
 import { BiometricGate } from './src/components/BiometricGate';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -58,6 +59,7 @@ export type RootStackParamList = {
   ANCVisit: undefined;
   PartnerMode: undefined;
   CheckIn: undefined;
+  EmergencyLocator: undefined;
 };
 
 export type MainTabParamList = {
@@ -244,6 +246,11 @@ function Navigation() {
               name="CheckIn"
               component={CheckInScreen}
               options={{ title: 'Daily Check-In' }}
+            />
+            <Stack.Screen
+              name="EmergencyLocator"
+              component={EmergencyLocatorScreen}
+              options={{ headerShown: false }}
             />
           </>
         )}

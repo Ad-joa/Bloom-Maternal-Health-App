@@ -248,6 +248,8 @@ app.post('/sync/symptoms', async (req, res) => {
       symptoms: log.symptoms,
       severity: log.severity || 'unknown',
       notes: log.notes || '',
+      blood_pressure: log.blood_pressure || null,
+      weight: log.weight ? parseFloat(log.weight) : null,
       created_at: new Date(log.created_at)
     }));
 
@@ -505,6 +507,20 @@ app.post('/users/:id/anc-visits', async (req, res) => {
     res.json(visit);
   } catch (e) {
     res.status(500).json({ error: "Failed to create visit" });
+  }
+});
+
+app.put('/users/:id/anc-visits/:visit_id', async (req, res) => {
+  try {
+    const visitId = parseInt(req.params.visit_id);
+    const { attendance_status } = req.body;
+    const visit = await (prisma as any).anc_visits.update({
+      where: { id: visitId },
+      data: { attendance_status }
+    });
+    res.json(visit);
+  } catch (e) {
+    res.status(500).json({ error: "Failed to update visit" });
   }
 });
 

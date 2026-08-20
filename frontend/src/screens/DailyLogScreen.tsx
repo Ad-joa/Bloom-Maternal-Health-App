@@ -6,6 +6,7 @@ import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
+import { TextInput } from '../components/TextInput';
 import { Check, ChevronDown, ChevronUp, Clock, AlertCircle } from 'lucide-react-native';
 
 // Enable LayoutAnimation for Android
@@ -54,6 +55,10 @@ export default function DailyLogScreen({ navigation }: any) {
   // Track selected intensities: { symptomId: optionId }
   const [selections, setSelections] = useState<Record<string, string>>({});
   
+  // Vitals State
+  const [bloodPressure, setBloodPressure] = useState('');
+  const [weight, setWeight] = useState('');
+
   const [daysSinceLastLog, setDaysSinceLastLog] = useState(0); 
   const [isSaving, setIsSaving] = useState(false);
 
@@ -101,9 +106,20 @@ export default function DailyLogScreen({ navigation }: any) {
     setIsSaving(true);
     try {
       // Map selections to an array of strings e.g. ["headache: h1", "nausea: n2"]
-      const selectedArray = Object.entries(selections).map(([key, val]) => `${key}:${val}`);
+      const selectedLabels = Object.entries(selections).map(([key, val]) => `${key}:${val}`);
+      const maxSeverity = Math.max(...Object.entries(selections).map(([key, val]) => {
+          const symptom = SYMPTOMS.find(s => s.id === key);
+          return symptom?.options.find(o => o.id === val)?.level || 0;
+      }), 0);
+
+      const logData = {
+        symptoms: selectedLabels.join(', '),
+        severity: maxSeverity,
+        blood_pressure: bloodPressure || undefined,
+        weight: weight ? parseFloat(weight) : undefined
+      };
       
-      await saveSymptomLog(user.id, selectedArray.join(', '));
+      await saveSymptomLog(user.id, logData);
       Alert.alert("Success", "Your symptom log has been saved securely.", [
         { text: "OK", onPress: () => navigation.goBack() }
       ]);

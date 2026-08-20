@@ -3,9 +3,9 @@ import { View, StyleSheet, ScrollView, TouchableOpacity, Modal, Alert } from 're
 import { theme } from '../theme/theme';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
-import { CheckCircle2, CalendarHeart, Plus } from 'lucide-react-native';
+import { CheckCircle2, CalendarHeart, Plus, Check } from 'lucide-react-native';
 import { useAuth } from '../context/AuthContext';
-import { getAncVisits, createAncVisit } from '../api/api';
+import { getAncVisits, createAncVisit, updateAncVisit } from '../api/api';
 import { TextInput } from '../components/TextInput';
 import { Button } from '../components/Button';
 
@@ -49,8 +49,19 @@ export default function ANCVisitScreen() {
     }
   };
 
-  const nextVisit = visits.find(v => v.status === 'scheduled');
-  const pastVisits = visits.filter(v => v.status === 'completed' || v.status === 'scheduled'); // simplifying for UI
+  const handleMarkAttended = async (visitId: number) => {
+    try {
+      if (user?.id) {
+        await updateAncVisit(user.id, visitId, { attendance_status: 'attended' });
+        loadVisits();
+      }
+    } catch (e) {
+      Alert.alert("Error", "Could not update attendance.");
+    }
+  };
+
+  const nextVisit = visits.find(v => v.status === 'scheduled' && v.attendance_status !== 'attended');
+  const pastVisits = visits.filter(v => v.status === 'completed' || v.attendance_status === 'attended' || (v.status === 'scheduled' && v !== nextVisit)); 
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -128,7 +139,18 @@ export default function ANCVisitScreen() {
             </View>
             <View style={{marginLeft: theme.spacing[4], flex: 1}}>
               <Typography variant="headline">{visit.doctor || 'Checkup'} - {visit.time}</Typography>
-              <Typography variant="caption1" color={theme.colors.textMedium}>{visit.notes || 'No notes available.'}</Typography>
+              <Typography variant="subhead" color={theme.colors.textMedium}>{visit.notes || 'Routine antenatal checkup'}</Typography>
+              {visit.attendance_status === 'attended' ? (
+                <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 8}}>
+                  <CheckCircle2 color={theme.colors.success} size={16} />
+                  <Typography variant="caption1" color={theme.colors.success} style={{marginLeft: 4}}>Attended</Typography>
+                </View>
+              ) : (
+                <TouchableOpacity style={styles.markAttendedBtn} onPress={() => handleMarkAttended(visit.id)}>
+                  <Check color="#fff" size={14} />
+                  <Typography variant="caption1" color="#fff" style={{marginLeft: 4}}>Mark Attended</Typography>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </Card>
@@ -214,13 +236,25 @@ const styles = StyleSheet.create({
   checkItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: theme.spacing[3],
+    marginBottom: 12,
   },
   checkText: {
-    marginLeft: theme.spacing[3],
+    marginLeft: 12,
+    color: theme.colors.textHigh,
   },
   bullet: {
-    marginBottom: theme.spacing[2],
+    marginBottom: 8,
+    color: theme.colors.textHigh,
+  },
+  markAttendedBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    marginTop: 8,
   },
   dateCircle: {
     width: 48,
