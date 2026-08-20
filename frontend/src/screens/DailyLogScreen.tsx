@@ -77,15 +77,11 @@ export default function DailyLogScreen({ navigation }: any) {
   }, [user]);
 
   const toggleExpand = (id: string) => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setExpandedSymptom(prev => prev === id ? null : id);
   };
 
   const selectIntensity = (symptomId: string, optionId: string) => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setSelections(prev => ({
       ...prev,

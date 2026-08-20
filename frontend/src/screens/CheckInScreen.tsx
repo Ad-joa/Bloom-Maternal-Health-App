@@ -23,8 +23,6 @@ export default function CheckInScreen({ navigation }: any) {
   const [vibe, setVibe] = useState<number | null>(null);
 
   const handleFinish = () => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
     // Save to DB and calculate trend
     navigation.goBack();
   };

@@ -48,7 +48,7 @@ export default function BloomAIScreen() {
     
     try {
       // Call our rule-based backend engine!
-      const response = await getAdvisory([userText], user?.id);
+      const response = await getAdvisory([userText]);
       const adviceStr = typeof response.advice === 'string' ? response.advice : response.advice.text;
       
       setMessages(prev => [...prev, { 
@@ -69,8 +69,6 @@ export default function BloomAIScreen() {
   };
 
   const handlePromptPress = (prompt: string) => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
     setInputText(prompt);
   };
 

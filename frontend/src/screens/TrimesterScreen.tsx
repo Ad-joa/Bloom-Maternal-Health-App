@@ -32,8 +32,6 @@ const AccordionItem = ({ title, icon, children, defaultOpen = false }: any) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   const toggleOpen = () => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setIsOpen(!isOpen);

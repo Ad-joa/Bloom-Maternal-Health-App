@@ -43,8 +43,6 @@ export default function EmergencyLocatorScreen({ navigation }: any) {
   }, []);
 
   const handleCall = (phone: string) => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
     Linking.openURL(`tel:${phone.replace(/\s/g, '')}`);
   };
 

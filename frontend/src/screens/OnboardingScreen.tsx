@@ -66,15 +66,11 @@ export default function OnboardingScreen({ navigation }: Props) {
   };
 
   const handleNext = () => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
     if (step < TOTAL_STEPS) animateTransition(step + 1);
     else handleComplete();
   };
 
   const handleBack = () => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
     if (step > 1) animateTransition(step - 1);
   };
 
@@ -120,8 +116,6 @@ export default function OnboardingScreen({ navigation }: Props) {
   );
 
   const renderStepContent = () => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
     switch (step) {
       case 1:
         return (
@@ -267,8 +261,6 @@ export default function OnboardingScreen({ navigation }: Props) {
   };
 
   const isNextDisabled = () => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
     if (step === 1 && !dueDate) return true;
     if (step === 2 && !trimester) return true;
     if (step === 3 && isFirstPregnancy === null) return true;

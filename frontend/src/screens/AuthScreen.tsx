@@ -74,8 +74,6 @@ export default function AuthScreen({ navigation }: Props) {
 
   // --- Handlers ---
   const handleInputChange = (field: string, value: string | boolean) => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
@@ -139,8 +137,6 @@ export default function AuthScreen({ navigation }: Props) {
   const strength = calculatePasswordStrength(formData.password);
   
   const getStrengthColor = (score: number) => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
     if (score <= 1) return '#FF3B30'; // red
     if (score <= 2) return '#FF9500'; // orange
     if (score <= 3) return '#FFCC00'; // yellow
@@ -150,8 +146,6 @@ export default function AuthScreen({ navigation }: Props) {
 
   // --- Render Sections ---
   const renderPasswordStrength = () => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
     if (!formData.password) return null;
     return (
       <View style={styles.strengthContainer}>
