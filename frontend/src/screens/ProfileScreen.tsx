@@ -136,6 +136,27 @@ export default function ProfileScreen({ navigation }: any) {
             </View>
             <Typography variant="body" color={theme.colors.textMedium}>{user?.trimester ? `Trimester ${user.trimester}` : 'Not set'}</Typography>
           </View>
+          <View style={[styles.menuItem, styles.menuItemBorder, { borderTopWidth: 1, borderColor: 'rgba(0,0,0,0.05)' }]}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="water" size={20} color={theme.colors.error} />
+              <Typography variant="body" style={styles.menuItemText}>Last Period (LMP)</Typography>
+            </View>
+            <Typography variant="body" color={theme.colors.textMedium}>{user?.last_period_date ? new Date(user.last_period_date).toLocaleDateString() : 'Not set'}</Typography>
+          </View>
+          <View style={[styles.menuItem, styles.menuItemBorder]}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="medkit" size={20} color={theme.colors.primary} />
+              <Typography variant="body" style={styles.menuItemText}>Blood Group</Typography>
+            </View>
+            <Typography variant="body" color={theme.colors.textMedium}>{user?.blood_group || 'Not set'}</Typography>
+          </View>
+          <View style={styles.menuItem}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="body" size={20} color={theme.colors.primary} />
+              <Typography variant="body" style={styles.menuItemText}>Height</Typography>
+            </View>
+            <Typography variant="body" color={theme.colors.textMedium}>{user?.height || 'Not set'}</Typography>
+          </View>
         </Card>
       </View>
 

@@ -41,6 +41,9 @@ export default function OnboardingScreen({ navigation }: Props) {
   const [medicalConditions, setMedicalConditions] = useState('');
   const [emergencyName, setEmergencyName] = useState('');
   const [emergencyPhone, setEmergencyPhone] = useState('');
+  const [lastPeriodDate, setLastPeriodDate] = useState('');
+  const [bloodGroup, setBloodGroup] = useState('');
+  const [height, setHeight] = useState('');
 
   // Animation values
   const fadeAnim = useState(new Animated.Value(1))[0];
@@ -84,6 +87,9 @@ export default function OnboardingScreen({ navigation }: Props) {
         if (medicalConditions) payload.medical_conditions = medicalConditions;
         if (emergencyName) payload.emergency_contact_name = emergencyName;
         if (emergencyPhone) payload.emergency_contact_phone = emergencyPhone;
+        if (lastPeriodDate) payload.last_period_date = lastPeriodDate;
+        if (bloodGroup) payload.blood_group = bloodGroup;
+        if (height) payload.height = height;
 
         const updatedUser = await onboardUser(user.id, payload);
         login(updatedUser);
