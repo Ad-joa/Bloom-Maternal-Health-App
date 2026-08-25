@@ -1,15 +1,14 @@
 import express from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../lib/prisma';
 import { authenticateToken } from '../middleware/authMiddleware';
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // GET /anc - Fetch user's ANC visits
 router.get('/', authenticateToken, async (req: any, res: any) => {
   try {
     const userId = req.user.userId;
-    const visits = await prisma.anc_visits.findMany({
+    const visits = await (prisma as any).anc_visits.findMany({
       where: { user_id: userId },
       orderBy: { created_at: 'desc' }
     });
@@ -25,8 +24,8 @@ router.post('/', authenticateToken, async (req: any, res: any) => {
   try {
     const userId = req.user.userId;
     const { date, time, doctor, notes, status, attendance_status } = req.body;
-    
-    const newVisit = await prisma.anc_visits.create({
+
+    const newVisit = await (prisma as any).anc_visits.create({
       data: {
         user_id: userId,
         date: date || new Date().toISOString().split('T')[0],
@@ -37,7 +36,7 @@ router.post('/', authenticateToken, async (req: any, res: any) => {
         attendance_status: attendance_status || 'pending'
       }
     });
-    
+
     res.status(201).json(newVisit);
   } catch (error) {
     console.error("Error creating ANC visit:", error);
@@ -51,21 +50,21 @@ router.put('/:id', authenticateToken, async (req: any, res: any) => {
     const userId = req.user.userId;
     const visitId = parseInt(req.params.id);
     const { attendance_status, status } = req.body;
-    
+
     // Ensure the visit belongs to the user
-    const visit = await prisma.anc_visits.findFirst({
+    const visit = await (prisma as any).anc_visits.findFirst({
       where: { id: visitId, user_id: userId }
     });
     if (!visit) return res.status(404).json({ detail: "Visit not found" });
 
-    const updatedVisit = await prisma.anc_visits.update({
+    const updatedVisit = await (prisma as any).anc_visits.update({
       where: { id: visitId },
-      data: { 
+      data: {
         attendance_status: attendance_status || visit.attendance_status,
         status: status || visit.status
       }
     });
-    
+
     res.json(updatedVisit);
   } catch (error) {
     console.error("Error updating ANC visit:", error);
