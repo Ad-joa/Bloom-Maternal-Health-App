@@ -11,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { BounceButton } from '../components/BounceButton';
+import LottieView from 'lottie-react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -19,8 +20,8 @@ const SLIDES = [
     id: '1',
     title: 'Your Pregnancy, Guided.',
     description: 'Bloom is your personal maternal health companion, designed specifically for your journey.',
-    icon: <Ionicons name="heart" size={64} color={theme.colors.primaryDark} />,
-    iconBg: '#E8F8F2',
+    isLottie: true,
+    iconBg: 'transparent',
   },
   {
     id: '2',
@@ -75,9 +76,18 @@ export default function WelcomeScreen({ navigation }: Props) {
     return (
       <View style={styles.slide}>
         <View style={styles.slideContent}>
-          <View style={[styles.iconWrapper, { backgroundColor: item.iconBg }]}>
-            {item.icon}
-          </View>
+          {(item as any).isLottie ? (
+            <LottieView
+              source={require('../../assets/animations/baby.json')}
+              autoPlay
+              loop
+              style={{ width: 280, height: 280, marginBottom: -10 }}
+            />
+          ) : (
+            <View style={[styles.iconWrapper, { backgroundColor: item.iconBg }]}>
+              {(item as any).icon}
+            </View>
+          )}
           <Typography variant="largeTitle" color="#000" style={styles.slideTitle}>
             {item.title}
           </Typography>

@@ -72,11 +72,16 @@ const getWeeklyData = (weeks: number) => {
 };
 
 const MOTIVATIONS = [
-  { quote: "There is such a special sweetness in being able to participate in creation.", author: "Pamela S. Nadav" },
-  { quote: "A baby is something you carry inside you for nine months, in your arms for three years, and in your heart until the day you die.", author: "Mary Mason" },
-  { quote: "Making the decision to have a child is momentous. It is to decide forever to have your heart go walking around outside your body.", author: "Elizabeth Stone" },
-  { quote: "Motherhood is the biggest gamble in the world. It is the glorious life force.", author: "Gilda Radner" },
-  { quote: "Birth is the sudden opening of a window, through which you look out upon a stupendous prospect.", author: "William Macneile Dixon" }
+  { quote: "If you educate a man you educate an individual, but if you educate a woman you educate a nation.", author: "Dr. J.E. Kwegyir Aggrey" },
+  { quote: "Motherhood is the ultimate act of faith in the future.", author: "Ama Ata Aidoo" },
+  { quote: "We are the women who birth nations. Our strength is inherited from the earth itself.", author: "Taiye Selasi" },
+  { quote: "There is no tool for development more effective than the empowerment of women.", author: "Kofi Annan" },
+  { quote: "To carry a child is to carry the future of our people in your hands.", author: "J.J. Rawlings" },
+  { quote: "To be a mother is to be the first teacher, the first guide, and the first love of the next generation.", author: "Kwame Nkrumah" },
+  { quote: "A tree has roots in the soil yet reaches to the sky. A mother roots her child in love so they may reach the stars.", author: "Wangari Maathai" },
+  { quote: "The true strength of our nation lies in the courageous hearts of its mothers.", author: "Yaa Asantewaa" },
+  { quote: "It always seems impossible until it is done. Trust your incredible body.", author: "Nelson Mandela" },
+  { quote: "There is no limit to what we, as women, can accomplish.", author: "Ellen Johnson Sirleaf" }
 ];
 
 // ── Circular Progress Ring ───────────────────────────────
@@ -352,7 +357,7 @@ export default function HomeScreen({ navigation }: any) {
                 <Typography variant="body" style={{ color: isDark ? '#F3E8FF' : '#4C1D95', fontFamily: theme.typography.families.headingSemibold, fontStyle: 'italic', lineHeight: 24, fontSize: 16 }}>
                   "{MOTIVATIONS[motivationIndex].quote}"
                 </Typography>
-                <Typography variant="caption1" style={{ color: isDark ? 'rgba(243, 232, 255, 0.7)' : 'rgba(76, 29, 149, 0.7)', marginTop: 12, fontWeight: '600', letterSpacing: 0.5 }}>
+                <Typography variant="caption1" style={{ color: isDark ? 'rgba(243, 232, 255, 0.7)' : 'rgba(76, 29, 149, 0.7)', marginTop: 12, fontWeight: '600', letterSpacing: 0.5, textAlign: 'center' }}>
                   — {MOTIVATIONS[motivationIndex].author}
                 </Typography>
               </Animated.View>

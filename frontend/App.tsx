@@ -7,6 +7,7 @@ import AdvisoryScreen from './src/screens/AdvisoryScreen';
 import DailyLogScreen from './src/screens/DailyLogScreen';
 import WelcomeScreen from './src/screens/WelcomeScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
+import GrowthVisualizerScreen from './src/screens/GrowthVisualizerScreen';
 import AuthScreen from './src/screens/AuthScreen';
 import AnalysisScreen from './src/screens/AnalysisScreen';
 import BloomAIScreen from './src/screens/BloomAIScreen';
@@ -51,6 +52,7 @@ SplashScreen.preventAutoHideAsync();
 export type RootStackParamList = {
   Welcome: undefined;
   Auth: undefined;
+  GrowthVisualizer: undefined;
   Onboarding: undefined;
   MainTabs: undefined;
   Trimester: { trimesterId: number };
@@ -211,6 +213,11 @@ function Navigation() {
           </>
         ) : needsOnboarding ? (
           <>
+            <Stack.Screen
+              name="GrowthVisualizer"
+              component={GrowthVisualizerScreen}
+              options={{ headerShown: false }}
+            />
             <Stack.Screen
               name="Onboarding"
               component={OnboardingScreen}
