@@ -25,7 +25,7 @@ export const globalErrorHandler = (
       success: false,
       error: 'ValidationError',
       message: 'Invalid input data',
-      details: err.errors,
+      details: (err as ZodError).errors,
     });
   }
 
