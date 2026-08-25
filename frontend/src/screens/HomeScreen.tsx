@@ -130,8 +130,11 @@ export default function HomeScreen({ navigation }: any) {
   const headerAnim = useRef(new Animated.Value(0)).current;
 
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening';
-  const GreetingIcon = hour < 18 ? Sun : Moon;
+  const isMorning = hour < 12;
+  const isAfternoon = hour >= 12 && hour < 18;
+  const isEvening = hour >= 18;
+  const greeting = isMorning ? 'Good Morning' : isAfternoon ? 'Good Afternoon' : 'Good Evening';
+  const greetingIconColor = isMorning ? '#F59E0B' : isAfternoon ? '#F97316' : '#818CF8';
 
   useEffect(() => {
     Animated.timing(headerAnim, {
@@ -182,7 +185,10 @@ export default function HomeScreen({ navigation }: any) {
           <Animated.View style={[styles.header, headerStyle]}>
             <View>
               <View style={styles.greetingRow}>
-                <GreetingIcon size={14} color={theme.colors.primaryDark} />
+                {isEvening
+                  ? <Moon size={14} color={greetingIconColor} />
+                  : <Sun size={14} color={greetingIconColor} />
+                }
                 <Typography variant="caption1" style={styles.greetingText}>{greeting}</Typography>
               </View>
               <Typography variant="title1" style={styles.nameText}>
