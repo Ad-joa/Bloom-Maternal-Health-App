@@ -28,6 +28,15 @@ export const ThemeProvider: React.FC<{children: React.ReactNode}> = ({ children 
     });
   }, []);
 
+  // Automatically update theme when the device's system theme changes
+  useEffect(() => {
+    if (systemColorScheme) {
+      setIsDark(systemColorScheme === 'dark');
+      // Optional: Clear any manual override when the system explicitly changes
+      AsyncStorage.removeItem('@theme_preference');
+    }
+  }, [systemColorScheme]);
+
   const toggleTheme = () => {
     setIsDark(prev => {
       const newMode = !prev;

@@ -30,7 +30,7 @@ export default function OnboardingScreen({ navigation }: Props) {
   const { theme } = useTheme();
   const { isDark } = useTheme();
   const styles = getStyles(theme, isDark);
-  const { user, token, login } = useAuth();
+  const { user, token, login, logout } = useAuth();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [isDeterminingTerm, setIsDeterminingTerm] = useState(false);
@@ -80,7 +80,11 @@ export default function OnboardingScreen({ navigation }: Props) {
   };
 
   const handleBack = () => {
-    if (step > 1) animateTransition(step - 1);
+    if (step > 1) {
+      animateTransition(step - 1);
+    } else {
+      logout();
+    }
   };
 
   const handleComplete = async () => {
@@ -129,7 +133,7 @@ export default function OnboardingScreen({ navigation }: Props) {
       case 1:
         return (
           <View style={styles.stepContainer}>
-            <Typography variant="title2" color={theme.colors.primaryDark} style={styles.questionTitle}>
+            <Typography variant="title2" color={theme.colors.textHigh} style={styles.questionTitle}>
               When is your expected due date?
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium} style={styles.questionSubtitle}>
@@ -141,7 +145,7 @@ export default function OnboardingScreen({ navigation }: Props) {
       case 2:
         return (
           <View style={styles.stepContainer}>
-            <Typography variant="title2" color={theme.colors.primaryDark} style={styles.questionTitle}>
+            <Typography variant="title2" color={theme.colors.textHigh} style={styles.questionTitle}>
               Which trimester are you in?
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium} style={styles.questionSubtitle}>
@@ -166,7 +170,7 @@ export default function OnboardingScreen({ navigation }: Props) {
       case 3:
         return (
           <View style={styles.stepContainer}>
-            <Typography variant="title2" color={theme.colors.primaryDark} style={styles.questionTitle}>
+            <Typography variant="title2" color={theme.colors.textHigh} style={styles.questionTitle}>
               Is this your first pregnancy?
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium} style={styles.questionSubtitle}>
@@ -193,7 +197,7 @@ export default function OnboardingScreen({ navigation }: Props) {
       case 4:
         return (
           <View style={styles.stepContainer}>
-            <Typography variant="title2" color={theme.colors.primaryDark} style={styles.questionTitle}>
+            <Typography variant="title2" color={theme.colors.textHigh} style={styles.questionTitle}>
               Age & Weight
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium} style={styles.questionSubtitle}>
@@ -207,7 +211,7 @@ export default function OnboardingScreen({ navigation }: Props) {
       case 5:
         return (
           <View style={styles.stepContainer}>
-            <Typography variant="title2" color={theme.colors.primaryDark} style={styles.questionTitle}>
+            <Typography variant="title2" color={theme.colors.textHigh} style={styles.questionTitle}>
               Primary Goal
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium} style={styles.questionSubtitle}>
@@ -230,7 +234,7 @@ export default function OnboardingScreen({ navigation }: Props) {
       case 6:
         return (
           <View style={styles.stepContainer}>
-            <Typography variant="title2" color={theme.colors.primaryDark} style={styles.questionTitle}>
+            <Typography variant="title2" color={theme.colors.textHigh} style={styles.questionTitle}>
               Dietary Preferences
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium} style={styles.questionSubtitle}>
@@ -242,7 +246,7 @@ export default function OnboardingScreen({ navigation }: Props) {
       case 7:
         return (
           <View style={styles.stepContainer}>
-            <Typography variant="title2" color={theme.colors.primaryDark} style={styles.questionTitle}>
+            <Typography variant="title2" color={theme.colors.textHigh} style={styles.questionTitle}>
               Pre-existing Medical Conditions
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium} style={styles.questionSubtitle}>
@@ -295,7 +299,7 @@ export default function OnboardingScreen({ navigation }: Props) {
           >
             {/* Header */}
             <View style={styles.header}>
-              <TouchableOpacity onPress={handleBack} style={[styles.backBtn, step === 1 && {opacity: 0}]} disabled={step === 1}>
+              <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
                 <ChevronLeft color={theme.colors.textHigh} size={28} />
               </TouchableOpacity>
               {renderProgressDots()}
@@ -325,7 +329,7 @@ export default function OnboardingScreen({ navigation }: Props) {
 
 const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: 'transparent' },
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: theme.colors.background },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: theme.spacing[4], paddingTop: theme.spacing[2], height: 60 },
   backBtn: { padding: theme.spacing[2] },
   backBtnPlaceholder: { width: 40 },

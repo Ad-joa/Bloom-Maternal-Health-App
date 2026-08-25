@@ -6,6 +6,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { BounceButton } from '../components/BounceButton';
+import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../theme/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
@@ -21,13 +23,17 @@ const TIMELINE_DATA = [
 ];
 
 export default function GrowthVisualizerScreen({ navigation }: Props) {
+  const { logout } = useAuth();
+  const { theme, isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
+  
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color="#FFF" />
+          <TouchableOpacity onPress={() => logout()} style={styles.backButton}>
+            <Ionicons name="chevron-back" size={24} color={theme.colors.textHigh} />
           </TouchableOpacity>
         </View>
 
@@ -77,10 +83,10 @@ export default function GrowthVisualizerScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: theme.colors.background,
   },
   safeArea: {
     flex: 1,
@@ -93,7 +99,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.05)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -114,7 +120,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 2,
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)',
   },
   axisArrow: {
     position: 'absolute',
@@ -128,7 +134,7 @@ const styles = StyleSheet.create({
     borderRightWidth: 0,
     borderBottomWidth: 5,
     borderTopWidth: 5,
-    borderLeftColor: 'rgba(255,255,255,0.15)',
+    borderLeftColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)',
     borderRightColor: 'transparent',
     borderBottomColor: 'transparent',
     borderTopColor: 'transparent',
@@ -156,7 +162,7 @@ const styles = StyleSheet.create({
   weekLabel: {
     position: 'absolute',
     top: 280,
-    color: 'rgba(255,255,255,0.4)',
+    color: theme.colors.textMedium,
     fontWeight: '700',
     fontSize: 16,
   },
@@ -166,7 +172,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    color: '#FFF',
+    color: theme.colors.textHigh,
     textAlign: 'center',
     fontWeight: 'bold',
     marginBottom: 16,
@@ -174,7 +180,7 @@ const styles = StyleSheet.create({
     lineHeight: 32,
   },
   subtitle: {
-    color: '#8E8E93',
+    color: theme.colors.textMedium,
     textAlign: 'center',
     fontSize: 16,
     lineHeight: 24,
@@ -184,7 +190,7 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   continueButton: {
-    backgroundColor: '#34C759',
+    backgroundColor: theme.colors.primary,
     width: '100%',
     height: 56,
     borderRadius: 12,
