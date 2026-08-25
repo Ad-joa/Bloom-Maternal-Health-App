@@ -503,7 +503,7 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(241,149,155,0.2)',
-    shadowColor: theme.colors.primaryDark,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: isDark ? 0.3 : 0.1,
     shadowRadius: 24,

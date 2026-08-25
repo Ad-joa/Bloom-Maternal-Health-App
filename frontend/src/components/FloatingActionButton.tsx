@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     bottom: theme.spacing[5],
     right: theme.spacing[5],
     elevation: 5,
-    shadowColor: theme.colors.primaryDark, // Soft colored shadow like Flo App
+    shadowColor: '#000', // Soft colored shadow like Flo App
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

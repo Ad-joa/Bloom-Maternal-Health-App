@@ -219,7 +219,7 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     backgroundColor: theme.colors.primaryDark,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: theme.colors.primaryDark,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

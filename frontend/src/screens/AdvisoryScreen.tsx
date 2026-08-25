@@ -316,7 +316,7 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     paddingVertical: theme.spacing[3],
     borderRadius: 20,
     borderBottomLeftRadius: 4,
-    shadowColor: theme.colors.primaryDark,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,

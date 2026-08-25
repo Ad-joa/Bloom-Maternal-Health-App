@@ -467,7 +467,7 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     fontFamily: theme.typography.families.headingBold,
   },
   saveButton: {
-    shadowColor: theme.colors.primaryDark,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.2,
     shadowRadius: 16,
