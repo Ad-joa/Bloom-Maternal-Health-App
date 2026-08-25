@@ -138,7 +138,6 @@ export default function HomeScreen({ navigation }: any) {
 
   const dayIndex = new Date().getDay() % DAILY_TIPS.length;
   const todayTip = DAILY_TIPS[dayIndex];
-  const trimesterFact = TRIMESTER_FACTS[trimester];
 
   const [nextVisit, setNextVisit] = useState<any>(null);
   const [dynamicTip, setDynamicTip] = useState<{title: string, body: string} | null>(null);

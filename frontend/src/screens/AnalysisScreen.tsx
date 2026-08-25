@@ -28,13 +28,10 @@ export default function AnalysisScreen() {
     }
   }, [user]);
 
-  // Transform logs into chart data
-  // Assign simple numerical weights to severities: Mild=1, Moderate=2, Severe=3
-  const getSeverityScore = (symptomsStr: string) => {
-    if (!symptomsStr) return 0;
-    if (symptomsStr.toLowerCase().includes('severe') || symptomsStr.toLowerCase().includes('n3') || symptomsStr.toLowerCase().includes('c3')) return 3;
-    if (symptomsStr.toLowerCase().includes('moderate') || symptomsStr.toLowerCase().includes('n2') || symptomsStr.toLowerCase().includes('c2')) return 2;
-    if (symptomsStr.toLowerCase().includes('mild') || symptomsStr.toLowerCase().includes('n1') || symptomsStr.toLowerCase().includes('c1')) return 1;
+  const getSeverityScore = (severity: string) => {
+    if (!severity) return 1;
+    if (severity.toLowerCase() === 'severe') return 3;
+    if (severity.toLowerCase() === 'moderate') return 2;
     return 1;
   };
 
@@ -42,7 +39,7 @@ export default function AnalysisScreen() {
     labels: logs.length > 0 ? logs.map(l => new Date(l.created_at).toLocaleDateString('en-US', {weekday: 'short'})) : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     datasets: [
       {
-        data: logs.length > 0 ? logs.map(l => getSeverityScore(l.symptoms)) : [1, 2, 1, 3, 2, 1, 1],
+        data: logs.length > 0 ? logs.map(l => getSeverityScore(l.severity)) : [1, 2, 1, 3, 2, 1, 1],
         color: (opacity = 1) => `rgba(192, 132, 252, ${opacity})`, // primary purple
         strokeWidth: 3
       }
@@ -111,6 +108,46 @@ export default function AnalysisScreen() {
             />
           </View>
       </Card>
+
+      <Typography variant="title3" style={[styles.sectionTitle, { marginTop: theme.spacing[4] }]}>
+        Recent Logs
+      </Typography>
+      
+      {logs.length > 0 ? (
+        logs.map((log: any, index: number) => (
+          <Card key={index} style={styles.historyCard} variant="glass">
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <Typography variant="headline">
+                {new Date(log.created_at).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+              </Typography>
+              <View style={log.severity === 'severe' ? styles.tagSevere : styles.tag}>
+                <Typography variant="caption1" color={log.severity === 'severe' ? theme.colors.danger : theme.colors.primaryDark}>
+                  {log.severity ? log.severity.toUpperCase() : 'MILD'}
+                </Typography>
+              </View>
+            </View>
+            <Typography variant="body" color={theme.colors.textMedium} style={{ marginBottom: 4 }}>
+              Symptoms: {log.symptoms || 'None'}
+            </Typography>
+            {log.blood_pressure && (
+              <Typography variant="caption1" color={theme.colors.textMedium}>
+                BP: {log.blood_pressure}
+              </Typography>
+            )}
+            {log.notes && (
+              <View style={{ marginTop: 8, padding: 8, backgroundColor: 'rgba(0,0,0,0.03)', borderRadius: 8 }}>
+                <Typography variant="caption2" color={theme.colors.textMedium}>Note: {log.notes}</Typography>
+              </View>
+            )}
+          </Card>
+        ))
+      ) : (
+        <Card style={styles.placeholderCard} variant="glass">
+          <Typography variant="body" color={theme.colors.textMedium}>
+            No logs recorded yet.
+          </Typography>
+        </Card>
+      )}
 
       
         </ScrollView>

@@ -5,7 +5,7 @@ import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { CheckCircle2, CalendarHeart, Plus, Check } from 'lucide-react-native';
 import { useAuth } from '../context/AuthContext';
-import { getAncVisits, createAncVisit, updateAncVisit } from '../api/api';
+import { getAncVisits, createAncVisit, updateAncVisit, getSymptomLogs } from '../api/api';
 import { TextInput } from '../components/TextInput';
 import { Button } from '../components/Button';
 
@@ -14,6 +14,7 @@ export default function ANCVisitScreen() {
   const styles = getStyles(theme);
   const { user } = useAuth();
   const [visits, setVisits] = useState<any[]>([]);
+  const [notes, setNotes] = useState<any[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   
   // New Visit Form
@@ -21,15 +22,21 @@ export default function ANCVisitScreen() {
   const [newTime, setNewTime] = useState('');
   const [newDoctor, setNewDoctor] = useState('');
 
-  const loadVisits = async () => {
+  const loadData = async () => {
     if (user?.id) {
-      const data = await getAncVisits();
-      setVisits(data || []);
+      const visitData = await getAncVisits();
+      setVisits(visitData || []);
+      
+      const logData = await getSymptomLogs(user.id);
+      if (logData) {
+        const withNotes = logData.filter((log: any) => log.notes && log.notes.trim().length > 0);
+        setNotes(withNotes);
+      }
     }
   };
 
   useEffect(() => {
-    loadVisits();
+    loadData();
   }, [user]);
 
   const handleSaveVisit = async () => {
@@ -121,12 +128,24 @@ export default function ANCVisitScreen() {
       </Card>
 
       <Typography variant="title3" style={styles.sectionTitle}>
-        Questions to Ask
+        Doctor's Cheat Sheet
+      </Typography>
+      <Typography variant="caption1" color={theme.colors.textMedium} style={{marginBottom: 8}}>
+        Notes you've saved from your daily tracker to ask your doctor.
       </Typography>
       <Card style={styles.card} variant="elevated">
-        <Typography style={styles.bullet}>• Is my current swelling normal?</Typography>
-        <Typography style={styles.bullet}>• What exercises are safe this trimester?</Typography>
-        <Typography style={styles.bullet}>• Should I change my prenatal vitamins?</Typography>
+        {notes.length > 0 ? (
+          notes.map((log: any, index: number) => (
+            <View key={index} style={{ marginBottom: index === notes.length - 1 ? 0 : 12, paddingBottom: index === notes.length - 1 ? 0 : 12, borderBottomWidth: index === notes.length - 1 ? 0 : 1, borderBottomColor: theme.colors.surfaceVariant }}>
+              <Typography variant="caption2" color={theme.colors.textMedium} style={{marginBottom: 4}}>
+                Logged on {new Date(log.created_at).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}
+              </Typography>
+              <Typography style={styles.bullet}>• {log.notes}</Typography>
+            </View>
+          ))
+        ) : (
+          <Typography style={styles.bullet} color={theme.colors.textMedium}>No notes saved yet. Add notes in your Daily Log to see them here!</Typography>
+        )}
       </Card>
 
       <Typography variant="title3" style={[styles.sectionTitle, {marginTop: theme.spacing[6]}]}>

@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import { getSymptomLogs } from '../api/api';
 
 export default function ProfileScreen({ navigation }: any) {
   const { user, logout } = useAuth();
@@ -40,6 +41,27 @@ export default function ProfileScreen({ navigation }: any) {
 
   const handleExportPDF = async () => {
     try {
+      let latestWeight = 'Not Recorded';
+      let latestBP = 'Not Recorded';
+      let recentSymptoms = 'No symptoms recorded recently.';
+
+      if (user?.id) {
+        const logs = await getSymptomLogs(user.id);
+        if (logs && logs.length > 0) {
+          const logWithWeight = logs.find((l: any) => l.weight);
+          if (logWithWeight) latestWeight = `${logWithWeight.weight} kg`;
+          
+          const logWithBP = logs.find((l: any) => l.blood_pressure);
+          if (logWithBP) latestBP = logWithBP.blood_pressure;
+
+          const recentLogs = logs.slice(0, 3);
+          recentSymptoms = recentLogs.map((l: any) => {
+            const date = new Date(l.created_at).toLocaleDateString();
+            return `<b>${date}:</b> ${l.severity ? l.severity.toUpperCase() : ''} - ${l.symptoms || 'None'} ${l.notes ? `(Note: ${l.notes})` : ''}`;
+          }).join('<br><br>');
+        }
+      }
+
       const html = `
         <html>
         <body style="font-family: Helvetica, sans-serif; padding: 40px; color: #333;">
@@ -53,16 +75,16 @@ export default function ProfileScreen({ navigation }: any) {
             <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
               <tr style="background-color: ${theme.colors.surfaceVariant};">
                 <td style="padding: 10px; border: 1px solid ${theme.colors.primaryLight};"><strong>Weight</strong></td>
-                <td style="padding: 10px; border: 1px solid ${theme.colors.primaryLight};">145 lbs</td>
+                <td style="padding: 10px; border: 1px solid ${theme.colors.primaryLight};">${latestWeight}</td>
               </tr>
               <tr>
                 <td style="padding: 10px; border: 1px solid ${theme.colors.primaryLight};"><strong>Blood Pressure</strong></td>
-                <td style="padding: 10px; border: 1px solid ${theme.colors.primaryLight};">120/80</td>
+                <td style="padding: 10px; border: 1px solid ${theme.colors.primaryLight};">${latestBP}</td>
               </tr>
             </table>
-            <h2 style="color: #444;">Recent Symptoms</h2>
-            <p style="font-size: 16px; line-height: 1.5; padding: 15px; background-color: ${theme.colors.background}; border: 1px solid ${theme.colors.primaryLight}; border-radius: 8px;">
-              Patient reported mild nausea in the mornings, well-managed with ginger tea. No severe headaches or blurred vision.
+            <h2 style="color: #444;">Recent Symptoms & Notes</h2>
+            <p style="font-size: 14px; line-height: 1.5; padding: 15px; background-color: ${theme.colors.background}; border: 1px solid ${theme.colors.primaryLight}; border-radius: 8px;">
+              ${recentSymptoms}
             </p>
             <p style="margin-top: 50px; font-style: italic; color: #888; font-size: 12px; text-align: center;">
               Generated securely by Bloom Maternal Health App
