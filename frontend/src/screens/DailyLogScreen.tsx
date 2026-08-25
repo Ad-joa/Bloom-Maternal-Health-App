@@ -223,7 +223,7 @@ export default function TrackerScreen({ navigation }: any) {
                     </Typography>
                     {isSelected && (
                       <View style={[styles.checkBadge, { backgroundColor: symptom.color }]}>
-                        <Check size={12} color="#FFF" />
+                        <Check size={12} color={theme.colors.background} />
                       </View>
                     )}
                   </TouchableOpacity>
@@ -253,7 +253,7 @@ export default function TrackerScreen({ navigation }: any) {
                     </Typography>
                     {isSelected && (
                       <View style={[styles.checkBadge, { backgroundColor: symptom.color }]}>
-                        <Check size={12} color="#FFF" />
+                        <Check size={12} color={theme.colors.background} />
                       </View>
                     )}
                   </TouchableOpacity>
@@ -486,7 +486,7 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     paddingVertical: 18,
   },
   saveText: {
-    color: '#FFF',
+    color: theme.colors.background,
     marginLeft: 8,
     fontFamily: theme.typography.families.headingBold,
   }

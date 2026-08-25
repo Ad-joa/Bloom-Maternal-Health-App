@@ -2,6 +2,8 @@ import React, { useRef } from 'react';
 import { Animated, Pressable, PressableProps, StyleProp, ViewStyle } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 interface BounceButtonProps extends PressableProps {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
@@ -49,18 +51,16 @@ export const BounceButton: React.FC<BounceButtonProps> = ({
   };
 
   return (
-    <Animated.View style={[{ transform: [{ scale: scaleValue }] }, style]}>
-      <Pressable
-        accessible={true}
-        accessibilityRole={props.accessibilityRole || 'button'}
-        onPress={onPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        style={{ justifyContent: 'center', alignItems: 'center' }}
-        {...props}
-      >
-        {children}
-      </Pressable>
-    </Animated.View>
+    <AnimatedPressable
+      accessible={true}
+      accessibilityRole={props.accessibilityRole || 'button'}
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      style={[{ justifyContent: 'center', alignItems: 'center' }, style, { transform: [{ scale: scaleValue }] }]}
+      {...props}
+    >
+      {children}
+    </AnimatedPressable>
   );
 };

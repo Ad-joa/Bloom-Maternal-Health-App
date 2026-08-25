@@ -14,7 +14,8 @@ const { width } = Dimensions.get('window');
 
 export default function AnalysisScreen() {
   const { theme } = useTheme();
-  const styles = getStyles(theme);
+  const { isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
   const { user } = useAuth();
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,7 +86,7 @@ export default function AnalysisScreen() {
               width={width - 64} // from padding
               height={220}
               chartConfig={{
-                backgroundColor: '#ffffff',
+                backgroundColor: isDark ? theme.colors.background : theme.colors.surface,
                 backgroundGradientFrom: '#ffffff',
                 backgroundGradientTo: '#ffffff',
                 decimalPlaces: 0,
@@ -156,7 +157,7 @@ export default function AnalysisScreen() {
   );
 }
 
-const getStyles = (theme: any) => StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

@@ -20,29 +20,21 @@ const SLIDES = [
     id: '1',
     title: 'Your Pregnancy, Guided.',
     description: 'Bloom is your personal maternal health companion, designed specifically for your journey.',
-    isLottie: true,
-    iconBg: 'transparent',
   },
   {
     id: '2',
     title: 'Track Vitals & Baby Growth',
     description: 'Log your symptoms, mood, and daily vitals. Keep a beautiful record as your baby grows.',
-    icon: <Ionicons name="medical" size={64} color={theme.colors.primaryDark} />,
-    iconBg: theme.colors.primaryLight,
   },
   {
     id: '3',
     title: 'Ghanaian Context',
     description: 'Local nutrition advice, ANC reminders, and culturally relevant insights for Ghanaian mothers.',
-    icon: <Ionicons name="leaf" size={64} color={theme.colors.primary} />,
-    iconBg: theme.colors.surfaceVariant,
   },
   {
     id: '4',
     title: 'Always Available',
     description: 'Works entirely offline. Your data syncs securely only when you are back on Wi-Fi.',
-    icon: <Ionicons name="shield-checkmark" size={64} color={theme.colors.accentOrange} />,
-    iconBg: theme.colors.surfaceVariant,
   },
 ];
 
@@ -68,7 +60,7 @@ export default function WelcomeScreen({ navigation }: Props) {
     if (currentIndex < SLIDES.length - 1) {
       flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
     } else {
-      navigation.navigate('PrivacyConsent' as never);
+      navigation.navigate('Auth' as never);
     }
   };
 
@@ -76,22 +68,16 @@ export default function WelcomeScreen({ navigation }: Props) {
     return (
       <View style={styles.slide}>
         <View style={styles.slideContent}>
-          {(item as any).isLottie ? (
-            <LottieView
-              source={require('../../assets/animations/baby.json')}
-              autoPlay
-              loop
-              style={{ width: 280, height: 280, marginBottom: -10 }}
-            />
-          ) : (
-            <View style={[styles.iconWrapper, { backgroundColor: item.iconBg }]}>
-              {(item as any).icon}
-            </View>
-          )}
-          <Typography variant="largeTitle" color="#000" style={styles.slideTitle}>
+          <LottieView
+            source={require('../../assets/animations/baby.json')}
+            autoPlay
+            loop
+            style={{ width: 280, height: 280, marginBottom: -10 }}
+          />
+          <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.slideTitle}>
             {item.title}
           </Typography>
-          <Typography variant="body" color="#3A3A3C" style={styles.slideDescription}>
+          <Typography variant="body" color={theme.colors.textMedium} style={styles.slideDescription}>
             {item.description}
           </Typography>
         </View>
@@ -148,12 +134,12 @@ export default function WelcomeScreen({ navigation }: Props) {
 
           <BounceButton onPress={scrollToNext} style={styles.ctaButton}>
             <View style={styles.ctaButtonInner}>
-              <Typography variant="headline" color="#FFF" style={styles.ctaText}>
+              <Typography variant="headline" color={theme.colors.background} style={styles.ctaText}>
                 {currentIndex === SLIDES.length - 1 ? "Get Started" : "Continue"}
               </Typography>
               {currentIndex === SLIDES.length - 1 && (
-                <View style={styles.ctaIcon}>
-                  <Ionicons name="arrow-forward" size={18} color="#000" />
+                <View style={[styles.ctaIcon, { backgroundColor: theme.colors.background }]}>
+                  <Ionicons name="arrow-forward" size={18} color={theme.colors.textHigh} />
                 </View>
               )}
             </View>
@@ -170,7 +156,7 @@ export default function WelcomeScreen({ navigation }: Props) {
 const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: theme.colors.background,
   },
   safeArea: {
     flex: 1,
@@ -223,14 +209,13 @@ const getStyles = (theme: any) => StyleSheet.create({
   dot: {
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#000',
   },
   ctaButton: {
-    backgroundColor: '#000',
+    backgroundColor: theme.colors.textHigh,
     width: '100%',
     borderRadius: 32,
     height: 64,
-    shadowColor: '#000',
+    shadowColor: theme.colors.textHigh,
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.2,
     shadowRadius: 24,
@@ -251,7 +236,6 @@ const getStyles = (theme: any) => StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#FFF',
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -17,7 +17,8 @@ const MOCK_HOSPITALS = [
 
 export default function EmergencyLocatorScreen({ navigation }: any) {
   const { theme } = useTheme();
-  const styles = getStyles(theme);
+  const { isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,7 +62,7 @@ export default function EmergencyLocatorScreen({ navigation }: any) {
         <Typography variant="title3" color={theme.colors.danger}>Location Error</Typography>
         <Typography variant="body" align="center" style={{ marginTop: 8 }}>{errorMsg}</Typography>
         <TouchableOpacity style={styles.backBtnFallback} onPress={() => navigation.goBack()}>
-          <Typography color="#fff">Go Back</Typography>
+          <Typography color={theme.colors.background}>Go Back</Typography>
         </TouchableOpacity>
       </View>
     );
@@ -99,8 +100,8 @@ export default function EmergencyLocatorScreen({ navigation }: any) {
                 </View>
                 <Typography variant="caption1" color="#666" style={{ marginVertical: 4 }}>{hosp.type}</Typography>
                 <View style={styles.callBtn}>
-                  <PhoneCall color="#fff" size={14} />
-                  <Typography variant="caption1" color="#fff" style={{ marginLeft: 4 }}>Call {hosp.phone}</Typography>
+                  <PhoneCall color={theme.colors.background} size={14} />
+                  <Typography variant="caption1" color={theme.colors.background} style={{ marginLeft: 4 }}>Call {hosp.phone}</Typography>
                 </View>
               </View>
             </Callout>
@@ -111,7 +112,7 @@ export default function EmergencyLocatorScreen({ navigation }: any) {
       <SafeAreaView style={styles.headerArea} edges={['top']}>
         <View style={styles.headerRow}>
           <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-            <ChevronLeft color="#000" size={24} />
+            <ChevronLeft color={theme.colors.textHigh} size={24} />
           </TouchableOpacity>
           <View style={styles.headerTitleWrap}>
             <Typography variant="headline">Emergency Locator</Typography>
@@ -131,10 +132,10 @@ export default function EmergencyLocatorScreen({ navigation }: any) {
   );
 }
 
-const getStyles = (theme: any) => StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: isDark ? theme.colors.background : theme.colors.surface,
   },
   centerContainer: {
     flex: 1,
@@ -195,7 +196,7 @@ const getStyles = (theme: any) => StyleSheet.create({
     borderLeftColor: theme.colors.danger,
   },
   calloutCard: {
-    backgroundColor: '#fff',
+    backgroundColor: isDark ? theme.colors.background : theme.colors.surface,
     borderRadius: 12,
     padding: 12,
     width: 220,

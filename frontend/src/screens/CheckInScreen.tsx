@@ -18,7 +18,8 @@ const EMOJIS = ['😭', '😔', '😐', '🙂', '🥰'];
 
 export default function CheckInScreen({ navigation }: any) {
   const { theme } = useTheme();
-  const styles = getStyles(theme);
+  const { isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
   const [answers, setAnswers] = useState<Record<number, boolean>>({});
   const [vibe, setVibe] = useState<number | null>(null);
 
@@ -92,7 +93,7 @@ export default function CheckInScreen({ navigation }: any) {
   );
 }
 
-const getStyles = (theme: any) => StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: theme.spacing[5],

@@ -14,7 +14,8 @@ type Props = {
 
 export default function ArticleScreen({ route, navigation }: Props) {
   const { theme } = useTheme();
-  const styles = getStyles(theme);
+  const { isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
   const { title, content } = route.params;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
@@ -40,7 +41,7 @@ export default function ArticleScreen({ route, navigation }: Props) {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Placeholder for an article header image */}
         <View style={[styles.headerImagePlaceholder, { opacity: fadeAnim }]}>
-          <Typography variant="title2" color="#fff" style={styles.imageText}>
+          <Typography variant="title2" color={theme.colors.background} style={styles.imageText}>
             Bloom Guide
           </Typography>
         </View>
@@ -93,7 +94,7 @@ export default function ArticleScreen({ route, navigation }: Props) {
   );
 }
 
-const getStyles = (theme: any) => StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -109,7 +110,7 @@ const getStyles = (theme: any) => StyleSheet.create({
   },
   contentContainer: {
     padding: theme.spacing[5],
-    backgroundColor: '#fff',
+    backgroundColor: isDark ? theme.colors.background : theme.colors.surface,
     borderTopLeftRadius: theme.radii.xl,
     borderTopRightRadius: theme.radii.xl,
     marginTop: -30, // Overlap the image slightly

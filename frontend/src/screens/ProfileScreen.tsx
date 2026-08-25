@@ -131,7 +131,7 @@ export default function ProfileScreen({ navigation }: any) {
           {/* Avatar & Name */}
           <View style={styles.profileHeader}>
             <View style={styles.avatarLarge}>
-              <Typography variant="largeTitle" style={{ color: '#FFF', fontFamily: theme.typography.families.headingBold }}>
+              <Typography variant="largeTitle" style={{ color: theme.colors.background, fontFamily: theme.typography.families.headingBold }}>
                 {user?.name ? user.name[0].toUpperCase() : 'B'}
               </Typography>
             </View>

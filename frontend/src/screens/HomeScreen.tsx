@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, StyleSheet, ScrollView, TouchableOpacity,
-  StatusBar, Dimensions, Animated, Platform,
+  StatusBar, Dimensions, Animated, Platform, Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
@@ -10,7 +10,7 @@ import { Typography } from '../components/Typography';
 import {
   Activity, Droplets, Stethoscope, Heart, Sun,
   Moon, Sparkles, Bell, ChevronRight, Zap,
-  Baby, Apple, Lightbulb,
+  Baby, Apple, Lightbulb, Calendar, ShoppingBag
 } from 'lucide-react-native';
 import { getWeeksPregnant, getDaysUntilDue } from '../utils/dateUtils';
 import { getAncVisits, getEducationalContent } from '../api/api';
@@ -151,6 +151,8 @@ export default function HomeScreen({ navigation }: any) {
 
   const dayIndex = new Date().getDay() % DAILY_TIPS.length;
   const todayTip = DAILY_TIPS[dayIndex];
+  
+  const todayDateFormatted = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
 
   const [nextVisit, setNextVisit] = useState<any>(null);
   const [dynamicTip, setDynamicTip] = useState<{title: string, body: string} | null>(null);
@@ -216,11 +218,14 @@ export default function HomeScreen({ navigation }: any) {
     transform: [{ translateY: headerAnim.interpolate({ inputRange: [0, 1], outputRange: [16, 0] }) }],
   };
 
-  const QUICK_ACTIONS = [
-    { label: 'Log Vitals',  sub: 'BP & Weight',  icon: Activity,     bg: isDark ? '#3B1F1F' : '#FEE2E2', color: '#DC2626', route: 'Tracker' },
-    { label: 'Symptoms',    sub: 'How you feel', icon: Heart,         bg: isDark ? '#1F2A3B' : '#DBEAFE', color: '#2563EB', route: 'Tracker' },
-    { label: 'ANC Visit',   sub: 'Appointments', icon: Stethoscope,  bg: isDark ? '#1A2E1F' : '#D1FAE5', color: '#059669', route: 'ANCVisit' },
-    { label: 'Hydration',   sub: 'Water intake', icon: Droplets,     bg: isDark ? '#1F2D3B' : '#CFFAFE', color: '#0891B2', route: 'Tracker' },
+  const PREGNANCY_TOOLS = [
+    { label: 'Weight\nTracker',   icon: Activity,    bg: '#F5A623' },
+    { label: 'Kegel\nExercises',  icon: Heart,       bg: '#50E3C2' },
+    { label: 'Kick\nCounter',     icon: Baby,        bg: '#9013FE' },
+    { label: 'Contraction\nCounter', icon: Zap,      bg: '#4A90E2' },
+    { label: 'Calendar\nand Diary',  icon: Calendar, bg: '#E06253' },
+    { label: 'Pregnancy\nItems',  icon: ShoppingBag, bg: '#609B66' },
+    { label: 'Meal\nPlan',        icon: Apple,       bg: '#8CC152' },
   ];
 
   return (
@@ -306,32 +311,33 @@ export default function HomeScreen({ navigation }: any) {
             </View>
           </View>
 
-          {/* ── Baby Development + Tip (side-by-side row) ── */}
-          <View style={styles.rowCards}>
-            {/* Baby Size */}
-            <View style={styles.halfCard}>
-              <LinearGradient
-                colors={isDark ? ['#1A1F2A', '#12161E'] : ['#EFF6FF', '#FFFFFF']}
-                style={StyleSheet.absoluteFillObject}
-                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-              />
-              <Typography variant="caption2" style={styles.halfCardLabel}>BABY SIZE</Typography>
-              <Typography style={styles.halfCardEmoji}>{babySize.icon}</Typography>
-              <Typography variant="headline" style={styles.halfCardTitle}>{babySize.length}</Typography>
-              <Typography variant="caption1" style={styles.halfCardSub}>Est. {babySize.weight}</Typography>
+          {/* ── Baby Size (Full Width) ── */}
+          <View style={styles.fullCard}>
+            <LinearGradient
+              colors={isDark ? ['#1A1F2A', '#12161E'] : ['#EFF6FF', '#FFFFFF']}
+              style={StyleSheet.absoluteFillObject}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+            />
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <View>
+                <Typography variant="caption2" style={[styles.halfCardLabel, { marginBottom: 12 }]}>BABY SIZE</Typography>
+                <Typography variant="title2" style={{ color: theme.colors.textHigh, marginBottom: 4 }}>{babySize.length}</Typography>
+                <Typography variant="subhead" style={{ color: theme.colors.textMedium }}>Est. {babySize.weight}</Typography>
+              </View>
+              <Typography style={{ fontSize: 64 }}>{babySize.icon}</Typography>
             </View>
+          </View>
 
-            {/* Today's Tip */}
-            <View style={styles.halfCard}>
-              <LinearGradient
-                colors={isDark ? ['#1A1F1A', '#12161A'] : ['#F0FDF4', '#FFFFFF']}
-                style={StyleSheet.absoluteFillObject}
-                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-              />
-              <Typography variant="caption2" style={[styles.halfCardLabel, { color: '#059669' }]}>TODAY'S TIP</Typography>
-              <Typography style={styles.halfCardEmoji}>{todayTip.icon}</Typography>
-              <Typography variant="caption1" style={styles.halfCardTipText}>{todayTip.tip}</Typography>
+          {/* ── Today's Tip (Full Width Editorial) ── */}
+          <View style={[styles.fullCard, { backgroundColor: isDark ? '#2A241A' : '#FDF8F0', padding: 24, paddingTop: 32 }]}>
+            <View style={styles.dateBadgeContainer}>
+              <View style={styles.dateBadgeBg} />
+              <Typography variant="headline" style={styles.dateBadgeText}>{todayDateFormatted}</Typography>
             </View>
+            <Typography variant="title2" style={{ color: theme.colors.textHigh, marginBottom: 16 }}>Today's tip</Typography>
+            <Typography variant="body" style={{ color: theme.colors.textHigh, lineHeight: 26, fontSize: 16, fontFamily: theme.typography.families.bodyMedium }}>
+              {todayTip.tip}
+            </Typography>
           </View>
 
           {/* ── Sliding Motivation ── */}
@@ -393,23 +399,22 @@ export default function HomeScreen({ navigation }: any) {
 
 
 
-          {/* ── Quick Actions ── */}
-          <View style={styles.sectionHeader}>
-            <Typography variant="title3" style={styles.sectionTitle}>Quick Actions</Typography>
+          {/* ── Pregnancy Tools ── */}
+          <View style={[styles.sectionHeader, { marginTop: 16 }]}>
+            <Typography variant="title2" style={styles.sectionTitle}>Pregnancy tools</Typography>
           </View>
           <View style={styles.actionsGrid}>
-            {QUICK_ACTIONS.map((action) => (
+            {PREGNANCY_TOOLS.map((tool) => (
               <TouchableOpacity
-                key={action.label}
-                style={styles.actionCard}
-                onPress={() => navigation.navigate(action.route)}
+                key={tool.label}
+                style={styles.toolCard}
+                onPress={() => Alert.alert('Coming Soon', 'We are building this feature!')}
                 activeOpacity={0.75}
               >
-                <View style={[styles.actionIcon, { backgroundColor: action.bg }]}>
-                  <action.icon size={20} color={action.color} strokeWidth={2} />
+                <View style={[styles.toolIconWrapper, { backgroundColor: tool.bg }]}>
+                  <tool.icon size={26} color={theme.colors.background} strokeWidth={2.5} />
                 </View>
-                <Typography variant="subhead" style={styles.actionLabel}>{action.label}</Typography>
-                <Typography variant="caption2" style={styles.actionSub}>{action.sub}</Typography>
+                <Typography variant="caption1" style={styles.toolLabel} numberOfLines={2}>{tool.label}</Typography>
               </TouchableOpacity>
             ))}
           </View>
@@ -608,11 +613,47 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     color: theme.colors.textMedium,
     fontSize: 12,
   },
-  halfCardTipText: {
+  fullCard: {
+    marginHorizontal: 24,
+    marginBottom: 16,
+    borderRadius: 24,
+    overflow: 'hidden',
+    padding: 20,
+    borderWidth: 1,
+    borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+    minHeight: 120,
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: isDark ? 0.2 : 0.05,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  dateBadgeContainer: {
+    position: 'absolute',
+    top: -1,
+    right: -1,
+    paddingTop: 12,
+    paddingRight: 20,
+    paddingLeft: 30,
+    paddingBottom: 20,
+    borderBottomLeftRadius: 40,
+    zIndex: 10,
+    overflow: 'hidden',
+  },
+  dateBadgeBg: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: '#F9C985',
+    borderBottomLeftRadius: 40,
+    opacity: isDark ? 0.9 : 1,
+  },
+  dateBadgeText: {
     color: theme.colors.textHigh,
-    fontFamily: theme.typography.families.bodyMedium,
-    fontSize: 12,
-    lineHeight: 18,
+    fontFamily: theme.typography.families.headingBold,
   },
 
   // Milestone
@@ -658,7 +699,7 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     fontFamily: theme.typography.families.headingBold,
   },
 
-  // Actions Grid
+  // Pregnancy Tools Grid
   actionsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -666,36 +707,33 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     gap: 12,
     marginBottom: 24,
   },
-  actionCard: {
-    width: (width - 60) / 2,
+  toolCard: {
+    width: (width - 72) / 3, // 3 columns, 2 gaps of 12 = 24, 2 padding of 24 = 48. Total 72.
     backgroundColor: theme.colors.surface,
-    borderRadius: 22,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: isDark ? 0.2 : 0.04,
     shadowRadius: 8,
     elevation: 2,
+    minHeight: 120,
   },
-  actionIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+  toolIconWrapper: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 14,
+    marginBottom: 12,
   },
-  actionLabel: {
+  toolLabel: {
     color: theme.colors.textHigh,
     fontFamily: theme.typography.families.headingBold,
-    fontSize: 14,
-    marginBottom: 2,
-  },
-  actionSub: {
-    color: theme.colors.textMedium,
-    fontSize: 11,
+    textAlign: 'center',
+    lineHeight: 14,
   },
 
   // Appointment

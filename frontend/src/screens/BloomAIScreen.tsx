@@ -113,7 +113,7 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
               >
                 {msg.sender === 'ai' && (
                   <View style={styles.aiAvatar}>
-                    <Flower2 size={18} color="#FFF" />
+                    <Flower2 size={18} color={theme.colors.background} />
                   </View>
                 )}
                 <View 
@@ -134,7 +134,7 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
             {loading && (
               <View style={[styles.messageRow, styles.messageRowAI]}>
                 <View style={styles.aiAvatar}>
-                  <Flower2 size={18} color="#FFF" />
+                  <Flower2 size={18} color={theme.colors.background} />
                 </View>
                 <View style={[styles.bubble, styles.bubbleAI, styles.loadingBubble]}>
                   <ActivityIndicator size="small" color={theme.colors.primary} />
@@ -174,7 +174,7 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
                 style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
                 disabled={!inputText.trim()}
               >
-                <Send color="#fff" size={20} style={styles.sendIcon} />
+                <Send color={theme.colors.background} size={20} style={styles.sendIcon} />
               </BounceButton>
             </View>
           </BlurView>

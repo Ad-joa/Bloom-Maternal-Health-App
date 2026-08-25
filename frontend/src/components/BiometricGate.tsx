@@ -45,7 +45,7 @@ export const BiometricGate: React.FC<Props> = ({ children }) => {
   useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
       if (
-        appState.current.match(/inactive|background/) &&
+        appState.current === 'background' &&
         nextAppState === 'active'
       ) {
         // If app comes to foreground and biometrics are enabled, lock it.
@@ -96,28 +96,29 @@ export const BiometricGate: React.FC<Props> = ({ children }) => {
     }, 1000);
   };
 
-  if (isLocked) {
-    return (
-      <View style={{ flex: 1 }}>
-        <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={StyleSheet.absoluteFillObject} />
-        <SafeAreaView style={styles.lockedContainer}>
-          <Lock size={64} color={theme.colors.primaryDark} style={{ marginBottom: 24 }} />
-          <Typography variant="title2" color={theme.colors.primaryDark} style={{ marginBottom: 8 }}>
-            App is Locked
-          </Typography>
-          <Typography variant="body" color={theme.colors.textMedium} align="center" style={{ paddingHorizontal: 40, marginBottom: 32 }}>
-            Your health data is protected. Please authenticate to view your logs and insights.
-          </Typography>
-          
-          <BounceButton style={styles.unlockButton} onPress={authenticate}>
-            <Typography variant="headline" color="#fff">Unlock App</Typography>
-          </BounceButton>
-        </SafeAreaView>
-      </View>
-    );
-  }
-
-  return <>{children}</>;
+  return (
+    <View style={{ flex: 1 }}>
+      {children}
+      {isLocked && (
+        <View style={[StyleSheet.absoluteFill, { zIndex: 9999, elevation: 9999 }]}>
+          <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={StyleSheet.absoluteFillObject} />
+          <SafeAreaView style={styles.lockedContainer}>
+            <Lock size={64} color={theme.colors.primaryDark} style={{ marginBottom: 24 }} />
+            <Typography variant="title2" color={theme.colors.primaryDark} style={{ marginBottom: 8 }}>
+              App is Locked
+            </Typography>
+            <Typography variant="body" color={theme.colors.textMedium} align="center" style={{ paddingHorizontal: 40, marginBottom: 32 }}>
+              Your health data is protected. Please authenticate to view your logs and insights.
+            </Typography>
+            
+            <BounceButton style={styles.unlockButton} onPress={authenticate}>
+              <Typography variant="headline" color="#fff">Unlock App</Typography>
+            </BounceButton>
+          </SafeAreaView>
+        </View>
+      )}
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({

@@ -10,7 +10,8 @@ import { BlurView } from 'expo-blur';
 
 export default function PrivacyConsentScreen({ navigation }: any) {
   const { theme } = useTheme();
-  const styles = getStyles(theme);
+  const { isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
   const insets = useSafeAreaInsets();
   const [agreed, setAgreed] = useState(false);
 
@@ -52,7 +53,7 @@ export default function PrivacyConsentScreen({ navigation }: any) {
             style={styles.iconContainer}
             start={{x: 0, y: 0}} end={{x: 1, y: 1}}
           >
-            <ShieldCheck size={48} color="#FFF" strokeWidth={1.5} />
+            <ShieldCheck size={48} color={theme.colors.background} strokeWidth={1.5} />
           </LinearGradient>
           
           <Typography variant="largeTitle" style={styles.mainTitle}>
@@ -118,10 +119,10 @@ export default function PrivacyConsentScreen({ navigation }: any) {
   );
 }
 
-const getStyles = (theme: any) => StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF', 
+    backgroundColor: isDark ? theme.colors.background : theme.colors.surface, 
   },
   header: {
     paddingHorizontal: 16,
@@ -216,7 +217,7 @@ const getStyles = (theme: any) => StyleSheet.create({
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: isDark ? theme.colors.background : theme.colors.surface,
     padding: 20,
     borderRadius: 20,
     marginBottom: 24,

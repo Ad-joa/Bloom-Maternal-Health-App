@@ -11,7 +11,8 @@ import { Button } from '../components/Button';
 
 export default function ANCVisitScreen() {
   const { theme } = useTheme();
-  const styles = getStyles(theme);
+  const { isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
   const { user } = useAuth();
   const [visits, setVisits] = useState<any[]>([]);
   const [notes, setNotes] = useState<any[]>([]);
@@ -80,7 +81,7 @@ export default function ANCVisitScreen() {
             Antenatal Care
           </Typography>
           <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.addBtn}>
-            <Plus color="#fff" size={24} />
+            <Plus color={theme.colors.background} size={24} />
           </TouchableOpacity>
         </View>
         <Typography variant="body" color={theme.colors.textMedium} style={{marginTop: 8}}>
@@ -168,8 +169,8 @@ export default function ANCVisitScreen() {
                 </View>
               ) : (
                 <TouchableOpacity style={styles.markAttendedBtn} onPress={() => handleMarkAttended(visit.id)}>
-                  <Check color="#fff" size={14} />
-                  <Typography variant="caption1" color="#fff" style={{marginLeft: 4}}>Mark Attended</Typography>
+                  <Check color={theme.colors.background} size={14} />
+                  <Typography variant="caption1" color={theme.colors.background} style={{marginLeft: 4}}>Mark Attended</Typography>
                 </TouchableOpacity>
               )}
             </View>
@@ -213,7 +214,7 @@ export default function ANCVisitScreen() {
   );
 }
 
-const getStyles = (theme: any) => StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   addBtn: {
     backgroundColor: theme.colors.primary,
     padding: 8,
@@ -226,7 +227,7 @@ const getStyles = (theme: any) => StyleSheet.create({
     padding: 24,
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: isDark ? theme.colors.background : theme.colors.surface,
     borderRadius: 24,
     padding: 24,
   },

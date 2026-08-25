@@ -37,7 +37,8 @@ const QUICK_REPLIES = [
 
 export default function AdvisoryScreen() {
   const { theme } = useTheme();
-  const styles = getStyles(theme);
+  const { isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
@@ -129,7 +130,7 @@ export default function AdvisoryScreen() {
             style={styles.userBubble}
             start={{x: 0, y: 0}} end={{x: 1, y: 1}}
           >
-            <Typography variant="body" color="#FFF">{item.text}</Typography>
+            <Typography variant="body" color={theme.colors.background}>{item.text}</Typography>
           </LinearGradient>
         </View>
       );
@@ -139,9 +140,9 @@ export default function AdvisoryScreen() {
       <View style={[styles.messageRow, styles.messageRowAI]}>
         <View style={styles.aiAvatar}>
           {item.isDanger ? (
-             <AlertTriangle color="#FFF" size={16} />
+             <AlertTriangle color={theme.colors.background} size={16} />
           ) : (
-             <Sparkles color="#FFF" size={16} />
+             <Sparkles color={theme.colors.background} size={16} />
           )}
         </View>
         <View style={[styles.aiBubble, item.isDanger && styles.aiBubbleDanger]}>
@@ -192,7 +193,7 @@ export default function AdvisoryScreen() {
           {loading && (
             <Animated.View style={[styles.messageRow, styles.messageRowAI, { opacity: fadeAnim, marginBottom: 8 }]}>
               <View style={styles.aiAvatar}>
-                <Sparkles color="#FFF" size={16} />
+                <Sparkles color={theme.colors.background} size={16} />
               </View>
               <View style={styles.aiBubble}>
                 <Typography variant="body" color={theme.colors.textMedium}>Bloom AI is typing...</Typography>
@@ -233,7 +234,7 @@ export default function AdvisoryScreen() {
               onPress={() => handleSend(inputText)}
               disabled={!inputText.trim() || loading}
             >
-              <Send color="#FFF" size={20} />
+              <Send color={theme.colors.background} size={20} />
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
@@ -242,7 +243,7 @@ export default function AdvisoryScreen() {
   );
 }
 
-const getStyles = (theme: any) => StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -255,7 +256,7 @@ const getStyles = (theme: any) => StyleSheet.create({
     paddingVertical: theme.spacing[4],
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.05)',
-    backgroundColor: '#fff',
+    backgroundColor: isDark ? theme.colors.background : theme.colors.surface,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -310,7 +311,7 @@ const getStyles = (theme: any) => StyleSheet.create({
     marginRight: 8,
   },
   aiBubble: {
-    backgroundColor: '#fff',
+    backgroundColor: isDark ? theme.colors.background : theme.colors.surface,
     paddingHorizontal: theme.spacing[4],
     paddingVertical: theme.spacing[3],
     borderRadius: 20,
@@ -349,7 +350,7 @@ const getStyles = (theme: any) => StyleSheet.create({
     alignItems: 'flex-end',
     paddingHorizontal: theme.spacing[4],
     paddingVertical: theme.spacing[3],
-    backgroundColor: '#fff',
+    backgroundColor: isDark ? theme.colors.background : theme.colors.surface,
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.05)',
   },

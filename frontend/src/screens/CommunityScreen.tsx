@@ -58,7 +58,7 @@ export default function CommunityScreen({ navigation, isNested }: any) {
       <Card variant="glass" style={styles.postCard}>
       <View style={styles.postHeader}>
         <View style={styles.avatar}>
-          <Typography variant="headline" color="#fff">{item.author[0]}</Typography>
+          <Typography variant="headline" color={theme.colors.background}>{item.author[0]}</Typography>
         </View>
         <View style={styles.postMeta}>
           <Typography variant="headline" color={theme.colors.textHigh}>{item.author}</Typography>
@@ -127,7 +127,7 @@ export default function CommunityScreen({ navigation, isNested }: any) {
         }}
       >
         <BounceButton style={styles.fab}>
-          <Ionicons name="add" size={32} color="#fff" />
+          <Ionicons name="add" size={32} color={theme.colors.background} />
         </BounceButton>
       </TouchableOpacity>
     </>

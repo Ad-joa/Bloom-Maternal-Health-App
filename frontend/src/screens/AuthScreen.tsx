@@ -49,7 +49,8 @@ const calculatePasswordStrength = (password: string): PasswordStrength => {
 
 export default function AuthScreen({ navigation }: Props) {
   const { theme } = useTheme();
-  const styles = getStyles(theme);
+  const { isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
   // State
   const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [registrationStep, setRegistrationStep] = useState<RegistrationStep>('details');
@@ -174,7 +175,7 @@ export default function AuthScreen({ navigation }: Props) {
   const renderReset = () => (
     <FadeSlideIn delay={100} duration={400} direction="right" style={styles.formContainer}>
       <View style={styles.iconHeader}>
-        <KeyRound size={48} color="#000" strokeWidth={1.5} />
+        <KeyRound size={48} color={theme.colors.textHigh} strokeWidth={1.5} />
         <Typography variant="title3" style={{ marginTop: 12, fontFamily: theme.typography.families.headingBold }}>Password Recovery</Typography>
         <Typography variant="footnote" color="#636366" style={{ textAlign: 'center', marginTop: 4 }}>
           Enter your email address and we'll send you a link to reset your password.
@@ -197,11 +198,11 @@ export default function AuthScreen({ navigation }: Props) {
       </View>
 
       <TouchableOpacity style={styles.primaryButton} onPress={handleSubmit} disabled={isLoading}>
-        {isLoading ? <ActivityIndicator color="#FFF" /> : <Typography variant="headline" color="#FFF">Send Reset Link</Typography>}
+        {isLoading ? <ActivityIndicator color={theme.colors.background} /> : <Typography variant="headline" color={theme.colors.background}>Send Reset Link</Typography>}
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.backButton} onPress={() => setAuthMode('login')}>
-        <Typography variant="footnote" color="#000" style={{ fontFamily: theme.typography.families.bodySemibold }}>Back to Login</Typography>
+        <Typography variant="footnote" color={theme.colors.textHigh} style={{ fontFamily: theme.typography.families.bodySemibold }}>Back to Login</Typography>
       </TouchableOpacity>
     </FadeSlideIn>
   );
@@ -209,7 +210,7 @@ export default function AuthScreen({ navigation }: Props) {
   const renderVerification = () => (
     <FadeSlideIn delay={100} duration={400} direction="right" style={styles.formContainer}>
        <View style={styles.iconHeader}>
-        <Mail size={48} color="#000" strokeWidth={1.5} />
+        <Mail size={48} color={theme.colors.textHigh} strokeWidth={1.5} />
         <Typography variant="title3" style={{ marginTop: 12, fontFamily: theme.typography.families.headingBold }}>Verify Your Email</Typography>
         <Typography variant="footnote" color="#636366" style={{ textAlign: 'center', marginTop: 4 }}>
           We've sent a 6-digit code to {formData.email}
@@ -231,11 +232,11 @@ export default function AuthScreen({ navigation }: Props) {
       </View>
 
       <TouchableOpacity style={styles.primaryButton} onPress={handleSubmit} disabled={isLoading || formData.verificationCode.length !== 6}>
-        {isLoading ? <ActivityIndicator color="#FFF" /> : <Typography variant="headline" color="#FFF">Verify Email</Typography>}
+        {isLoading ? <ActivityIndicator color={theme.colors.background} /> : <Typography variant="headline" color={theme.colors.background}>Verify Email</Typography>}
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.backButton} onPress={() => setRegistrationStep('details')}>
-        <Typography variant="footnote" color="#000" style={{ fontFamily: theme.typography.families.bodySemibold }}>Back to Details</Typography>
+        <Typography variant="footnote" color={theme.colors.textHigh} style={{ fontFamily: theme.typography.families.bodySemibold }}>Back to Details</Typography>
       </TouchableOpacity>
     </FadeSlideIn>
   );
@@ -251,7 +252,7 @@ export default function AuthScreen({ navigation }: Props) {
       </View>
 
       <TouchableOpacity style={[styles.primaryButton, { marginTop: 24 }]} onPress={() => login(registeredUser.user, registeredUser.token)}>
-        <Typography variant="headline" color="#FFF">Continue to Setup</Typography>
+        <Typography variant="headline" color={theme.colors.background}>Continue to Setup</Typography>
       </TouchableOpacity>
     </FadeSlideIn>
   );
@@ -375,7 +376,7 @@ export default function AuthScreen({ navigation }: Props) {
               <Typography variant="caption1" color="#636366">Remember me</Typography>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setAuthMode('reset')}>
-              <Typography variant="caption1" style={{ color: '#000', fontFamily: theme.typography.families.bodySemibold }}>Forgot password?</Typography>
+              <Typography variant="caption1" style={{ color: theme.colors.textHigh, fontFamily: theme.typography.families.bodySemibold }}>Forgot password?</Typography>
             </TouchableOpacity>
           </>
         ) : (
@@ -392,7 +393,7 @@ export default function AuthScreen({ navigation }: Props) {
       </View>
 
       <TouchableOpacity style={styles.primaryButton} onPress={handleSubmit} disabled={isLoading}>
-        {isLoading ? <ActivityIndicator color="#FFF" /> : <Typography variant="headline" color="#FFF">{authMode === 'login' ? 'Sign In' : 'Create Account'}</Typography>}
+        {isLoading ? <ActivityIndicator color={theme.colors.background} /> : <Typography variant="headline" color={theme.colors.background}>{authMode === 'login' ? 'Sign In' : 'Create Account'}</Typography>}
       </TouchableOpacity>
     </FadeSlideIn>
   );
@@ -420,7 +421,7 @@ export default function AuthScreen({ navigation }: Props) {
   );
 }
 
-const getStyles = (theme: any) => StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   formContainer: {
     gap: 20,
   },
@@ -438,7 +439,7 @@ const getStyles = (theme: any) => StyleSheet.create({
     borderRadius: 8,
   },
   toggleBtnActive: {
-    backgroundColor: '#FFF',
+    backgroundColor: isDark ? theme.colors.background : theme.colors.surface,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -490,17 +491,17 @@ const getStyles = (theme: any) => StyleSheet.create({
     justifyContent: 'center',
   },
   checkboxActive: {
-    backgroundColor: '#000',
-    borderColor: '#000',
+    backgroundColor: theme.colors.textHigh,
+    borderColor: theme.colors.textHigh,
   },
   checkboxDot: {
     width: 8,
     height: 8,
     borderRadius: 2,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: isDark ? theme.colors.background : theme.colors.surface,
   },
   primaryButton: {
-    backgroundColor: '#000',
+    backgroundColor: theme.colors.textHigh,
     borderRadius: 16,
     height: 56,
     alignItems: 'center',

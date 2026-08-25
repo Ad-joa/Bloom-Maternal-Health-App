@@ -14,7 +14,8 @@ import { getReminders, createReminder, deleteReminder } from '../api/api';
 
 export default function RemindersScreen() {
   const { theme } = useTheme();
-  const styles = getStyles(theme);
+  const { isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
   const { user } = useAuth();
   const [remindersList, setRemindersList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -164,7 +165,7 @@ export default function RemindersScreen() {
   );
 }
 
-const getStyles = (theme: any) => StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
   scrollContent: { padding: theme.spacing[5] },
