@@ -128,7 +128,7 @@ export default function AuthScreen({ navigation }: Props) {
       }
     } catch (error: any) {
       console.error(error);
-      const message = error?.response?.data?.detail || 'Authentication failed. Please try again.';
+      const message = error?.response?.data?.message || 'Authentication failed. Please try again.';
       setErrors({ general: message });
     } finally {
       setIsLoading(false);
