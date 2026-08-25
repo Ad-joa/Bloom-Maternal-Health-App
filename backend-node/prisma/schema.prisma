@@ -44,7 +44,7 @@ model symptom_logs {
   weight      Float?
   is_synced   Boolean  @default(true)
   created_at DateTime? @default(now())
-  users      users?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users      users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   health_alerts health_alerts[]
 
   @@index([user_id, created_at(sort: Desc)])
@@ -120,8 +120,8 @@ model health_alerts {
   is_resolved     Boolean  @default(false)
   created_at      DateTime @default(now())
   
-  users           users         @relation(fields: [user_id], references: [id])
-  symptom_logs    symptom_logs? @relation(fields: [symptom_log_id], references: [id])
+  users           users         @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  symptom_logs    symptom_logs? @relation(fields: [symptom_log_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@index([user_id, is_resolved])
 }
