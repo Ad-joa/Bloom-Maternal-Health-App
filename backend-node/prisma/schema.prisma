@@ -31,6 +31,7 @@ model users {
   symptom_logs            symptom_logs[]
   anc_visits              anc_visits[]
   reminders               reminders[]
+  health_alerts           health_alerts[]
 }
 
 model symptom_logs {
@@ -44,6 +45,9 @@ model symptom_logs {
   is_synced   Boolean  @default(true)
   created_at DateTime? @default(now())
   users      users?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  health_alerts health_alerts[]
+
+  @@index([user_id, created_at(sort: Desc)])
 }
 
 model community_posts {
@@ -54,6 +58,8 @@ model community_posts {
   likes      Int       @default(0)
   comments   Int       @default(0)
   created_at DateTime  @default(now())
+
+  @@index([created_at(sort: Desc)])
 }
 
 model anc_visits {
@@ -67,6 +73,8 @@ model anc_visits {
   attendance_status String @default("pending") // pending, attended, missed
   created_at DateTime  @default(now())
   users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, date])
 }
 
 model reminders {
@@ -78,5 +86,42 @@ model reminders {
   is_active  Boolean   @default(true)
   created_at DateTime  @default(now())
   users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, is_active])
 }
 
+model educational_content {
+  id          Int      @id @default(autoincrement())
+  title       String
+  content     String
+  category    String   // e.g., "nutrition", "danger_sign", "general"
+  trimester   Int?     // 1, 2, 3, or null if applicable to all
+  week_start  Int?     // specific week applicability
+  week_end    Int?
+  created_at  DateTime @default(now())
+
+  @@index([trimester, category])
+}
+
+model advisory_rules {
+  id              Int      @id @default(autoincrement())
+  condition       String   // e.g., "blood_pressure_sys > 140 AND severity == 'high'"
+  alert_message   String   // e.g., "Seek immediate medical attention."
+  risk_level      String   // "low", "medium", "critical"
+  is_active       Boolean  @default(true)
+}
+
+model health_alerts {
+  id              Int      @id @default(autoincrement())
+  user_id         Int
+  symptom_log_id  Int?
+  alert_message   String
+  risk_level      String
+  is_resolved     Boolean  @default(false)
+  created_at      DateTime @default(now())
+  
+  users           users         @relation(fields: [user_id], references: [id])
+  symptom_logs    symptom_logs? @relation(fields: [symptom_log_id], references: [id])
+
+  @@index([user_id, is_resolved])
+}

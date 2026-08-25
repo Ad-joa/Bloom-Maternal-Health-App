@@ -1,11 +1,21 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../lib/prisma';
+import { z } from 'zod';
+import { validate } from '../middleware/validate';
+import { AppError } from '../utils/AppError';
 
 const router = express.Router();
-const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
+
+// Validation Schemas
+const loginSchema = z.object({
+  body: z.object({
+    email: z.string().email('Invalid email format'),
+    password: z.string().min(6, 'Password must be at least 6 characters')
+  })
+});
 
 // Helper to exclude password
 export const excludePassword = (user: any) => {
@@ -13,17 +23,17 @@ export const excludePassword = (user: any) => {
   return userWithoutPassword;
 };
 
-router.post('/register', async (req, res) => {
+router.post('/register', async (req, res, next) => {
   try {
     const { email, password, name, role } = req.body;
     
-    const existing = await prisma.users.findUnique({ where: { email } });
+    const existing = await (prisma as any).users.findUnique({ where: { email } });
     if (existing) {
-      return res.status(400).json({ detail: "Email already registered" });
+      return next(new AppError('Email already registered', 400));
     }
 
     const hashed_password = await bcrypt.hash(password, 10);
-    const user = await prisma.users.create({
+    const user = await (prisma as any).users.create({
       data: { 
         email, 
         name, 
@@ -45,23 +55,22 @@ router.post('/register', async (req, res) => {
       user: excludePassword(user)
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ detail: "Server error" });
+    next(error);
   }
 });
 
-router.post('/login', async (req, res) => {
+router.post('/login', validate(loginSchema), async (req, res, next) => {
   try {
     const { email, password } = req.body;
     
-    const user = await prisma.users.findUnique({ where: { email } });
+    const user = await (prisma as any).users.findUnique({ where: { email } });
     if (!user || !user.hashed_password) {
-      return res.status(401).json({ detail: "Incorrect email or password" });
+      return next(new AppError('Incorrect email or password', 401));
     }
 
     const valid = await bcrypt.compare(password, user.hashed_password);
     if (!valid) {
-      return res.status(401).json({ detail: "Incorrect email or password" });
+      return next(new AppError('Incorrect email or password', 401));
     }
 
     // NFR: Session Management - Clinicians timeout after 15 minutes, mothers get longer token
@@ -78,8 +87,7 @@ router.post('/login', async (req, res) => {
       user: excludePassword(user)
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ detail: "Server error" });
+    next(error);
   }
 });
 

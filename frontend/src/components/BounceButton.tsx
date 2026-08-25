@@ -56,7 +56,7 @@ export const BounceButton: React.FC<BounceButtonProps> = ({
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        style={{ flex: 1 }}
+        style={{ justifyContent: 'center', alignItems: 'center' }}
         {...props}
       >
         {children}

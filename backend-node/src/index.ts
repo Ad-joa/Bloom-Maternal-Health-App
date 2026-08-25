@@ -11,7 +11,10 @@ import { GoogleGenAI } from '@google/genai';
 import authRoutes, { excludePassword } from './routes/auth';
 import logsRoutes from './routes/logs';
 import ancRoutes from './routes/anc';
+import educationalRoutes from './routes/educational';
 import { authenticateToken } from './middleware/authMiddleware';
+import rateLimit from 'express-rate-limit';
+import { globalErrorHandler } from './middleware/errorHandler';
 
 dotenv.config();
 
@@ -29,6 +32,22 @@ const prisma = new PrismaClient();
 
 app.use(cors());
 app.use(express.json());
+
+// Global Rate Limiting: 100 requests per 15 minutes
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    error: 'TooManyRequests',
+    message: 'Too many requests from this IP, please try again after 15 minutes'
+  }
+});
+
+// Apply rate limiter to all API routes
+app.use('/', apiLimiter);
 
 io.on('connection', async (socket) => {
   console.log(`Socket connected: ${socket.id}`);
@@ -96,6 +115,7 @@ io.on('connection', async (socket) => {
 app.use('/auth', authRoutes);
 app.use('/logs', logsRoutes);
 app.use('/anc', ancRoutes);
+app.use('/educational', educationalRoutes);
 
 app.get('/users/:id', async (req, res) => {
   try {
@@ -551,6 +571,10 @@ app.get('/users/:id/partner/dashboard', async (req, res) => {
     res.status(500).json({ error: "Failed to fetch partner dashboard" });
   }
 });
+
+// Global Error Handling Middleware
+// This must be placed after all route definitions!
+app.use(globalErrorHandler);
 
 const PORT = process.env.PORT || 8000;
 httpServer.listen(PORT, () => {

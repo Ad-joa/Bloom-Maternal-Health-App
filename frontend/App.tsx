@@ -23,7 +23,7 @@ import { BiometricGate } from './src/components/BiometricGate';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { Home, Activity, Users, MessageCircle, CalendarDays } from 'lucide-react-native';
+import { Home, Activity, Users, MessageCircle, CalendarDays, User } from 'lucide-react-native';
 import { StyleSheet, TouchableOpacity, View, Platform, Text } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -116,8 +116,8 @@ function CustomTabBar({ state, navigation }: any) {
         let label = route.name;
         if (route.name === 'Home') { Icon = Home; label = 'Today'; }
         if (route.name === 'Tracker') { Icon = Activity; label = 'Tracker'; }
-        if (route.name === 'Support') { Icon = Users; label = 'Support'; }
-        if (route.name === 'Profile') { Icon = MessageCircle; label = 'Profile'; }
+        if (route.name === 'Support') { Icon = MessageCircle; label = 'Support'; }
+        if (route.name === 'Profile') { Icon = User; label = 'Profile'; }
 
         const activeColor = theme.colors.primaryDark;
         const inactiveColor = isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)';

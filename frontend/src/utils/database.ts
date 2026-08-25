@@ -21,6 +21,10 @@ export const initDatabase = async () => {
         is_synced INTEGER DEFAULT 0
       );
     `);
+
+    // Ensure older installs get the new columns safely
+    try { await db.execAsync("ALTER TABLE symptom_logs ADD COLUMN blood_pressure TEXT;"); } catch (e) {}
+    try { await db.execAsync("ALTER TABLE symptom_logs ADD COLUMN weight REAL;"); } catch (e) {}
   }
   return db;
 };

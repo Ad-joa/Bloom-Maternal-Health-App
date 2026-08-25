@@ -12,7 +12,7 @@ import BloomAIChat from './BloomAIScreen';
 export default function SupportScreen({ navigation }: any) {
   const { theme, isDark } = useTheme();
   const styles = getStyles(theme, isDark);
-  const [activeTab, setActiveTab] = useState<'community' | 'ai'>('community');
+  const [activeTab, setActiveTab] = useState<'community' | 'ai'>('ai');
 
   return (
     <View style={styles.container}>
@@ -34,21 +34,21 @@ export default function SupportScreen({ navigation }: any) {
           <View style={styles.segmentedControl}>
             <TouchableOpacity 
               activeOpacity={0.8}
-              style={[styles.segmentButton, activeTab === 'community' && styles.segmentActive]}
-              onPress={() => setActiveTab('community')}
-            >
-              <Typography variant="subhead" style={[styles.segmentText, activeTab === 'community' && styles.segmentTextActive]}>
-                Community
-              </Typography>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              activeOpacity={0.8}
               style={[styles.segmentButton, activeTab === 'ai' && styles.segmentActive]}
               onPress={() => setActiveTab('ai')}
             >
               <Typography variant="subhead" style={[styles.segmentText, activeTab === 'ai' && styles.segmentTextActive]}>
                 Bloom AI
+              </Typography>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              activeOpacity={0.8}
+              style={[styles.segmentButton, activeTab === 'community' && styles.segmentActive]}
+              onPress={() => setActiveTab('community')}
+            >
+              <Typography variant="subhead" style={[styles.segmentText, activeTab === 'community' && styles.segmentTextActive]}>
+                Community
               </Typography>
             </TouchableOpacity>
           </View>
