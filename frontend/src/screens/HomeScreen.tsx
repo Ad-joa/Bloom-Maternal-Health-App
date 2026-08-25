@@ -52,10 +52,23 @@ const DAILY_TIPS = [
   { tip: 'Take your prenatal vitamin if you haven\'t today.', icon: '💊' },
 ];
 
-const TRIMESTER_FACTS: Record<number, { title: string; body: string }> = {
-  1: { title: 'Heart Beating', body: 'Your baby\'s heart started beating around week 6.' },
-  2: { title: 'Can Hear You', body: 'Your baby can hear your voice and respond to sounds.' },
-  3: { title: 'Breathing Practice', body: 'Baby is practicing breathing movements to prepare for birth.' },
+const WEEKLY_DATA: Record<number, { fetal: string; maternal: string; todo: string; ancPreview: string }> = {
+  12: { fetal: 'Baby\'s vital organs are fully formed.', maternal: 'Nausea might start to subside.', todo: 'Schedule NIPT (Genetic) Screening', ancPreview: 'Nuchal translucency ultrasound & blood test' },
+  16: { fetal: 'Baby can make facial expressions.', maternal: 'You might feel a "fluttering" (quickening).', todo: 'Start practicing sleeping on your side', ancPreview: 'Fetal heart rate check & fundal height' },
+  20: { fetal: 'Baby is covered in a protective coating (vernix).', maternal: 'Your uterus has reached your belly button.', todo: 'Schedule your 20-week Anatomy Scan', ancPreview: 'Detailed anatomy scan to check baby\'s organs' },
+  24: { fetal: 'Inner ear is fully developed; they can hear you!', maternal: 'You may notice Braxton Hicks contractions.', todo: 'Research local pediatrician options', ancPreview: 'Glucose screening for gestational diabetes' },
+  28: { fetal: 'Baby\'s eyes can now open and close.', maternal: 'Third trimester begins! Fatigue may return.', todo: 'Take Glucose Tolerance Test', ancPreview: 'Antibody screen (if Rh negative) & iron check' },
+  32: { fetal: 'Baby is practicing breathing movements.', maternal: 'Shortness of breath as uterus pushes up.', todo: 'Pack your hospital bag', ancPreview: 'Discuss birth plan & signs of preterm labor' },
+  36: { fetal: 'Baby is rapidly gaining fat (1 oz/day).', maternal: 'Baby might "drop" lower into your pelvis.', todo: 'Install the car seat', ancPreview: 'Group B Strep (GBS) swab test' },
+  40: { fetal: 'Baby is fully cooked and ready to meet you!', maternal: 'The waiting game. Rest as much as possible.', todo: 'Rest and watch for signs of active labor', ancPreview: 'Cervical check & membrane sweep discussion' },
+};
+
+const getWeeklyData = (weeks: number) => {
+  const keys = Object.keys(WEEKLY_DATA).map(Number).sort((a, b) => a - b);
+  const closest = keys.reduce((prev, curr) =>
+    Math.abs(curr - weeks) < Math.abs(prev - weeks) ? curr : prev
+  );
+  return WEEKLY_DATA[closest] ?? WEEKLY_DATA[28];
 };
 
 // ── Circular Progress Ring ───────────────────────────────
@@ -120,6 +133,7 @@ export default function HomeScreen({ navigation }: any) {
   const daysLeft = dueDate ? getDaysUntilDue(dueDate) : 56;
   const trimester = weeksPregnant < 13 ? 1 : weeksPregnant < 27 ? 2 : 3;
   const babySize = getBabySize(weeksPregnant);
+  const weeklyData = getWeeklyData(weeksPregnant);
   const progressPercent = Math.min((weeksPregnant / 40) * 100, 100);
 
   const dayIndex = new Date().getDay() % DAILY_TIPS.length;
@@ -295,12 +309,39 @@ export default function HomeScreen({ navigation }: any) {
                 {dynamicTip ? "DYNAMIC INSIGHT" : `WEEK ${weeksPregnant} MILESTONE`}
               </Typography>
             </View>
-            <Typography variant="title3" style={styles.milestoneTitle}>
-              {dynamicTip ? dynamicTip.title : trimesterFact.title}
-            </Typography>
-            <Typography variant="body" style={styles.milestoneBody}>
-              {dynamicTip ? dynamicTip.body : trimesterFact.body}
-            </Typography>
+            
+            {dynamicTip ? (
+              <>
+                <Typography variant="title3" style={styles.milestoneTitle}>{dynamicTip.title}</Typography>
+                <Typography variant="body" style={styles.milestoneBody}>{dynamicTip.body}</Typography>
+              </>
+            ) : (
+              <View>
+                <Typography variant="title3" style={styles.milestoneTitle}>Fetal Development</Typography>
+                <Typography variant="body" style={styles.milestoneBody}>{weeklyData.fetal}</Typography>
+                
+                <View style={{ height: 1, backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : '#E5E7EB', marginVertical: 12 }} />
+                
+                <Typography variant="title3" style={styles.milestoneTitle}>Maternal Changes</Typography>
+                <Typography variant="body" style={styles.milestoneBody}>{weeklyData.maternal}</Typography>
+              </View>
+            )}
+          </View>
+
+          {/* ── Dynamic To-Do List ── */}
+          <View style={[styles.milestoneCard, { marginTop: 16, backgroundColor: isDark ? 'rgba(5, 150, 105, 0.1)' : '#ECFDF5', borderColor: isDark ? 'rgba(5, 150, 105, 0.3)' : '#A7F3D0' }]}>
+            <View style={[styles.milestoneBadge, { backgroundColor: isDark ? 'rgba(5, 150, 105, 0.2)' : '#D1FAE5' }]}>
+              <Activity size={14} color="#059669" />
+              <Typography variant="caption2" style={[styles.milestoneBadgeText, { color: '#059669' }]}>
+                RECOMMENDED ACTION
+              </Typography>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
+              <View style={{ width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: '#059669', marginRight: 12 }} />
+              <Typography variant="body" style={{ color: theme.colors.textHigh, flex: 1, fontFamily: theme.typography.families.headingSemibold }}>
+                {weeklyData.todo}
+              </Typography>
+            </View>
           </View>
 
           {/* ── Quick Actions ── */}
@@ -335,7 +376,7 @@ export default function HomeScreen({ navigation }: any) {
                 <View style={styles.apptIconBg}>
                   <Stethoscope size={18} color={theme.colors.primaryDark} />
                 </View>
-                <View>
+                <View style={{ flex: 1 }}>
                   <Typography variant="caption1" style={styles.apptLabel}>NEXT APPOINTMENT</Typography>
                   <Typography variant="headline" style={styles.apptDate}>
                     {nextVisit.scheduled_date || nextVisit.date || 'Upcoming Visit'}
@@ -343,6 +384,11 @@ export default function HomeScreen({ navigation }: any) {
                   <Typography variant="caption1" style={styles.apptFacility}>
                     {nextVisit.facility || 'Clinic Visit'}
                   </Typography>
+                  
+                  <View style={{ marginTop: 8, padding: 8, backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#F3F4F6', borderRadius: 8 }}>
+                    <Typography variant="caption2" style={{ color: theme.colors.textMedium, marginBottom: 2 }}>What to expect:</Typography>
+                    <Typography variant="caption1" style={{ color: theme.colors.textHigh }}>{weeklyData.ancPreview}</Typography>
+                  </View>
                 </View>
               </View>
               <ChevronRight size={18} color={theme.colors.textMedium} />
