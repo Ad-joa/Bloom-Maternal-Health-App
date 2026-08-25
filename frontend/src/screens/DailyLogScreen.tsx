@@ -6,17 +6,25 @@ import { saveSymptomLog, getInsights } from '../api/api';
 import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
 import { TextInput } from '../components/TextInput';
-import { Activity, Droplet, Thermometer, Wind, AlertCircle, Save, Check } from 'lucide-react-native';
+import { Activity, Droplet, Thermometer, Wind, AlertCircle, Save, Check, Flame, Eye, Baby, AlertTriangle } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { KickCounter } from '../components/KickCounter';
 import { getWeeksPregnant } from '../utils/dateUtils';
 
-const SYMPTOMS_GRID = [
+const COMMON_SYMPTOMS = [
   { id: 'nausea', label: 'Nausea', icon: Droplet, color: '#3B82F6' },
-  { id: 'headache', label: 'Headache', icon: Thermometer, color: '#EF4444' },
   { id: 'fatigue', label: 'Fatigue', icon: Wind, color: '#8B5CF6' },
-  { id: 'cramps', label: 'Cramping', icon: Activity, color: '#F59E0B' },
+  { id: 'heartburn', label: 'Heartburn', icon: Flame, color: '#F97316' },
+  { id: 'backache', label: 'Backache', icon: Activity, color: '#14B8A6' },
+];
+
+const WARNING_SIGNS = [
+  { id: 'headache', label: 'Severe Headache', icon: AlertTriangle, color: '#EF4444' },
+  { id: 'vision', label: 'Vision Changes', icon: Eye, color: '#DC2626' },
+  { id: 'swelling', label: 'Swelling', icon: Activity, color: '#B91C1C' },
+  { id: 'spotting', label: 'Bleeding', icon: Droplet, color: '#991B1B' },
+  { id: 'fetal_movement', label: 'Less Movement', icon: Baby, color: '#7F1D1D' },
 ];
 
 export default function TrackerScreen({ navigation }: any) {
@@ -32,6 +40,8 @@ export default function TrackerScreen({ navigation }: any) {
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [bloodPressure, setBloodPressure] = useState('');
   const [weight, setWeight] = useState('');
+  const [notes, setNotes] = useState('');
+  const [severity, setSeverity] = useState('mild');
   const [isSaving, setIsSaving] = useState(false);
   const [daysSinceLastLog, setDaysSinceLastLog] = useState(0);
 
@@ -63,7 +73,8 @@ export default function TrackerScreen({ navigation }: any) {
     try {
       const logData = {
         symptoms: selectedSymptoms.join(', '),
-        severity: selectedSymptoms.length > 2 ? 2 : 1, // Basic severity calculation
+        severity: severity,
+        notes: notes || undefined,
         blood_pressure: bloodPressure || undefined,
         weight: weight ? parseFloat(weight) : undefined
       };
@@ -86,6 +97,8 @@ export default function TrackerScreen({ navigation }: any) {
       setSelectedSymptoms([]);
       setBloodPressure('');
       setWeight('');
+      setNotes('');
+      setSeverity('mild');
     } catch (error) {
       Alert.alert("Error", "Failed to save. It will sync when you are back online.");
     } finally {
@@ -165,11 +178,32 @@ export default function TrackerScreen({ navigation }: any) {
             </View>
           </View>
 
+          {/* Severity Section (Moved up for better UX) */}
+          <View style={styles.section}>
+            <Typography variant="title3" style={styles.sectionTitle}>Overall Severity</Typography>
+            <View style={styles.segmentedControl}>
+              {['mild', 'moderate', 'severe'].map(level => {
+                const isActive = severity === level;
+                return (
+                  <TouchableOpacity 
+                    key={level} 
+                    style={[styles.segmentBtn, isActive && styles.segmentBtnActive]} 
+                    onPress={() => setSeverity(level)}
+                  >
+                    <Typography variant="subhead" style={[styles.segmentText, isActive && styles.segmentTextActive]}>
+                      {level.charAt(0).toUpperCase() + level.slice(1)}
+                    </Typography>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
           {/* Symptoms Section */}
           <View style={styles.section}>
-            <Typography variant="title3" style={styles.sectionTitle}>Quick Symptoms</Typography>
+            <Typography variant="title3" style={styles.sectionTitle}>Common Symptoms</Typography>
             <View style={styles.symptomsGrid}>
-              {SYMPTOMS_GRID.map(symptom => {
+              {COMMON_SYMPTOMS.map(symptom => {
                 const isSelected = selectedSymptoms.includes(symptom.id);
                 return (
                   <TouchableOpacity 
@@ -196,6 +230,49 @@ export default function TrackerScreen({ navigation }: any) {
                 );
               })}
             </View>
+
+            <Typography variant="title3" style={[styles.sectionTitle, { marginTop: 16, color: '#EF4444' }]}>Warning Signs</Typography>
+            <View style={styles.symptomsGrid}>
+              {WARNING_SIGNS.map(symptom => {
+                const isSelected = selectedSymptoms.includes(symptom.id);
+                return (
+                  <TouchableOpacity 
+                    key={symptom.id}
+                    activeOpacity={0.7}
+                    onPress={() => toggleSymptom(symptom.id)}
+                    style={[
+                      styles.symptomCard,
+                      isSelected && { borderColor: symptom.color, backgroundColor: symptom.color + '10' }
+                    ]}
+                  >
+                    <View style={[styles.symptomIconBg, { backgroundColor: isSelected ? symptom.color : (isDark ? 'rgba(255,255,255,0.1)' : '#F3F4F6') }]}>
+                      <symptom.icon size={20} color={isSelected ? '#FFF' : (isDark ? 'rgba(255,255,255,0.6)' : '#6B7280')} />
+                    </View>
+                    <Typography variant="subhead" style={[styles.symptomLabel, isSelected && { color: symptom.color, fontFamily: theme.typography.families.headingBold }]}>
+                      {symptom.label}
+                    </Typography>
+                    {isSelected && (
+                      <View style={[styles.checkBadge, { backgroundColor: symptom.color }]}>
+                        <Check size={12} color="#FFF" />
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* Notes Section */}
+          <View style={styles.section}>
+            <Typography variant="title3" style={styles.sectionTitle}>Daily Notes</Typography>
+            <TextInput
+              placeholder="Any notes for your doctor or thoughts for today?"
+              value={notes}
+              onChangeText={setNotes}
+              multiline
+              numberOfLines={4}
+              style={[styles.glassCard, { minHeight: 120, padding: 16, textAlignVertical: 'top' }]}
+            />
           </View>
 
           {/* Save Button */}
@@ -361,6 +438,33 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  segmentedControl: {
+    flexDirection: 'row',
+    backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#F3F4F6',
+    borderRadius: 16,
+    padding: 6,
+  },
+  segmentBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderRadius: 12,
+  },
+  segmentBtnActive: {
+    backgroundColor: theme.colors.surface,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  segmentText: {
+    color: theme.colors.textMedium,
+  },
+  segmentTextActive: {
+    color: theme.colors.primaryDark,
+    fontFamily: theme.typography.families.headingBold,
   },
   saveButton: {
     shadowColor: theme.colors.primaryDark,
