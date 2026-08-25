@@ -427,7 +427,7 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   },
   toggleContainer: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(0,0,0,0.05)',
+    backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
     borderRadius: 12,
     padding: 4,
     marginBottom: 8,
