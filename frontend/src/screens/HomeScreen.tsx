@@ -21,25 +21,25 @@ const { width } = Dimensions.get('window');
 const CARD_WIDTH = width - 48;
 
 // ── Data ────────────────────────────────────────────────
-const BABY_SIZE_MAP: Record<number, { emoji: string; fruit: string; size: string }> = {
-  4:  { emoji: '🌸', fruit: 'Poppy Seed',     size: '1 mm' },
-  8:  { emoji: '🍇', fruit: 'Raspberry',       size: '1.6 cm' },
-  12: { emoji: '🍋', fruit: 'Lime',            size: '5.4 cm' },
-  16: { emoji: '🥑', fruit: 'Avocado',         size: '11.6 cm' },
-  20: { emoji: '🍌', fruit: 'Banana',          size: '25 cm' },
-  24: { emoji: '🌽', fruit: 'Ear of Corn',     size: '30 cm' },
-  28: { emoji: '🍆', fruit: 'Eggplant',        size: '37.6 cm' },
-  32: { emoji: '🍍', fruit: 'Pineapple',        size: '42.4 cm' },
-  36: { emoji: '🍈', fruit: 'Honeydew Melon',  size: '47.4 cm' },
-  40: { emoji: '🍉', fruit: 'Watermelon',      size: '51 cm' },
+const CLINICAL_SIZE_MAP: Record<number, { icon: string; weight: string; length: string }> = {
+  4:  { icon: '🔬', weight: '< 1 g',      length: '1 mm' },
+  8:  { icon: '🧬', weight: '1 g',        length: '1.6 cm' },
+  12: { icon: '⚖️', weight: '14 g',       length: '5.4 cm' },
+  16: { icon: '⚖️', weight: '100 g',      length: '11.6 cm' },
+  20: { icon: '📏', weight: '300 g',      length: '25.6 cm' },
+  24: { icon: '📏', weight: '600 g',      length: '30 cm' },
+  28: { icon: '📏', weight: '1.0 kg',     length: '37.6 cm' },
+  32: { icon: '📏', weight: '1.7 kg',     length: '42.4 cm' },
+  36: { icon: '📏', weight: '2.6 kg',     length: '47.4 cm' },
+  40: { icon: '📏', weight: '3.5 kg',     length: '51.2 cm' },
 };
 
 const getBabySize = (weeks: number) => {
-  const keys = Object.keys(BABY_SIZE_MAP).map(Number).sort((a, b) => a - b);
+  const keys = Object.keys(CLINICAL_SIZE_MAP).map(Number).sort((a, b) => a - b);
   const closest = keys.reduce((prev, curr) =>
     Math.abs(curr - weeks) < Math.abs(prev - weeks) ? curr : prev
   );
-  return BABY_SIZE_MAP[closest] ?? BABY_SIZE_MAP[32];
+  return CLINICAL_SIZE_MAP[closest] ?? CLINICAL_SIZE_MAP[32];
 };
 
 const DAILY_TIPS = [
@@ -269,9 +269,9 @@ export default function HomeScreen({ navigation }: any) {
                 start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
               />
               <Typography variant="caption2" style={styles.halfCardLabel}>BABY SIZE</Typography>
-              <Typography style={styles.halfCardEmoji}>{babySize.emoji}</Typography>
-              <Typography variant="headline" style={styles.halfCardTitle}>{babySize.fruit}</Typography>
-              <Typography variant="caption1" style={styles.halfCardSub}>{babySize.size} long</Typography>
+              <Typography style={styles.halfCardEmoji}>{babySize.icon}</Typography>
+              <Typography variant="headline" style={styles.halfCardTitle}>{babySize.length}</Typography>
+              <Typography variant="caption1" style={styles.halfCardSub}>Est. {babySize.weight}</Typography>
             </View>
 
             {/* Today's Tip */}
