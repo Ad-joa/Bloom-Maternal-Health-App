@@ -51,7 +51,7 @@ export default function ANCVisitScreen() {
         setNewDate('');
         setNewTime('');
         setNewDoctor('');
-        loadVisits();
+        loadData();
       }
     } catch (e) {
       Alert.alert("Error", "Could not save visit.");
@@ -62,7 +62,7 @@ export default function ANCVisitScreen() {
     try {
       if (user?.id) {
         await updateAncVisit(visitId, { attendance_status: 'attended' });
-        loadVisits();
+        loadData();
       }
     } catch (e) {
       Alert.alert("Error", "Could not update attendance.");
