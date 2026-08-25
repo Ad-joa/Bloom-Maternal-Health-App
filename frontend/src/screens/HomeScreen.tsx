@@ -29,7 +29,7 @@ const BABY_SIZE_MAP: Record<number, { emoji: string; fruit: string; size: string
   20: { emoji: '🍌', fruit: 'Banana',          size: '25 cm' },
   24: { emoji: '🌽', fruit: 'Ear of Corn',     size: '30 cm' },
   28: { emoji: '🍆', fruit: 'Eggplant',        size: '37.6 cm' },
-  32: { emoji: '🎃', fruit: 'Squash',          size: '42.4 cm' },
+  32: { emoji: '🍍', fruit: 'Pineapple',        size: '42.4 cm' },
   36: { emoji: '🍈', fruit: 'Honeydew Melon',  size: '47.4 cm' },
   40: { emoji: '🍉', fruit: 'Watermelon',      size: '51 cm' },
 };
