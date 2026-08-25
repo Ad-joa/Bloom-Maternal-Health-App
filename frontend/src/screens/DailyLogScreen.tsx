@@ -68,10 +68,21 @@ export default function TrackerScreen({ navigation }: any) {
         weight: weight ? parseFloat(weight) : undefined
       };
       
-      await saveSymptomLog(user.id, logData);
+      const response = await saveSymptomLog(user.id, logData);
       
-      // Show success and clear form
-      Alert.alert("Saved", "Your log has been securely saved.", [{ text: "OK" }]);
+      // If the backend expert system triggered a health alert, show it prominently
+      if (response && response.alerts && response.alerts.length > 0) {
+        const primaryAlert = response.alerts[0];
+        Alert.alert(
+          "⚠️ Medical Advisory", 
+          primaryAlert.alert_message,
+          [{ text: "I Understand", style: "destructive" }]
+        );
+      } else {
+        // Show normal success and clear form
+        Alert.alert("Saved", "Your log has been securely saved.", [{ text: "OK" }]);
+      }
+
       setSelectedSymptoms([]);
       setBloodPressure('');
       setWeight('');

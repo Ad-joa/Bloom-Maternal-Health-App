@@ -13,7 +13,7 @@ import {
   Baby, Apple,
 } from 'lucide-react-native';
 import { getWeeksPregnant, getDaysUntilDue } from '../utils/dateUtils';
-import { getAncVisits } from '../api/api';
+import { getAncVisits, getEducationalContent } from '../api/api';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle } from 'react-native-svg';
 
@@ -127,6 +127,7 @@ export default function HomeScreen({ navigation }: any) {
   const trimesterFact = TRIMESTER_FACTS[trimester];
 
   const [nextVisit, setNextVisit] = useState<any>(null);
+  const [dynamicTip, setDynamicTip] = useState<{title: string, body: string} | null>(null);
   const headerAnim = useRef(new Animated.Value(0)).current;
 
   const hour = new Date().getHours();
@@ -150,8 +151,18 @@ export default function HomeScreen({ navigation }: any) {
           setNextVisit(upcoming);
         })
         .catch(() => {});
+        
+      getEducationalContent(trimester, 'general')
+        .then(content => {
+          if (content && content.length > 0) {
+            // Pick a random tip for today
+            const randomArticle = content[Math.floor(Math.random() * content.length)];
+            setDynamicTip({ title: randomArticle.title, body: randomArticle.content });
+          }
+        })
+        .catch(() => {});
     }
-  }, [user]);
+  }, [user, trimester]);
 
   const headerStyle = {
     opacity: headerAnim,
@@ -276,14 +287,20 @@ export default function HomeScreen({ navigation }: any) {
             </View>
           </View>
 
-          {/* ── Weekly Milestone ── */}
+          {/* ── Weekly Milestone / Dynamic Insight ── */}
           <View style={styles.milestoneCard}>
             <View style={styles.milestoneBadge}>
               <Sparkles size={14} color={theme.colors.primaryDark} />
-              <Typography variant="caption2" style={styles.milestoneBadgeText}>WEEK {weeksPregnant} MILESTONE</Typography>
+              <Typography variant="caption2" style={styles.milestoneBadgeText}>
+                {dynamicTip ? "DYNAMIC INSIGHT" : `WEEK ${weeksPregnant} MILESTONE`}
+              </Typography>
             </View>
-            <Typography variant="title3" style={styles.milestoneTitle}>{trimesterFact.title}</Typography>
-            <Typography variant="body" style={styles.milestoneBody}>{trimesterFact.body}</Typography>
+            <Typography variant="title3" style={styles.milestoneTitle}>
+              {dynamicTip ? dynamicTip.title : trimesterFact.title}
+            </Typography>
+            <Typography variant="body" style={styles.milestoneBody}>
+              {dynamicTip ? dynamicTip.body : trimesterFact.body}
+            </Typography>
           </View>
 
           {/* ── Quick Actions ── */}

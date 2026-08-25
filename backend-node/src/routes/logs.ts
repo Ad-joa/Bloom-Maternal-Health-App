@@ -98,7 +98,7 @@ router.post('/', authenticateToken, validate(logSchema), async (req: any, res: a
         });
       }
 
-      return newLog;
+      return { log: newLog, alerts: triggeredRules };
     });
     
     res.status(201).json(resultLog);
