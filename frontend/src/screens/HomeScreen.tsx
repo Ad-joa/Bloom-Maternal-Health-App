@@ -10,7 +10,7 @@ import { Typography } from '../components/Typography';
 import {
   Activity, Droplets, Stethoscope, Heart, Sun,
   Moon, Sparkles, Bell, ChevronRight, Zap,
-  Baby, Apple,
+  Baby, Apple, Lightbulb,
 } from 'lucide-react-native';
 import { getWeeksPregnant, getDaysUntilDue } from '../utils/dateUtils';
 import { getAncVisits, getEducationalContent } from '../api/api';
@@ -290,7 +290,7 @@ export default function HomeScreen({ navigation }: any) {
           {/* ── Weekly Milestone / Dynamic Insight ── */}
           <View style={styles.milestoneCard}>
             <View style={styles.milestoneBadge}>
-              <Sparkles size={14} color={theme.colors.primaryDark} />
+              <Lightbulb size={14} color={theme.colors.primaryDark} />
               <Typography variant="caption2" style={styles.milestoneBadgeText}>
                 {dynamicTip ? "DYNAMIC INSIGHT" : `WEEK ${weeksPregnant} MILESTONE`}
               </Typography>
