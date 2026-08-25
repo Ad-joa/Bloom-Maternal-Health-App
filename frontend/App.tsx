@@ -8,6 +8,7 @@ import DailyLogScreen from './src/screens/DailyLogScreen';
 import WelcomeScreen from './src/screens/WelcomeScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import GrowthVisualizerScreen from './src/screens/GrowthVisualizerScreen';
+import DueDateRevealScreen from './src/screens/DueDateRevealScreen';
 import AuthScreen from './src/screens/AuthScreen';
 import AnalysisScreen from './src/screens/AnalysisScreen';
 import BloomAIScreen from './src/screens/BloomAIScreen';
@@ -54,6 +55,7 @@ export type RootStackParamList = {
   Auth: undefined;
   GrowthVisualizer: undefined;
   Onboarding: undefined;
+  DueDateReveal: { dueDate: string };
   MainTabs: undefined;
   Trimester: { trimesterId: number };
   Advisory: undefined;
@@ -222,6 +224,15 @@ function Navigation() {
               name="Onboarding"
               component={OnboardingScreen}
               options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="DueDateReveal"
+              component={DueDateRevealScreen}
+              options={{ 
+                headerShown: false,
+                presentation: 'modal', // Make it slide over nicely
+                animation: 'fade', // Smooth crossfade if supported
+              }}
             />
           </>
         ) : (

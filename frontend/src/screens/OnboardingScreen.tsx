@@ -285,6 +285,7 @@ export default function OnboardingScreen({ navigation }: Props) {
           <TermLoader onComplete={() => {
             setIsDeterminingTerm(false);
             animateTransition(2);
+            navigation.navigate('DueDateReveal', { dueDate });
           }} />
         ) : (
           <KeyboardAvoidingView 
