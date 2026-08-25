@@ -71,6 +71,14 @@ const getWeeklyData = (weeks: number) => {
   return WEEKLY_DATA[closest] ?? WEEKLY_DATA[28];
 };
 
+const MOTIVATIONS = [
+  { quote: "There is such a special sweetness in being able to participate in creation.", author: "Pamela S. Nadav" },
+  { quote: "A baby is something you carry inside you for nine months, in your arms for three years, and in your heart until the day you die.", author: "Mary Mason" },
+  { quote: "Making the decision to have a child is momentous. It is to decide forever to have your heart go walking around outside your body.", author: "Elizabeth Stone" },
+  { quote: "Motherhood is the biggest gamble in the world. It is the glorious life force.", author: "Gilda Radner" },
+  { quote: "Birth is the sudden opening of a window, through which you look out upon a stupendous prospect.", author: "William Macneile Dixon" }
+];
+
 // ── Circular Progress Ring ───────────────────────────────
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const RING_SIZE = 180;
@@ -142,6 +150,27 @@ export default function HomeScreen({ navigation }: any) {
   const [nextVisit, setNextVisit] = useState<any>(null);
   const [dynamicTip, setDynamicTip] = useState<{title: string, body: string} | null>(null);
   const headerAnim = useRef(new Animated.Value(0)).current;
+  
+  const [motivationIndex, setMotivationIndex] = useState(0);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const slideAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      Animated.parallel([
+        Animated.timing(fadeAnim, { toValue: 0, duration: 400, useNativeDriver: true }),
+        Animated.timing(slideAnim, { toValue: -15, duration: 400, useNativeDriver: true })
+      ]).start(() => {
+        setMotivationIndex(prev => (prev + 1) % MOTIVATIONS.length);
+        slideAnim.setValue(15);
+        Animated.parallel([
+          Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
+          Animated.timing(slideAnim, { toValue: 0, duration: 600, useNativeDriver: true })
+        ]).start();
+      });
+    }, 7000);
+    return () => clearInterval(interval);
+  }, []);
 
   const hour = new Date().getHours();
   const isMorning = hour < 12;
@@ -300,6 +329,36 @@ export default function HomeScreen({ navigation }: any) {
             </View>
           </View>
 
+          {/* ── Sliding Motivation ── */}
+          <View style={[styles.milestoneCard, { padding: 0, overflow: 'hidden', marginBottom: 16, borderWidth: 0 }]}>
+            <LinearGradient
+              colors={isDark ? ['#3B0764', '#1E1B4B'] : ['#FAF5FF', '#F3E8FF']}
+              style={[StyleSheet.absoluteFillObject]}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+            />
+            {/* Watermark Quote */}
+            <Typography style={{ position: 'absolute', right: -20, top: -40, fontSize: 160, color: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', fontFamily: 'serif' }}>
+              “
+            </Typography>
+            
+            <View style={{ padding: 20 }}>
+              <View style={[styles.milestoneBadge, { backgroundColor: 'transparent', alignSelf: 'flex-start', paddingHorizontal: 0 }]}>
+                <Heart size={14} color={isDark ? "#D8B4FE" : "#9333EA"} />
+                <Typography variant="caption2" style={[styles.milestoneBadgeText, { color: isDark ? '#D8B4FE' : '#9333EA', letterSpacing: 1 }]}>
+                  DAILY INSPIRATION
+                </Typography>
+              </View>
+              <Animated.View style={{ marginTop: 12, opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+                <Typography variant="body" style={{ color: isDark ? '#F3E8FF' : '#4C1D95', fontFamily: theme.typography.families.headingSemibold, fontStyle: 'italic', lineHeight: 24, fontSize: 16 }}>
+                  "{MOTIVATIONS[motivationIndex].quote}"
+                </Typography>
+                <Typography variant="caption1" style={{ color: isDark ? 'rgba(243, 232, 255, 0.7)' : 'rgba(76, 29, 149, 0.7)', marginTop: 12, fontWeight: '600', letterSpacing: 0.5 }}>
+                  — {MOTIVATIONS[motivationIndex].author}
+                </Typography>
+              </Animated.View>
+            </View>
+          </View>
+
           {/* ── Weekly Milestone / Dynamic Insight ── */}
           <View style={styles.milestoneCard}>
             <View style={styles.milestoneBadge}>
@@ -327,21 +386,7 @@ export default function HomeScreen({ navigation }: any) {
             )}
           </View>
 
-          {/* ── Dynamic To-Do List ── */}
-          <View style={[styles.milestoneCard, { marginTop: 16, backgroundColor: isDark ? 'rgba(5, 150, 105, 0.1)' : '#ECFDF5', borderColor: isDark ? 'rgba(5, 150, 105, 0.3)' : '#A7F3D0' }]}>
-            <View style={[styles.milestoneBadge, { backgroundColor: isDark ? 'rgba(5, 150, 105, 0.2)' : '#D1FAE5' }]}>
-              <Activity size={14} color="#059669" />
-              <Typography variant="caption2" style={[styles.milestoneBadgeText, { color: '#059669' }]}>
-                THIS WEEK'S TO-DO
-              </Typography>
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
-              <View style={{ width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: '#059669', marginRight: 12 }} />
-              <Typography variant="body" style={{ color: theme.colors.textHigh, flex: 1, fontFamily: theme.typography.families.headingSemibold }}>
-                {weeklyData.todo}
-              </Typography>
-            </View>
-          </View>
+
 
           {/* ── Quick Actions ── */}
           <View style={styles.sectionHeader}>
