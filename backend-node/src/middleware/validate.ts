@@ -12,7 +12,7 @@ export const validate = (schema: ZodSchema) => {
         body: req.body,
         query: req.query,
         params: req.params,
-      });
+      });                               
       next();
     } catch (error) {
       // Pass the ZodError to the global error handler
