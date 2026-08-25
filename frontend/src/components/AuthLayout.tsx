@@ -14,8 +14,8 @@ interface AuthLayoutProps {
 }
 
 export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
+  const { theme, isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
   return (
     <View style={styles.container}>
       {/* Edge-to-edge abstract mesh background */}
@@ -33,7 +33,7 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
           >
             {/* The main Glassmorphism Card */}
             <View style={styles.glassWrapper}>
-              <BlurView intensity={80} tint="light" style={styles.blurContainer}>
+              <BlurView intensity={80} tint={isDark ? "dark" : "light"} style={styles.blurContainer}>
                 
                 {/* Header */}
                 <FadeSlideIn delay={100} duration={500} direction="down" style={styles.header}>
@@ -60,7 +60,7 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
   );
 };
 
-const getStyles = (theme: any) => StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000', // Should be entirely covered by BackgroundMesh
@@ -82,7 +82,7 @@ const getStyles = (theme: any) => StyleSheet.create({
     overflow: 'hidden',
     // Subtle iOS border for glass elements
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
+    borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.4)',
     // Shadow for depth
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 12 },
@@ -93,7 +93,7 @@ const getStyles = (theme: any) => StyleSheet.create({
   blurContainer: {
     paddingHorizontal: 28,
     paddingVertical: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.65)',
+    backgroundColor: isDark ? 'rgba(0, 0, 0, 0.65)' : 'rgba(255, 255, 255, 0.65)',
   },
   header: {
     marginBottom: 40,
@@ -108,6 +108,6 @@ const getStyles = (theme: any) => StyleSheet.create({
     lineHeight: 22,
     letterSpacing: 0.2,
     fontSize: 16,
-    color: '#636366', // Apple system gray
+    color: theme.colors.textMedium,
   },
 });

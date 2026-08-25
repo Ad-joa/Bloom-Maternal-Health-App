@@ -373,7 +373,7 @@ export default function AuthScreen({ navigation }: Props) {
               <View style={[styles.checkbox, formData.rememberMe && styles.checkboxActive]}>
                 {formData.rememberMe && <View style={styles.checkboxDot} />}
               </View>
-              <Typography variant="caption1" color="#636366">Remember me</Typography>
+              <Typography variant="caption1" color={theme.colors.textMedium}>Remember me</Typography>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setAuthMode('reset')}>
               <Typography variant="caption1" style={{ color: theme.colors.textHigh, fontFamily: theme.typography.families.bodySemibold }}>Forgot password?</Typography>
@@ -385,7 +385,7 @@ export default function AuthScreen({ navigation }: Props) {
               <View style={[styles.checkbox, formData.agreeToTerms && styles.checkboxActive]}>
                 {formData.agreeToTerms && <View style={styles.checkboxDot} />}
               </View>
-              <Typography variant="caption2" color="#636366">I agree to the Terms of Service</Typography>
+              <Typography variant="caption2" color={theme.colors.textMedium}>I agree to the Terms of Service</Typography>
             </TouchableOpacity>
             {errors.agreeToTerms && <Typography variant="caption2" color="#FF3B30" style={{ marginTop: 4 }}>{errors.agreeToTerms}</Typography>}
           </View>
@@ -455,13 +455,13 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.8)',
     borderRadius: 16,
     paddingHorizontal: 16,
     height: 56,
     gap: 12,
     borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.05)',
+    borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
   },
   inputError: {
     borderColor: '#FF3B30',
@@ -486,7 +486,7 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     height: 20,
     borderRadius: 6,
     borderWidth: 1.5,
-    borderColor: '#C7C7CC',
+    borderColor: isDark ? 'rgba(255, 255, 255, 0.3)' : '#C7C7CC',
     alignItems: 'center',
     justifyContent: 'center',
   },
