@@ -332,7 +332,7 @@ export default function HomeScreen({ navigation }: any) {
             <View style={[styles.milestoneBadge, { backgroundColor: isDark ? 'rgba(5, 150, 105, 0.2)' : '#D1FAE5' }]}>
               <Activity size={14} color="#059669" />
               <Typography variant="caption2" style={[styles.milestoneBadgeText, { color: '#059669' }]}>
-                RECOMMENDED ACTION
+                THIS WEEK'S TO-DO
               </Typography>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
