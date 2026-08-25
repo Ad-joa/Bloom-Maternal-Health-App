@@ -38,26 +38,28 @@ export default function GrowthVisualizerScreen({ navigation }: Props) {
         </View>
 
         {/* Timeline Visualization */}
-        <View style={styles.visualizationContainer}>
-          <View style={styles.timelineWrapper}>
-            <View style={styles.axisLine}>
-              <View style={styles.axisArrow} />
+        <View style={styles.visualizationOuter}>
+          <View style={styles.visualizationCard}>
+            <View style={styles.timelineWrapper}>
+              <View style={styles.axisLine}>
+                <View style={styles.axisArrow} />
+              </View>
+              
+              {TIMELINE_DATA.map((item, index) => {
+                const leftPos = (index / (TIMELINE_DATA.length - 1)) * (width - 70); // 35px padding on each side
+                return (
+                  <View key={item.week.toString()} style={[styles.timelineItem, { left: leftPos }]}>
+                    <View style={styles.topIconContainer}>
+                      <Image source={item.topImg} style={{ width: item.topSize, height: item.topSize, resizeMode: 'contain' }} />
+                    </View>
+                    <View style={styles.bottomIconContainer}>
+                      <Image source={item.bottomImg} style={{ width: item.bottomSize, height: item.bottomSize, resizeMode: 'contain' }} />
+                    </View>
+                    <Typography variant="body" style={styles.weekLabel}>{item.week}</Typography>
+                  </View>
+                );
+              })}
             </View>
-            
-            {TIMELINE_DATA.map((item, index) => {
-              const leftPos = (index / (TIMELINE_DATA.length - 1)) * (width - 70); // 35px padding on each side
-              return (
-                <View key={item.week.toString()} style={[styles.timelineItem, { left: leftPos }]}>
-                  <View style={styles.topIconContainer}>
-                    <Image source={item.topImg} style={{ width: item.topSize, height: item.topSize, resizeMode: 'contain' }} />
-                  </View>
-                  <View style={styles.bottomIconContainer}>
-                    <Image source={item.bottomImg} style={{ width: item.bottomSize, height: item.bottomSize, resizeMode: 'contain' }} />
-                  </View>
-                  <Typography variant="body" style={styles.weekLabel}>{item.week}</Typography>
-                </View>
-              );
-            })}
           </View>
         </View>
 
@@ -103,11 +105,24 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  visualizationContainer: {
+  visualizationOuter: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 35,
+    paddingHorizontal: 16,
     marginTop: 20,
+    marginBottom: 20,
+  },
+  visualizationCard: {
+    backgroundColor: '#000',
+    borderRadius: 32,
+    paddingHorizontal: 19,
+    paddingVertical: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: isDark ? 0.3 : 0.15,
+    shadowRadius: 20,
+    elevation: 10,
+    overflow: 'hidden',
   },
   timelineWrapper: {
     height: 350,
@@ -120,7 +135,7 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     left: 0,
     right: 0,
     height: 2,
-    backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)',
+    backgroundColor: 'rgba(255,255,255,0.2)',
   },
   axisArrow: {
     position: 'absolute',
@@ -134,7 +149,7 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     borderRightWidth: 0,
     borderBottomWidth: 5,
     borderTopWidth: 5,
-    borderLeftColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)',
+    borderLeftColor: 'rgba(255,255,255,0.2)',
     borderRightColor: 'transparent',
     borderBottomColor: 'transparent',
     borderTopColor: 'transparent',
@@ -161,10 +176,10 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   },
   weekLabel: {
     position: 'absolute',
-    top: 280,
-    color: theme.colors.textMedium,
-    fontWeight: '700',
-    fontSize: 16,
+    top: 290,
+    color: '#FFF',
+    fontWeight: '800',
+    fontSize: 18,
   },
   copyContainer: {
     paddingHorizontal: 32,
