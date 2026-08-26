@@ -32,7 +32,7 @@ const SLIDES = [
     id: '3',
     title: 'Ghanaian Context',
     description: 'Local nutrition advice, ANC reminders, and culturally relevant insights for Ghanaian mothers.',
-    animation: require('../../assets/animations/baby.json'),
+    animation: require('../../assets/animations/Ghana flag Lottie JSON animation.json'),
   },
   {
     id: '4',
