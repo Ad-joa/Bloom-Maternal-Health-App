@@ -65,14 +65,23 @@ export default function WelcomeScreen({ navigation }: Props) {
   };
 
   const renderItem = ({ item }: { item: typeof SLIDES[0] }) => {
+    const lottieRef = React.useRef<LottieView>(null);
+
+    React.useEffect(() => {
+      // Force play on mount to fix autoPlay bugs
+      lottieRef.current?.play();
+    }, []);
+
     return (
       <View style={styles.slide}>
         <View style={styles.slideContent}>
           <LottieView
+            ref={lottieRef}
             source={require('../../assets/animations/baby.json')}
             autoPlay
             loop
             style={{ width: 280, height: 280, marginBottom: -10 }}
+            resizeMode="contain"
           />
           <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.slideTitle}>
             {item.title}

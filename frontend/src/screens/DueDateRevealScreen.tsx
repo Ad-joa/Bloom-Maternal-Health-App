@@ -6,6 +6,7 @@ import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../App';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../theme/ThemeContext';
 
 type DueDateRevealScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'DueDateReveal'>;
 type DueDateRevealScreenRouteProp = RouteProp<RootStackParamList, 'DueDateReveal'>;
@@ -18,9 +19,15 @@ type Props = {
 // Helper to format date "03/04/2027" -> "March 4, 2027"
 const formatDueDate = (dateString: string) => {
   try {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return dateString;
-    return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    let d = new Date(dateString);
+    if (isNaN(d.getTime())) {
+      const parts = dateString.split('/');
+      if (parts.length === 3) {
+        d = new Date(parseInt(parts[2]), parseInt(parts[0]) - 1, parseInt(parts[1]));
+      }
+    }
+    if (isNaN(d.getTime())) return dateString;
+    return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   } catch {
     return dateString;
   }
@@ -29,6 +36,8 @@ const formatDueDate = (dateString: string) => {
 export default function DueDateRevealScreen({ navigation, route }: Props) {
   const { dueDate } = route.params;
   const formattedDate = formatDueDate(dueDate);
+  const { theme, isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
 
   return (
     <View style={styles.container}>
@@ -36,7 +45,7 @@ export default function DueDateRevealScreen({ navigation, route }: Props) {
 
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color="#FFF" />
+            <Ionicons name="chevron-back" size={24} color={theme.colors.textHigh} />
           </TouchableOpacity>
         </View>
 
@@ -71,10 +80,10 @@ export default function DueDateRevealScreen({ navigation, route }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000', // Pure black like the screenshot
+    backgroundColor: theme.colors.background,
   },
   safeArea: {
     flex: 1,
@@ -87,7 +96,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -96,7 +105,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
-    paddingBottom: 40, // offset
+    paddingBottom: 40,
   },
   storkImage: {
     width: Dimensions.get('window').width * 0.9,
@@ -104,14 +113,14 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   title: {
-    color: '#FFF',
+    color: theme.colors.textHigh,
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 16,
     textAlign: 'center',
   },
   dateText: {
-    color: '#FF6B00', // Vibrant orange from screenshot
+    color: theme.colors.primary,
     fontSize: 36,
     fontWeight: '900',
     textAlign: 'center',
@@ -122,7 +131,7 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   nextButton: {
-    backgroundColor: '#34C759', // Vibrant green
+    backgroundColor: theme.colors.primaryDark,
     height: 56,
     borderRadius: 12,
     alignItems: 'center',

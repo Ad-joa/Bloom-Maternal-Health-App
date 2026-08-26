@@ -13,6 +13,7 @@ export function TermLoader({ onComplete }: { onComplete: () => void }) {
 
   const spinAnim = useRef(new Animated.Value(0)).current;
   const containerOpacity = useRef(new Animated.Value(0)).current;
+  const lottieRef = useRef<LottieView>(null);
 
   useEffect(() => {
     // Fade in the loader
@@ -31,6 +32,9 @@ export function TermLoader({ onComplete }: { onComplete: () => void }) {
         useNativeDriver: true,
       })
     ).start();
+
+    // Force play Lottie animation
+    lottieRef.current?.play();
 
     // After 3.2 seconds, fade out then advance
     const exitTimer = setTimeout(() => {
@@ -64,6 +68,7 @@ export function TermLoader({ onComplete }: { onComplete: () => void }) {
         {/* Lottie belly animation inside the ring */}
         <View style={styles.lottieWrapper}>
           <LottieView
+            ref={lottieRef}
             source={require('../../assets/belly.json')}
             autoPlay
             loop={false}

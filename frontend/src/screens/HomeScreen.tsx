@@ -142,12 +142,30 @@ export default function HomeScreen({ navigation }: any) {
 
   const dueDate = user?.due_date || '';
   const rawWeeks = dueDate ? getWeeksPregnant(dueDate) : 0;
-  const weeksPregnant = rawWeeks > 0 ? rawWeeks : 32;
-  const daysLeft = dueDate ? getDaysUntilDue(dueDate) : 56;
-  const trimester = weeksPregnant < 13 ? 1 : weeksPregnant < 27 ? 2 : 3;
+  const weeksPregnant = rawWeeks > 0 ? rawWeeks : 0;
+  const daysLeft = dueDate ? getDaysUntilDue(dueDate) : 0;
+  const trimester = weeksPregnant === 0 ? 0 : weeksPregnant < 13 ? 1 : weeksPregnant < 27 ? 2 : 3;
   const babySize = getBabySize(weeksPregnant);
   const weeklyData = getWeeklyData(weeksPregnant);
   const progressPercent = Math.min((weeksPregnant / 40) * 100, 100);
+
+  const formatDueDate = (dateStr: string) => {
+    if (!dateStr) return 'Unknown';
+    let d = new Date(dateStr);
+    if (isNaN(d.getTime())) {
+      // Fallback for MM/DD/YYYY
+      const parts = dateStr.split('/');
+      if (parts.length === 3) {
+        d = new Date(parseInt(parts[2]), parseInt(parts[0]) - 1, parseInt(parts[1]));
+      } else if (dateStr.includes('-')) {
+        // Fallback for YYYY-MM-DD
+        const p2 = dateStr.split('T')[0].split('-');
+        if (p2.length === 3) d = new Date(parseInt(p2[0]), parseInt(p2[1]) - 1, parseInt(p2[2]));
+      }
+    }
+    if (isNaN(d.getTime())) return dateStr; // Just return raw string if parsing fails
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
 
   const dayIndex = new Date().getDay() % DAILY_TIPS.length;
   const todayTip = DAILY_TIPS[dayIndex];
@@ -228,6 +246,23 @@ export default function HomeScreen({ navigation }: any) {
     { label: 'Meal\nPlan',        icon: Apple,       bg: '#8CC152' },
   ];
 
+  const calendarDates = React.useMemo(() => {
+    const today = new Date();
+    const dates = [];
+    // Generate 3 days before today, today, and 10 days ahead
+    for (let i = -3; i <= 10; i++) {
+      const d = new Date();
+      d.setDate(today.getDate() + i);
+      dates.push({
+        date: d,
+        dayName: d.toLocaleDateString('en-US', { weekday: 'short' }),
+        dayNum: d.getDate(),
+        isToday: i === 0,
+      });
+    }
+    return dates;
+  }, []);
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
@@ -263,6 +298,31 @@ export default function HomeScreen({ navigation }: any) {
             </TouchableOpacity>
           </Animated.View>
 
+          {/* ── Top Calendar Strip ── */}
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.calendarStrip}
+          >
+            {calendarDates.map((item, index) => (
+              <View 
+                key={index} 
+                style={[
+                  styles.calendarItem, 
+                  item.isToday && styles.calendarItemActive,
+                  { backgroundColor: item.isToday ? theme.colors.primaryDark : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)') }
+                ]}
+              >
+                <Typography variant="caption2" style={{ color: item.isToday ? '#FFF' : theme.colors.textMedium, marginBottom: 4 }}>
+                  {item.dayName.toUpperCase()}
+                </Typography>
+                <Typography variant="headline" style={{ color: item.isToday ? '#FFF' : theme.colors.textHigh }}>
+                  {item.dayNum}
+                </Typography>
+              </View>
+            ))}
+          </ScrollView>
+
           {/* ── Hero Card: Circular Progress ── */}
           <View style={styles.heroCard}>
             <LinearGradient
@@ -286,14 +346,16 @@ export default function HomeScreen({ navigation }: any) {
               {/* Right: Stats */}
               <View style={styles.heroStats}>
                 <View style={styles.trimBadge}>
-                  <Typography variant="caption2" style={styles.trimBadgeText}>TRIMESTER {trimester}</Typography>
+                  <Typography variant="caption2" style={styles.trimBadgeText}>
+                    {trimester === 0 ? 'NOT STARTED' : `TRIMESTER ${trimester}`}
+                  </Typography>
                 </View>
 
                 {dueDate ? (
                   <View style={{ marginBottom: 12 }}>
                     <Typography variant="caption2" style={{ color: theme.colors.textMedium, fontSize: 9, letterSpacing: 0.5, marginBottom: 2, textTransform: 'uppercase' }}>Est. Due Date</Typography>
                     <Typography variant="body" style={{ color: theme.colors.textHigh, fontFamily: theme.typography.families.headingBold, fontSize: 13 }}>
-                      {new Date(dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      {formatDueDate(dueDate)}
                     </Typography>
                   </View>
                 ) : null}
@@ -320,103 +382,136 @@ export default function HomeScreen({ navigation }: any) {
             </View>
           </View>
 
-          {/* ── Baby Size (Full Width) ── */}
-          <View style={styles.fullCard}>
-            <LinearGradient
-              colors={isDark ? ['#1A1F2A', '#12161E'] : ['#EFF6FF', '#FFFFFF']}
-              style={StyleSheet.absoluteFillObject}
-              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-            />
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-              <View>
-                <Typography variant="caption2" style={[styles.halfCardLabel, { marginBottom: 12 }]}>BABY SIZE</Typography>
-                <Typography variant="title2" style={{ color: theme.colors.textHigh, marginBottom: 4 }}>{babySize.length}</Typography>
-                <Typography variant="subhead" style={{ color: theme.colors.textMedium }}>Est. {babySize.weight}</Typography>
+          {/* ── Dynamic Grid (Baby Size & Inspiration) ── */}
+          <View style={styles.rowCards}>
+            {/* Left: Baby Size */}
+            <View style={styles.halfCard}>
+              <LinearGradient
+                colors={isDark ? ['#1A1F2A', '#12161E'] : ['#EFF6FF', '#FFFFFF']}
+                style={StyleSheet.absoluteFillObject}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+              />
+              <Typography variant="caption2" style={styles.halfCardLabel}>BABY SIZE</Typography>
+              <Typography style={styles.halfCardEmoji}>{babySize.icon}</Typography>
+              <Typography variant="title3" style={styles.halfCardTitle}>{babySize.length}</Typography>
+              <Typography variant="caption1" style={styles.halfCardSub}>Est. {babySize.weight}</Typography>
+            </View>
+
+            {/* Right: Inspiration */}
+            <View style={[styles.halfCard, { padding: 0, borderWidth: 0 }]}>
+              <LinearGradient
+                colors={isDark ? ['#3B0764', '#1E1B4B'] : ['#FAF5FF', '#F3E8FF']}
+                style={[StyleSheet.absoluteFillObject, { borderRadius: 24 }]}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+              />
+              <Typography style={{ position: 'absolute', right: -10, top: -20, fontSize: 80, color: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', fontFamily: 'serif' }}>
+                “
+              </Typography>
+              <View style={{ padding: 18, flex: 1, justifyContent: 'space-between' }}>
+                <View style={[styles.milestoneBadge, { backgroundColor: 'transparent', paddingHorizontal: 0, marginBottom: 0 }]}>
+                  <Heart size={12} color={isDark ? "#D8B4FE" : "#9333EA"} />
+                  <Typography variant="caption2" style={{ fontSize: 9, color: isDark ? '#D8B4FE' : '#9333EA', letterSpacing: 1, marginLeft: 4 }}>
+                    INSPIRATION
+                  </Typography>
+                </View>
+                <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+                  <Typography variant="caption1" style={{ color: isDark ? '#F3E8FF' : '#4C1D95', fontFamily: theme.typography.families.headingSemibold, fontStyle: 'italic', lineHeight: 18 }} numberOfLines={5}>
+                    "{MOTIVATIONS[motivationIndex].quote}"
+                  </Typography>
+                </Animated.View>
               </View>
-              <Typography style={{ fontSize: 64 }}>{babySize.icon}</Typography>
             </View>
           </View>
 
           {/* ── Today's Tip (Full Width Editorial) ── */}
-          <View style={[styles.fullCard, { backgroundColor: isDark ? '#2A241A' : '#FDF8F0', padding: 24, paddingTop: 32 }]}>
+          <View style={[styles.fullCard, { backgroundColor: isDark ? '#2A241A' : '#FDF8F0', padding: 20, paddingTop: 24, minHeight: 100 }]}>
             <View style={styles.dateBadgeContainer}>
               <View style={styles.dateBadgeBg} />
-              <Typography variant="headline" style={styles.dateBadgeText}>{todayDateFormatted}</Typography>
+              <Typography variant="caption1" style={styles.dateBadgeText}>{todayDateFormatted}</Typography>
             </View>
-            <Typography variant="title2" style={{ color: theme.colors.textHigh, marginBottom: 16 }}>Today's tip</Typography>
-            <Typography variant="body" style={{ color: theme.colors.textHigh, lineHeight: 26, fontSize: 16, fontFamily: theme.typography.families.bodyMedium }}>
+            <Typography variant="title3" style={{ color: theme.colors.textHigh, marginBottom: 8 }}>Today's tip</Typography>
+            <Typography variant="body" style={{ color: theme.colors.textHigh, lineHeight: 22, fontSize: 14 }}>
               {todayTip.tip}
             </Typography>
           </View>
 
-          {/* ── Sliding Motivation ── */}
-          <View style={[styles.milestoneCard, { padding: 0, overflow: 'hidden', marginBottom: 16, borderWidth: 0 }]}>
-            <LinearGradient
-              colors={isDark ? ['#3B0764', '#1E1B4B'] : ['#FAF5FF', '#F3E8FF']}
-              style={[StyleSheet.absoluteFillObject]}
-              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-            />
-            {/* Watermark Quote */}
-            <Typography style={{ position: 'absolute', right: -20, top: -40, fontSize: 160, color: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', fontFamily: 'serif' }}>
-              “
-            </Typography>
-            
-            <View style={{ padding: 20 }}>
-              <View style={[styles.milestoneBadge, { backgroundColor: 'transparent', alignSelf: 'flex-start', paddingHorizontal: 0 }]}>
-                <Heart size={14} color={isDark ? "#D8B4FE" : "#9333EA"} />
-                <Typography variant="caption2" style={[styles.milestoneBadgeText, { color: isDark ? '#D8B4FE' : '#9333EA', letterSpacing: 1 }]}>
-                  DAILY INSPIRATION
-                </Typography>
-              </View>
-              <Animated.View style={{ marginTop: 12, opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
-                <Typography variant="body" style={{ color: isDark ? '#F3E8FF' : '#4C1D95', fontFamily: theme.typography.families.headingSemibold, fontStyle: 'italic', lineHeight: 24, fontSize: 16 }}>
-                  "{MOTIVATIONS[motivationIndex].quote}"
-                </Typography>
-                <Typography variant="caption1" style={{ color: isDark ? 'rgba(243, 232, 255, 0.7)' : 'rgba(76, 29, 149, 0.7)', marginTop: 12, fontWeight: '600', letterSpacing: 0.5, textAlign: 'center' }}>
-                  — {MOTIVATIONS[motivationIndex].author}
-                </Typography>
-              </Animated.View>
-            </View>
+          {/* ── My Journey Hub ── */}
+          <View style={[styles.sectionHeader, { marginTop: 16 }]}>
+            <Typography variant="title2" style={styles.sectionTitle}>My Journey</Typography>
           </View>
 
-          {/* ── Weekly Milestone / Dynamic Insight ── */}
-          <View style={styles.milestoneCard}>
-            <View style={styles.milestoneBadge}>
-              <Lightbulb size={14} color={theme.colors.primaryDark} />
-              <Typography variant="caption2" style={styles.milestoneBadgeText}>
-                {dynamicTip ? "DYNAMIC INSIGHT" : `WEEK ${weeksPregnant} MILESTONE`}
-              </Typography>
-            </View>
-            
-            {dynamicTip ? (
-              <>
-                <Typography variant="title3" style={styles.milestoneTitle}>{dynamicTip.title}</Typography>
-                <Typography variant="body" style={styles.milestoneBody}>{dynamicTip.body}</Typography>
-              </>
-            ) : (
-              <View>
-                <Typography variant="title3" style={styles.milestoneTitle}>Fetal Development</Typography>
-                <Typography variant="body" style={styles.milestoneBody}>{weeklyData.fetal}</Typography>
-                
-                <View style={{ height: 1, backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : '#E5E7EB', marginVertical: 12 }} />
-                
-                <Typography variant="title3" style={styles.milestoneTitle}>Maternal Changes</Typography>
-                <Typography variant="body" style={styles.milestoneBody}>{weeklyData.maternal}</Typography>
+          <View style={[styles.milestoneCard, { padding: 0, overflow: 'hidden' }]}>
+            {/* Milestone Section */}
+            <View style={{ padding: 20 }}>
+              <View style={styles.milestoneBadge}>
+                <Lightbulb size={14} color={theme.colors.primaryDark} />
+                <Typography variant="caption2" style={styles.milestoneBadgeText}>
+                  {dynamicTip ? "DYNAMIC INSIGHT" : `WEEK ${weeksPregnant} MILESTONE`}
+                </Typography>
               </View>
+              
+              {dynamicTip ? (
+                <>
+                  <Typography variant="title3" style={styles.milestoneTitle}>{dynamicTip.title}</Typography>
+                  <Typography variant="body" style={styles.milestoneBody}>{dynamicTip.body}</Typography>
+                </>
+              ) : (
+                <View>
+                  <Typography variant="title3" style={styles.milestoneTitle}>Fetal Development</Typography>
+                  <Typography variant="body" style={styles.milestoneBody}>{weeklyData.fetal}</Typography>
+                  
+                  <View style={{ height: 1, backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : '#E5E7EB', marginVertical: 12 }} />
+                  
+                  <Typography variant="title3" style={styles.milestoneTitle}>Maternal Changes</Typography>
+                  <Typography variant="body" style={styles.milestoneBody}>{weeklyData.maternal}</Typography>
+                </View>
+              )}
+            </View>
+
+            {/* Next Appointment Section */}
+            {nextVisit && (
+              <TouchableOpacity
+                style={[styles.apptCard, { marginHorizontal: 0, marginBottom: 0, borderLeftWidth: 0, borderRightWidth: 0, borderBottomWidth: 0, borderRadius: 0, backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : '#FAFAFA' }]}
+                onPress={() => navigation.navigate('ANCVisit')}
+                activeOpacity={0.8}
+              >
+                <View style={styles.apptLeft}>
+                  <View style={styles.apptIconBg}>
+                    <Stethoscope size={18} color={theme.colors.primaryDark} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Typography variant="caption1" style={styles.apptLabel}>NEXT APPOINTMENT</Typography>
+                    <Typography variant="headline" style={styles.apptDate}>
+                      {nextVisit.scheduled_date || nextVisit.date || 'Upcoming Visit'}
+                    </Typography>
+                    <Typography variant="caption1" style={styles.apptFacility}>
+                      {nextVisit.facility || 'Clinic Visit'}
+                    </Typography>
+                    
+                    <View style={{ marginTop: 8, padding: 8, backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#F3F4F6', borderRadius: 8 }}>
+                      <Typography variant="caption2" style={{ color: theme.colors.textMedium, marginBottom: 2 }}>What to expect:</Typography>
+                      <Typography variant="caption1" style={{ color: theme.colors.textHigh }}>{weeklyData.ancPreview}</Typography>
+                    </View>
+                  </View>
+                </View>
+                <ChevronRight size={18} color={theme.colors.textMedium} />
+              </TouchableOpacity>
             )}
           </View>
-
-
 
           {/* ── Pregnancy Tools ── */}
           <View style={[styles.sectionHeader, { marginTop: 16 }]}>
             <Typography variant="title2" style={styles.sectionTitle}>Pregnancy tools</Typography>
           </View>
-          <View style={styles.actionsGrid}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            contentContainerStyle={{ paddingHorizontal: 24, gap: 12, paddingBottom: 24 }}
+          >
             {PREGNANCY_TOOLS.map((tool) => (
               <TouchableOpacity
                 key={tool.label}
-                style={styles.toolCard}
+                style={[styles.toolCard, { width: 110 }]}
                 onPress={() => Alert.alert('Coming Soon', 'We are building this feature!')}
                 activeOpacity={0.75}
               >
@@ -426,38 +521,7 @@ export default function HomeScreen({ navigation }: any) {
                 <Typography variant="caption1" style={styles.toolLabel} numberOfLines={2}>{tool.label}</Typography>
               </TouchableOpacity>
             ))}
-          </View>
-
-          {/* ── Next Appointment ── */}
-          {nextVisit && (
-            <TouchableOpacity
-              style={styles.apptCard}
-              onPress={() => navigation.navigate('ANCVisit')}
-              activeOpacity={0.8}
-            >
-              <View style={styles.apptLeft}>
-                <View style={styles.apptIconBg}>
-                  <Stethoscope size={18} color={theme.colors.primaryDark} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Typography variant="caption1" style={styles.apptLabel}>NEXT APPOINTMENT</Typography>
-                  <Typography variant="headline" style={styles.apptDate}>
-                    {nextVisit.scheduled_date || nextVisit.date || 'Upcoming Visit'}
-                  </Typography>
-                  <Typography variant="caption1" style={styles.apptFacility}>
-                    {nextVisit.facility || 'Clinic Visit'}
-                  </Typography>
-                  
-                  <View style={{ marginTop: 8, padding: 8, backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#F3F4F6', borderRadius: 8 }}>
-                    <Typography variant="caption2" style={{ color: theme.colors.textMedium, marginBottom: 2 }}>What to expect:</Typography>
-                    <Typography variant="caption1" style={{ color: theme.colors.textHigh }}>{weeklyData.ancPreview}</Typography>
-                  </View>
-                </View>
-              </View>
-              <ChevronRight size={18} color={theme.colors.textMedium} />
-            </TouchableOpacity>
-          )}
-
+          </ScrollView>
         </ScrollView>
       </SafeAreaView>
     </View>
@@ -473,12 +537,15 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   // Header
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 24,
-    paddingTop: 8,
-    paddingBottom: 20,
+    paddingTop: 16,
+    paddingBottom: 16,
   },
+  calendarStrip: { paddingHorizontal: 24, gap: 12, paddingBottom: 16 },
+  calendarItem: { width: 48, height: 64, borderRadius: 24, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)' },
+  calendarItemActive: { shadowColor: theme.colors.primaryDark, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
   greetingRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 3 },
   greetingText: {
     color: theme.colors.primaryDark,
