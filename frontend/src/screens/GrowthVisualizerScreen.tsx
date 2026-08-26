@@ -38,28 +38,33 @@ export default function GrowthVisualizerScreen({ navigation }: Props) {
         </View>
 
         {/* Timeline Visualization */}
-        <View style={styles.visualizationOuter}>
-          <View style={styles.visualizationCard}>
-            <View style={styles.timelineWrapper}>
-              <View style={styles.axisLine}>
-                <View style={styles.axisArrow} />
-              </View>
-              
-              {TIMELINE_DATA.map((item, index) => {
-                const leftPos = (index / (TIMELINE_DATA.length - 1)) * (width - 70); // 35px padding on each side
-                return (
-                  <View key={item.week.toString()} style={[styles.timelineItem, { left: leftPos }]}>
-                    <View style={styles.topIconContainer}>
-                      <Image source={item.topImg} style={{ width: item.topSize, height: item.topSize, resizeMode: 'contain' }} />
-                    </View>
-                    <View style={styles.bottomIconContainer}>
-                      <Image source={item.bottomImg} style={{ width: item.bottomSize, height: item.bottomSize, resizeMode: 'contain' }} />
-                    </View>
-                    <Typography variant="body" style={styles.weekLabel}>{item.week}</Typography>
-                  </View>
-                );
-              })}
+        <View style={styles.visualizationContainer}>
+          <View style={styles.timelineWrapper}>
+            <View style={styles.axisLine}>
+              <View style={styles.axisArrow} />
             </View>
+            
+            {TIMELINE_DATA.map((item, index) => {
+              const screenPadding = 16;
+              const firstItemRadius = 40 / 2;
+              const lastItemRadius = 110 / 2;
+              const startPos = screenPadding + firstItemRadius;
+              const endPos = width - screenPadding - lastItemRadius;
+              const usableWidth = endPos - startPos;
+              const centerPos = startPos + (index / (TIMELINE_DATA.length - 1)) * usableWidth;
+
+              return (
+                <View key={item.week.toString()} style={[styles.timelineItem, { left: centerPos }]}>
+                  <View style={[styles.topIconContainer, { width: item.topSize, height: item.topSize, borderRadius: item.topSize / 2, bottom: 185 }]}>
+                    <Image source={item.topImg} style={{ width: '100%', height: '100%', resizeMode: 'cover' }} />
+                  </View>
+                  <View style={[styles.bottomIconContainer, { width: item.bottomSize, height: item.bottomSize, borderRadius: item.bottomSize / 2, top: 185 }]}>
+                    <Image source={item.bottomImg} style={{ width: '100%', height: '100%', resizeMode: 'cover' }} />
+                  </View>
+                  <Typography variant="body" style={styles.weekLabel}>{item.week}</Typography>
+                </View>
+              );
+            })}
           </View>
         </View>
 
@@ -105,24 +110,10 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  visualizationOuter: {
+  visualizationContainer: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 16,
     marginTop: 20,
-    marginBottom: 20,
-  },
-  visualizationCard: {
-    backgroundColor: '#000',
-    borderRadius: 32,
-    paddingHorizontal: 19,
-    paddingVertical: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: isDark ? 0.3 : 0.15,
-    shadowRadius: 20,
-    elevation: 10,
-    overflow: 'hidden',
   },
   timelineWrapper: {
     height: 350,
@@ -132,10 +123,10 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   axisLine: {
     position: 'absolute',
     top: 175,
-    left: 0,
-    right: 0,
+    left: 16,
+    right: 16,
     height: 2,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)',
   },
   axisArrow: {
     position: 'absolute',
@@ -149,7 +140,7 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     borderRightWidth: 0,
     borderBottomWidth: 5,
     borderTopWidth: 5,
-    borderLeftColor: 'rgba(255,255,255,0.2)',
+    borderLeftColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)',
     borderRightColor: 'transparent',
     borderBottomColor: 'transparent',
     borderTopColor: 'transparent',
@@ -157,27 +148,43 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   timelineItem: {
     position: 'absolute',
     alignItems: 'center',
-    width: 80,
-    marginLeft: -40,
+    width: 110,
+    marginLeft: -55,
     top: 0,
     bottom: 0,
   },
   topIconContainer: {
     position: 'absolute',
-    bottom: 185,
     alignItems: 'center',
-    width: '100%',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    backgroundColor: '#000',
+    borderWidth: 2,
+    borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#FFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   bottomIconContainer: {
     position: 'absolute',
-    top: 185,
     alignItems: 'center',
-    width: '100%',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    backgroundColor: '#000',
+    borderWidth: 2,
+    borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#FFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   weekLabel: {
     position: 'absolute',
-    top: 290,
-    color: '#FFF',
+    top: 305,
+    color: theme.colors.textHigh,
     fontWeight: '800',
     fontSize: 18,
   },
