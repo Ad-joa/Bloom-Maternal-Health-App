@@ -27,7 +27,7 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const [messages, setMessages] = useState<Message[]>([
-    { id: '1', text: `Hi ${user?.name ? user.name.split(' ')[0] : 'there'}! I am Bloom AI. Do you have any questions about your pregnancy today? Describe what you are feeling.`, sender: 'ai' },
+    { id: '1', text: `Hi ${user?.name ? user.name : 'there'}! I am Bloom AI. Do you have any questions about your pregnancy today? Describe what you are feeling.`, sender: 'ai' },
   ]);
 
   React.useEffect(() => {

@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import LottieView from 'lottie-react-native';
 import { Typography } from '../components/Typography';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
@@ -50,9 +51,11 @@ export default function DueDateRevealScreen({ navigation, route }: Props) {
         </View>
 
         <View style={styles.content}>
-          <Image
-            source={require('../../assets/images/stork.jpg')}
-            style={styles.storkImage}
+          <LottieView
+            source={require('../../assets/animations/belly.json')}
+            autoPlay
+            loop
+            style={styles.bellyAnimation}
             resizeMode="contain"
           />
 
@@ -107,10 +110,10 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     paddingHorizontal: 24,
     paddingBottom: 40,
   },
-  storkImage: {
-    width: Dimensions.get('window').width * 0.9,
-    height: Dimensions.get('window').width * 0.9,
-    marginBottom: 40,
+  bellyAnimation: {
+    width: Dimensions.get('window').width * 0.7,
+    height: Dimensions.get('window').width * 0.7,
+    marginBottom: 32,
   },
   title: {
     color: theme.colors.textHigh,
