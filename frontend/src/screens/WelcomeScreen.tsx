@@ -20,21 +20,25 @@ const SLIDES = [
     id: '1',
     title: 'Your Pregnancy, Guided.',
     description: 'Bloom is your personal maternal health companion, designed specifically for your journey.',
+    animation: require('../../assets/animations/baby.json'),
   },
   {
     id: '2',
     title: 'Track Vitals & Baby Growth',
     description: 'Log your symptoms, mood, and daily vitals. Keep a beautiful record as your baby grows.',
+    animation: require('../../assets/animations/baby_hide.json'),
   },
   {
     id: '3',
     title: 'Ghanaian Context',
     description: 'Local nutrition advice, ANC reminders, and culturally relevant insights for Ghanaian mothers.',
+    animation: require('../../assets/animations/baby.json'),
   },
   {
     id: '4',
     title: 'Always Available',
     description: 'Works entirely offline. Your data syncs securely only when you are back on Wi-Fi.',
+    animation: require('../../assets/animations/baby.json'), // TODO: Update this when new animations are provided
   },
 ];
 
@@ -42,8 +46,8 @@ type WelcomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList,
 type Props = { navigation: WelcomeScreenNavigationProp };
 
 const SlideItem = ({ item }: { item: typeof SLIDES[0] }) => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
+  const { theme, isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
   const lottieRef = React.useRef<LottieView>(null);
 
   React.useEffect(() => {
@@ -56,7 +60,7 @@ const SlideItem = ({ item }: { item: typeof SLIDES[0] }) => {
       <View style={styles.slideContent}>
         <LottieView
           ref={lottieRef}
-          source={require('../../assets/animations/baby.json')}
+          source={item.animation}
           autoPlay
           loop
           style={{ width: 280, height: 280, marginBottom: -10 }}
