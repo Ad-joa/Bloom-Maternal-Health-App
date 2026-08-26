@@ -38,7 +38,7 @@ const SLIDES = [
     id: '4',
     title: 'Always Available',
     description: 'Works entirely offline. Your data syncs securely only when you are back on Wi-Fi.',
-    animation: require('../../assets/animations/Ghana flag Lottie JSON animation.json'), // Updated for Always Available screen
+    animation: require('../../assets/animations/Check.json'),
   },
 ];
 
@@ -58,20 +58,24 @@ const SlideItem = ({ item }: { item: typeof SLIDES[0] }) => {
   return (
     <View style={styles.slide}>
       <View style={styles.slideContent}>
-        <LottieView
-          ref={lottieRef}
-          source={item.animation}
-          autoPlay
-          loop
-          style={{ width: 280, height: 280, marginBottom: -10 }}
-          resizeMode="contain"
-        />
-        <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.slideTitle}>
-          {item.title}
-        </Typography>
-        <Typography variant="body" color={theme.colors.textMedium} style={styles.slideDescription}>
-          {item.description}
-        </Typography>
+        <View style={styles.animationWrapper}>
+          <LottieView
+            ref={lottieRef}
+            source={item.animation}
+            autoPlay
+            loop
+            style={{ width: 220, height: 220 }}
+            resizeMode="contain"
+          />
+        </View>
+        <View style={styles.textWrapper}>
+          <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.slideTitle}>
+            {item.title}
+          </Typography>
+          <Typography variant="body" color={theme.colors.textMedium} style={styles.slideDescription}>
+            {item.description}
+          </Typography>
+        </View>
       </View>
     </View>
   );
@@ -96,7 +100,7 @@ export default function WelcomeScreen({ navigation }: Props) {
     if (currentIndex < SLIDES.length - 1) {
       flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
     } else {
-      navigation.navigate('Auth' as never);
+      navigation.navigate('PrivacyConsent' as never);
     }
   };
 
@@ -182,14 +186,24 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   },
   slide: {
     width,
+    height: height * 0.75,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 32,
   },
   slideContent: {
     alignItems: 'center',
+    justifyContent: 'center',
     width: '100%',
-    paddingTop: height * 0.1, // Push content slightly up for balance
+  },
+  animationWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  textWrapper: {
+    alignItems: 'center',
+    paddingHorizontal: 8,
   },
   iconWrapper: {
     width: 140,
