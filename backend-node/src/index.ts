@@ -309,6 +309,9 @@ app.put('/users/:user_id/onboard', async (req, res) => {
         dietary_preferences: data.dietary_preferences ?? user.dietary_preferences,
         emergency_contact_name: data.emergency_contact_name ?? user.emergency_contact_name,
         emergency_contact_phone: data.emergency_contact_phone ?? user.emergency_contact_phone,
+        last_period_date: data.last_period_date ?? user.last_period_date,
+        blood_group: data.blood_group ?? user.blood_group,
+        height: data.height ?? user.height,
       }
     });
 

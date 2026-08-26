@@ -102,7 +102,22 @@ export default function OnboardingScreen({ navigation }: Props) {
         if (medicalConditions) payload.medical_conditions = medicalConditions;
         if (emergencyName) payload.emergency_contact_name = emergencyName;
         if (emergencyPhone) payload.emergency_contact_phone = emergencyPhone;
-        if (lastPeriodDate) payload.last_period_date = lastPeriodDate;
+        if (lastPeriodDate) {
+          payload.last_period_date = lastPeriodDate;
+          // Standard medical calculation (Naegele's rule): LMP + 280 days
+          const lmpParts = lastPeriodDate.split('/');
+          if (lmpParts.length === 3) {
+            const lmpDate = new Date(`${lmpParts[2]}-${lmpParts[0]}-${lmpParts[1]}T12:00:00Z`);
+            if (!isNaN(lmpDate.getTime())) {
+              const calculatedDueDate = new Date(lmpDate.getTime() + (280 * 24 * 60 * 60 * 1000));
+              // Format back to MM/DD/YYYY
+              const month = String(calculatedDueDate.getUTCMonth() + 1).padStart(2, '0');
+              const day = String(calculatedDueDate.getUTCDate()).padStart(2, '0');
+              const year = calculatedDueDate.getUTCFullYear();
+              payload.due_date = `${month}/${day}/${year}`;
+            }
+          }
+        }
         if (bloodGroup) payload.blood_group = bloodGroup;
         if (height) payload.height = height;
 
@@ -134,12 +149,12 @@ export default function OnboardingScreen({ navigation }: Props) {
         return (
           <View style={styles.stepContainer}>
             <Typography variant="title2" color={theme.colors.textHigh} style={styles.questionTitle}>
-              When is your expected due date?
+              When was the first day of your last period?
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium} style={styles.questionSubtitle}>
-              This helps us track your baby's development.
+              We'll use this to safely calculate your expected due date.
             </Typography>
-            <TextInput label="Due Date" placeholder="MM/DD/YYYY" value={dueDate} onChangeText={setDueDate} />
+            <TextInput label="Last Period Date" placeholder="MM/DD/YYYY" value={lastPeriodDate} onChangeText={setLastPeriodDate} />
           </View>
         );
       case 2:

@@ -289,6 +289,15 @@ export default function HomeScreen({ navigation }: any) {
                   <Typography variant="caption2" style={styles.trimBadgeText}>TRIMESTER {trimester}</Typography>
                 </View>
 
+                {dueDate ? (
+                  <View style={{ marginBottom: 12 }}>
+                    <Typography variant="caption2" style={{ color: theme.colors.textMedium, fontSize: 9, letterSpacing: 0.5, marginBottom: 2, textTransform: 'uppercase' }}>Est. Due Date</Typography>
+                    <Typography variant="body" style={{ color: theme.colors.textHigh, fontFamily: theme.typography.families.headingBold, fontSize: 13 }}>
+                      {new Date(dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </Typography>
+                  </View>
+                ) : null}
+
                 <View style={styles.statBlock}>
                   <Typography variant="title2" style={styles.statNum}>{daysLeft}</Typography>
                   <Typography variant="caption1" style={styles.statLbl}>days left</Typography>
