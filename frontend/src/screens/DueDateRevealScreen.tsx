@@ -33,7 +33,7 @@ export default function DueDateRevealScreen({ navigation, route }: Props) {
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        
+
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <Ionicons name="chevron-back" size={24} color="#FFF" />
@@ -41,23 +41,23 @@ export default function DueDateRevealScreen({ navigation, route }: Props) {
         </View>
 
         <View style={styles.content}>
-          <Image 
-            source={require('../../assets/images/stork.jpg')} 
+          <Image
+            source={require('../../assets/images/stork.jpg')}
             style={styles.storkImage}
             resizeMode="contain"
           />
-          
+
           <Typography style={styles.title}>
             Your expected due date
           </Typography>
-          
+
           <Typography style={styles.dateText}>
             {formattedDate}
           </Typography>
         </View>
 
         <View style={styles.footer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.nextButton}
             onPress={() => navigation.goBack()}
             activeOpacity={0.8}

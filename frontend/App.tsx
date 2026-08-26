@@ -94,18 +94,19 @@ function CustomTabBar({ state, navigation }: any) {
       shadowRadius: 12,
     }}>
       <BlurView
-        intensity={isDark ? 40 : 80}
+        intensity={isDark ? 60 : 100}
         tint={isDark ? 'dark' : 'light'}
         style={{
-          backgroundColor: isDark ? 'rgba(18,18,18,0.85)' : 'rgba(255,255,255,0.82)',
+          backgroundColor: isDark ? 'rgba(18,18,18,0.75)' : 'rgba(255,255,255,0.75)',
           overflow: 'hidden',
-          borderRadius: 32,
+          borderRadius: 40,
           flexDirection: 'row',
           justifyContent: 'space-around',
           alignItems: 'center',
-          paddingVertical: 12,
+          paddingVertical: 14,
+          paddingHorizontal: 8,
           borderWidth: 1,
-          borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+          borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
         }}>
       {state.routes.map((route: any, index: number) => {
         const isFocused = state.index === index;
@@ -133,15 +134,12 @@ function CustomTabBar({ state, navigation }: any) {
             justifyContent: 'center',
             paddingVertical: 4,
           }}>
-            <Icon size={24} color={isFocused ? activeColor : inactiveColor} strokeWidth={isFocused ? 2.5 : 1.8} />
-            <Text style={{
-              fontSize: 10,
-              color: isFocused ? activeColor : inactiveColor,
-              marginTop: 4,
-              fontFamily: isFocused
-                ? theme.typography.families.headingBold
-                : theme.typography.families.bodyRegular,
-            }}>{label}</Text>
+            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <Icon size={24} color={isFocused ? activeColor : inactiveColor} strokeWidth={isFocused ? 2.5 : 1.8} />
+              {isFocused && (
+                <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: activeColor, position: 'absolute', bottom: -10 }} />
+              )}
+            </View>
           </TouchableOpacity>
         );
       })}
@@ -159,14 +157,31 @@ function MainTabs() {
         headerStyle: { backgroundColor: theme.colors.background, shadowOpacity: 0, elevation: 0 },
         headerTintColor: theme.colors.textHigh,
         headerTitleStyle: { fontFamily: theme.typography.families.headingBold },
-        headerRight: () => (
-          <TouchableOpacity
-            style={{ marginRight: theme.spacing[4] }}
-            onPress={() => (navigation as any).navigate('Profile')}
-          >
-            <Ionicons name="menu" color={theme.colors.textHigh} size={24} />
-          </TouchableOpacity>
-        ),
+        headerRight: () => {
+          const { user } = useAuth();
+          return (
+            <TouchableOpacity
+              style={{ 
+                marginRight: theme.spacing[4], 
+                width: 36, 
+                height: 36, 
+                borderRadius: 18, 
+                backgroundColor: theme.colors.primaryLight,
+                alignItems: 'center', 
+                justifyContent: 'center',
+                borderWidth: 2,
+                borderColor: theme.colors.primaryDark
+              }}
+              onPress={() => (navigation as any).navigate('Profile')}
+            >
+              {user?.avatar ? (
+                <View /> /* Image component would go here */
+              ) : (
+                <User size={20} color={theme.colors.primaryDark} strokeWidth={2} />
+              )}
+            </TouchableOpacity>
+          );
+        },
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Today', headerShown: false }} />
