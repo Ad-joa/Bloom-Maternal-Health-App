@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from './src/screens/HomeScreen';
 import TrimesterScreen from './src/screens/TrimesterScreen';
@@ -79,8 +79,7 @@ export type MainTabParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-function CustomTabBar({ state, navigation }: any) {
-  const { theme, isDark } = useTheme();
+function CustomTabBar({ state, navigation, theme, isDark }: any) {
   return (
     <View style={{
       position: 'absolute',
@@ -148,40 +147,43 @@ function CustomTabBar({ state, navigation }: any) {
   );
 }
 
+const HeaderRightComponent = ({ theme, user, navigation }: any) => {
+  return (
+    <TouchableOpacity
+      style={{ 
+        marginRight: theme.spacing[4], 
+        width: 36, 
+        height: 36, 
+        borderRadius: 18, 
+        backgroundColor: theme.colors.primaryLight,
+        alignItems: 'center', 
+        justifyContent: 'center',
+        borderWidth: 2,
+        borderColor: theme.colors.primaryDark
+      }}
+      onPress={() => navigation.navigate('Profile')}
+    >
+      {user?.avatar ? (
+        <View /> /* Image component would go here */
+      ) : (
+        <User size={20} color={theme.colors.primaryDark} strokeWidth={2} />
+      )}
+    </TouchableOpacity>
+  );
+};
+
 function MainTabs() {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
+  const { user } = useAuth();
+  const navigation = useNavigation();
   return (
     <Tab.Navigator
-      tabBar={(props) => <CustomTabBar {...props} />}
+      tabBar={(props) => <CustomTabBar {...props} theme={theme} isDark={isDark} />}
       screenOptions={({ route, navigation }) => ({
         headerStyle: { backgroundColor: theme.colors.background, shadowOpacity: 0, elevation: 0 },
         headerTintColor: theme.colors.textHigh,
         headerTitleStyle: { fontFamily: theme.typography.families.headingBold },
-        headerRight: () => {
-          const { user } = useAuth();
-          return (
-            <TouchableOpacity
-              style={{ 
-                marginRight: theme.spacing[4], 
-                width: 36, 
-                height: 36, 
-                borderRadius: 18, 
-                backgroundColor: theme.colors.primaryLight,
-                alignItems: 'center', 
-                justifyContent: 'center',
-                borderWidth: 2,
-                borderColor: theme.colors.primaryDark
-              }}
-              onPress={() => (navigation as any).navigate('Profile')}
-            >
-              {user?.avatar ? (
-                <View /> /* Image component would go here */
-              ) : (
-                <User size={20} color={theme.colors.primaryDark} strokeWidth={2} />
-              )}
-            </TouchableOpacity>
-          );
-        },
+        headerRight: () => <HeaderRightComponent theme={theme} user={user} navigation={navigation} />,
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Today', headerShown: false }} />

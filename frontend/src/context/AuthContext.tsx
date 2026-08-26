@@ -13,6 +13,7 @@ interface User {
   weight?: string;
   primary_goal?: string;
   dietary_preferences?: string;
+  avatar?: string;
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
   blood_group?: string;

@@ -10,7 +10,7 @@ import { Typography } from '../components/Typography';
 import {
   Activity, Droplets, Stethoscope, Heart, Sun,
   Moon, Sparkles, Bell, ChevronRight, Zap,
-  Baby, Apple, Lightbulb, Calendar, ShoppingBag
+  Baby, Apple, Lightbulb, Calendar, ShoppingBag, Info
 } from 'lucide-react-native';
 import { getWeeksPregnant, getDaysUntilDue } from '../utils/dateUtils';
 import { getAncVisits, getEducationalContent } from '../api/api';
@@ -306,15 +306,24 @@ export default function HomeScreen({ navigation }: any) {
                 style={[
                   styles.calendarItem, 
                   item.isToday && styles.calendarItemActive,
-                  { backgroundColor: item.isToday ? theme.colors.primaryDark : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)') }
+                  { backgroundColor: 'transparent', overflow: 'hidden' }
                 ]}
               >
-                <Typography variant="caption2" style={{ color: item.isToday ? '#FFF' : theme.colors.textMedium, marginBottom: 4 }}>
-                  {item.dayName.toUpperCase()}
-                </Typography>
-                <Typography variant="headline" style={{ color: item.isToday ? '#FFF' : theme.colors.textHigh }}>
-                  {item.dayNum}
-                </Typography>
+                <BlurView intensity={isDark ? 40 : 80} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+                <LinearGradient
+                  colors={item.isToday 
+                    ? [theme.colors.primaryDark, theme.colors.primary]
+                    : (isDark ? ['rgba(255,255,255,0.08)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.2)'])}
+                  style={StyleSheet.absoluteFillObject}
+                />
+                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography variant="caption2" style={{ color: item.isToday ? '#FFF' : theme.colors.textMedium, marginBottom: 4 }}>
+                    {item.dayName.toUpperCase()}
+                  </Typography>
+                  <Typography variant="headline" style={{ color: item.isToday ? '#FFF' : theme.colors.textHigh }}>
+                    {item.dayNum}
+                  </Typography>
+                </View>
               </View>
             ))}
           </ScrollView>
@@ -323,7 +332,7 @@ export default function HomeScreen({ navigation }: any) {
           <Animated.View style={[styles.heroCard, { transform: [{ scale: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [0.95, 1] }) }] }]}>
             <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
             <LinearGradient
-              colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']}
+              colors={isDark ? ['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.02)'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']}
               style={StyleSheet.absoluteFillObject}
             />
 
@@ -380,7 +389,7 @@ export default function HomeScreen({ navigation }: any) {
           <View style={[styles.fullCard, { padding: 0, overflow: 'hidden', borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)' }]}>
             <BlurView intensity={isDark ? 40 : 80} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
             <LinearGradient
-              colors={isDark ? ['rgba(147,51,234,0.1)', 'transparent'] : ['rgba(250,245,255,0.8)', 'rgba(243,232,255,0.4)']}
+              colors={isDark ? ['rgba(147,51,234,0.15)', 'rgba(147,51,234,0.03)'] : ['rgba(250,245,255,0.8)', 'rgba(243,232,255,0.4)']}
               style={StyleSheet.absoluteFillObject}
             />
             <Typography style={{ position: 'absolute', right: 8, top: -10, fontSize: 120, color: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(147,51,234,0.04)', fontFamily: 'serif', lineHeight: 120 }}>
@@ -416,10 +425,23 @@ export default function HomeScreen({ navigation }: any) {
             <View style={{ padding: 24, alignItems: 'center' }}>
               <Typography variant="caption2" style={[styles.halfCardLabel, { marginBottom: 20, letterSpacing: 1.5 }]}>CURRENT BABY SIZE</Typography>
               
-              <View style={{ width: 140, height: 140, justifyContent: 'center', alignItems: 'center', marginBottom: 24 }}>
+              <View style={{ 
+                width: 140, 
+                height: 140, 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                marginBottom: 24,
+                backgroundColor: '#FFFFFF',
+                borderRadius: 70,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.1,
+                shadowRadius: 8,
+                elevation: 4
+              }}>
                 <Image 
                   source={babySize.image} 
-                  style={{ width: '100%', height: '100%' }} 
+                  style={{ width: '80%', height: '80%' }} 
                   resizeMode="contain" 
                 />
               </View>
@@ -446,12 +468,11 @@ export default function HomeScreen({ navigation }: any) {
               colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(253,248,240,0.8)', 'rgba(253,248,240,0.3)']}
               style={StyleSheet.absoluteFillObject}
             />
-            <View style={styles.dateBadgeContainer}>
-              <View style={styles.dateBadgeBg} />
-              <Typography variant="caption1" style={styles.dateBadgeText}>{todayDateFormatted}</Typography>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+              <Info size={16} color={theme.colors.primaryDark} strokeWidth={2.5} style={{ marginRight: 6 }} />
+              <Typography variant="caption2" style={[styles.halfCardLabel, { letterSpacing: 1, color: theme.colors.primaryDark }]}>TODAY'S TIP</Typography>
             </View>
-            <Typography variant="title3" style={{ color: theme.colors.textHigh, fontFamily: theme.typography.families.headingBold, textTransform: 'uppercase', letterSpacing: 1, fontSize: 12, marginBottom: 12 }}>Today's Tip</Typography>
-            <Typography variant="body" style={{ color: theme.colors.textHigh, fontFamily: theme.typography.families.bodyMedium, lineHeight: 26, fontSize: 16 }}>
+            <Typography variant="body" style={{ color: theme.colors.textHigh, lineHeight: 24, fontFamily: theme.typography.families.headingSemibold, fontSize: 16 }}>
               {todayTip.tip}
             </Typography>
           </View>

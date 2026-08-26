@@ -15,6 +15,7 @@ import { onboardUser } from '../api/api';
 import { ChevronLeft, Calendar, Activity, CheckCircle2, User, Salad, HeartPulse, Phone, CheckSquare, Target, Smile, Baby } from 'lucide-react-native';
 import { TermLoader } from '../components/TermLoader';
 import { BlurView } from 'expo-blur';
+import { BackgroundMesh } from '../components/BackgroundMesh';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -93,8 +94,17 @@ export default function OnboardingScreen({ navigation }: Props) {
       setLoading(true);
       try {
         const payload: any = {};
+        const formatToISO = (dateStr: string) => {
+          if (!dateStr) return dateStr;
+          if (dateStr.includes('/')) {
+             const [m, d, y] = dateStr.split('/');
+             if (y && m && d) return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+          }
+          return dateStr;
+        };
+
         if (trimester) payload.trimester = parseInt(trimester, 10);
-        if (dueDate) payload.due_date = dueDate;
+        if (dueDate) payload.due_date = formatToISO(dueDate);
         if (isFirstPregnancy !== null) payload.is_first_pregnancy = isFirstPregnancy;
         if (age) payload.age = parseInt(age, 10);
         if (weight) payload.weight = weight;
@@ -111,11 +121,11 @@ export default function OnboardingScreen({ navigation }: Props) {
             const lmpDate = new Date(`${lmpParts[2]}-${lmpParts[0]}-${lmpParts[1]}T12:00:00Z`);
             if (!isNaN(lmpDate.getTime())) {
               const calculatedDueDate = new Date(lmpDate.getTime() + (280 * 24 * 60 * 60 * 1000));
-              // Format back to MM/DD/YYYY
+              // Format back to YYYY-MM-DD
               const month = String(calculatedDueDate.getUTCMonth() + 1).padStart(2, '0');
               const day = String(calculatedDueDate.getUTCDate()).padStart(2, '0');
               const year = calculatedDueDate.getUTCFullYear();
-              payload.due_date = `${month}/${day}/${year}`;
+              payload.due_date = `${year}-${month}-${day}`;
             }
           }
         }
@@ -344,16 +354,7 @@ export default function OnboardingScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={isDark
-          ? ['#1A1212', '#2A1518', '#121212']
-          : ['#FDF4F4', '#FFF0F0', '#FAFAFA']}
-        style={StyleSheet.absoluteFillObject}
-        start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-      />
-      {/* Decorative Orbs */}
-      <View style={[styles.orb, { top: -100, right: -50, backgroundColor: isDark ? 'rgba(216,122,128,0.08)' : 'rgba(241,149,155,0.15)' }]} />
-      <View style={[styles.orb, { bottom: 100, left: -100, backgroundColor: isDark ? 'rgba(80,227,194,0.05)' : 'rgba(80,227,194,0.1)' }]} />
+      <BackgroundMesh />
       
       <SafeAreaView style={styles.safeArea}>
         
@@ -366,8 +367,9 @@ export default function OnboardingScreen({ navigation }: Props) {
         ) : (
           <KeyboardAvoidingView 
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            style={styles.container}
+            style={{ flex: 1 }}
           >
+            <BlurView intensity={isDark ? 40 : 70} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
             {/* Header */}
             <View style={styles.header}>
               <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
@@ -402,13 +404,13 @@ export default function OnboardingScreen({ navigation }: Props) {
 
 const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: 'transparent' },
-  container: { flex: 1, backgroundColor: theme.colors.background },
+  container: { flex: 1, backgroundColor: 'transparent' },
   orb: { position: 'absolute', width: 300, height: 300, borderRadius: 150 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: theme.spacing[2], paddingTop: theme.spacing[2], height: 60 },
   backBtn: { padding: theme.spacing[2], width: 44, alignItems: 'center' },
   progressContainer: { flex: 1, flexDirection: 'row', gap: 6, alignItems: 'center' },
-  stepSegment: { flex: 1, height: 6, borderRadius: 3 },
-  activeSegment: { backgroundColor: theme.colors.primaryDark },
+  stepSegment: { flex: 1, height: 6, borderRadius: 3, backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' },
+  activeSegment: { backgroundColor: theme.colors.primaryDark, shadowColor: theme.colors.primaryDark, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 4, elevation: 2 },
   completedSegment: { backgroundColor: theme.colors.primary },
   scrollContent: { flexGrow: 1, padding: theme.spacing[5], justifyContent: 'center' },
   stepContainer: { flex: 1, justifyContent: 'center' },

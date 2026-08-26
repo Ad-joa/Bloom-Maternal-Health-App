@@ -12,6 +12,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { getSymptomLogs } from '../api/api';
+import { BackgroundMesh } from '../components/BackgroundMesh';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ProfileScreen({ navigation }: any) {
   const { user, logout } = useAuth();
@@ -114,9 +116,10 @@ export default function ProfileScreen({ navigation }: any) {
   ];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: 'transparent' }]}>
+      <BackgroundMesh />
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: 'transparent' }]} edges={['top']}>
 
         {/* Header */}
         <View style={styles.header}>
@@ -129,20 +132,26 @@ export default function ProfileScreen({ navigation }: any) {
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
           {/* Avatar & Name */}
-          <View style={styles.profileHeader}>
-            <View style={styles.avatarLarge}>
-              <Typography variant="largeTitle" style={{ color: theme.colors.background, fontFamily: theme.typography.families.headingBold }}>
-                {user?.name ? user.name[0].toUpperCase() : 'B'}
-              </Typography>
+          <View style={styles.section}>
+            <View style={[styles.menuCard, { alignItems: 'center', paddingVertical: 24, borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)' }]}>
+              <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+              <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
+              <View style={styles.avatarLarge}>
+                <Typography variant="largeTitle" style={{ color: theme.colors.background, fontFamily: theme.typography.families.headingBold }}>
+                  {user?.name ? user.name[0].toUpperCase() : 'B'}
+                </Typography>
+              </View>
+              <Typography variant="title2" style={styles.name}>{user?.name || 'Bloom User'}</Typography>
+              <Typography variant="body" style={styles.email}>{user?.email || 'user@example.com'}</Typography>
             </View>
-            <Typography variant="title2" style={styles.name}>{user?.name || 'Bloom User'}</Typography>
-            <Typography variant="body" style={styles.email}>{user?.email || 'user@example.com'}</Typography>
           </View>
 
           {/* Language */}
           <View style={styles.section}>
             <Typography variant="caption1" style={styles.sectionLabel}>LANGUAGE</Typography>
-            <View style={styles.menuCard}>
+            <View style={[styles.menuCard, { borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)' }]}>
+              <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+              <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
               <View style={styles.menuItem}>
                 <View style={styles.menuItemLeft}>
                   <Ionicons name="language" size={20} color={theme.colors.primaryDark} />
@@ -167,7 +176,9 @@ export default function ProfileScreen({ navigation }: any) {
           {/* Pregnancy Details */}
           <View style={styles.section}>
             <Typography variant="caption1" style={styles.sectionLabel}>PREGNANCY DETAILS</Typography>
-            <View style={styles.menuCard}>
+            <View style={[styles.menuCard, { borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)' }]}>
+              <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+              <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
               {[
                 { icon: 'flag', label: 'Primary Goal', value: user?.primary_goal || 'Not set' },
                 { icon: 'calendar', label: 'Due Date', value: user?.due_date ? new Date(user.due_date).toLocaleDateString() : 'Not set' },
@@ -190,7 +201,9 @@ export default function ProfileScreen({ navigation }: any) {
           {/* Health & Lifestyle */}
           <View style={styles.section}>
             <Typography variant="caption1" style={styles.sectionLabel}>HEALTH & LIFESTYLE</Typography>
-            <View style={styles.menuCard}>
+            <View style={[styles.menuCard, { borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)' }]}>
+              <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+              <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
               {[
                 { icon: 'nutrition', label: 'Dietary Preferences', value: user?.dietary_preferences || 'None' },
                 { icon: 'medical', label: 'Medical Conditions', value: user?.medical_conditions || 'None' },
@@ -209,7 +222,9 @@ export default function ProfileScreen({ navigation }: any) {
           {/* Emergency Contact */}
           <View style={styles.section}>
             <Typography variant="caption1" style={styles.sectionLabel}>EMERGENCY CONTACT</Typography>
-            <View style={styles.menuCard}>
+            <View style={[styles.menuCard, { borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)' }]}>
+              <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+              <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
               {[
                 { icon: 'person', label: 'Name', value: user?.emergency_contact_name || 'Not set' },
                 { icon: 'call', label: 'Phone', value: user?.emergency_contact_phone || 'Not set' },
@@ -228,7 +243,9 @@ export default function ProfileScreen({ navigation }: any) {
           {/* Account Settings */}
           <View style={styles.section}>
             <Typography variant="caption1" style={styles.sectionLabel}>ACCOUNT</Typography>
-            <View style={styles.menuCard}>
+            <View style={[styles.menuCard, { borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)' }]}>
+              <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+              <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
               {menuItems.map((item, index) => (
                 <TouchableOpacity
                   key={item.title}
@@ -357,11 +374,9 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     marginLeft: 4,
   },
   menuCard: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: 'transparent',
     borderRadius: 20,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
   },
   menuItem: {
     flexDirection: 'row',
@@ -373,7 +388,7 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   },
   menuItemBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    borderBottomColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
   },
   menuItemLeft: {
     flexDirection: 'row',
