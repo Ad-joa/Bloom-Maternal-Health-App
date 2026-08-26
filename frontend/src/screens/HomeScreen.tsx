@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, StyleSheet, ScrollView, TouchableOpacity,
-  StatusBar, Dimensions, Animated, Platform, Alert
+  StatusBar, Dimensions, Animated, Platform, Alert, Image
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
@@ -15,31 +15,27 @@ import {
 import { getWeeksPregnant, getDaysUntilDue } from '../utils/dateUtils';
 import { getAncVisits, getEducationalContent } from '../api/api';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import Svg, { Circle } from 'react-native-svg';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width - 48;
 
 // ── Data ────────────────────────────────────────────────
-const CLINICAL_SIZE_MAP: Record<number, { icon: string; weight: string; length: string }> = {
-  4:  { icon: '🔬', weight: '< 1 g',      length: '1 mm' },
-  8:  { icon: '🧬', weight: '1 g',        length: '1.6 cm' },
-  12: { icon: '⚖️', weight: '14 g',       length: '5.4 cm' },
-  16: { icon: '⚖️', weight: '100 g',      length: '11.6 cm' },
-  20: { icon: '📏', weight: '300 g',      length: '25.6 cm' },
-  24: { icon: '📏', weight: '600 g',      length: '30 cm' },
-  28: { icon: '📏', weight: '1.0 kg',     length: '37.6 cm' },
-  32: { icon: '📏', weight: '1.7 kg',     length: '42.4 cm' },
-  36: { icon: '📏', weight: '2.6 kg',     length: '47.4 cm' },
-  40: { icon: '📏', weight: '3.5 kg',     length: '51.2 cm' },
+const FRUIT_SIZE_MAP: Record<number, { image: any; fruitName: string; weight: string; length: string }> = {
+  2:  { image: require('../../assets/images/fruit_2_clean.jpg'), fruitName: 'Poppy Seed', weight: '< 1 g', length: '1 mm' },
+  7:  { image: require('../../assets/images/fruit_7.jpg'), fruitName: 'Blueberry', weight: '1 g', length: '1.6 cm' },
+  14: { image: require('../../assets/images/fruit_14.jpg'), fruitName: 'Lemon', weight: '43 g', length: '8.7 cm' },
+  35: { image: require('../../assets/images/fruit_35.jpg'), fruitName: 'Honeydew', weight: '2.4 kg', length: '46.2 cm' },
+  41: { image: require('../../assets/images/fruit_41.jpg'), fruitName: 'Watermelon', weight: '3.5 kg', length: '51.2 cm' },
 };
 
 const getBabySize = (weeks: number) => {
-  const keys = Object.keys(CLINICAL_SIZE_MAP).map(Number).sort((a, b) => a - b);
+  const keys = Object.keys(FRUIT_SIZE_MAP).map(Number).sort((a, b) => a - b);
   const closest = keys.reduce((prev, curr) =>
     Math.abs(curr - weeks) < Math.abs(prev - weeks) ? curr : prev
   );
-  return CLINICAL_SIZE_MAP[closest] ?? CLINICAL_SIZE_MAP[32];
+  return FRUIT_SIZE_MAP[closest] ?? FRUIT_SIZE_MAP[14];
 };
 
 const DAILY_TIPS = [
@@ -323,14 +319,12 @@ export default function HomeScreen({ navigation }: any) {
             ))}
           </ScrollView>
 
-          {/* ── Hero Card: Circular Progress ── */}
-          <View style={styles.heroCard}>
+          {/* ── Hero Card ── */}
+          <Animated.View style={[styles.heroCard, { transform: [{ scale: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [0.95, 1] }) }] }]}>
+            <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
             <LinearGradient
-              colors={isDark
-                ? ['#2A1518', '#1E1010']
-                : ['#FFF0F0', '#FFF8F8']}
+              colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']}
               style={StyleSheet.absoluteFillObject}
-              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
             />
 
             <View style={styles.heroInner}>
@@ -382,49 +376,76 @@ export default function HomeScreen({ navigation }: any) {
             </View>
           </View>
 
-          {/* ── Dynamic Grid (Baby Size & Inspiration) ── */}
-          <View style={styles.rowCards}>
-            {/* Left: Baby Size */}
-            <View style={styles.halfCard}>
-              <LinearGradient
-                colors={isDark ? ['#1A1F2A', '#12161E'] : ['#EFF6FF', '#FFFFFF']}
-                style={StyleSheet.absoluteFillObject}
-                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+          {/* ── Inspiration Card ── */}
+          <View style={[styles.fullCard, { padding: 0, overflow: 'hidden', borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)' }]}>
+            <BlurView intensity={isDark ? 40 : 80} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+            <LinearGradient
+              colors={isDark ? ['rgba(147,51,234,0.1)', 'transparent'] : ['rgba(250,245,255,0.8)', 'rgba(243,232,255,0.4)']}
+              style={StyleSheet.absoluteFillObject}
+            />
+            <Typography style={{ position: 'absolute', right: 8, top: -10, fontSize: 120, color: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(147,51,234,0.04)', fontFamily: 'serif', lineHeight: 120 }}>
+              “
+            </Typography>
+            <View style={{ padding: 24 }}>
+              <View style={[styles.milestoneBadge, { backgroundColor: isDark ? 'rgba(216,180,254,0.15)' : 'rgba(147,51,234,0.1)', alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, marginBottom: 16 }]}>
+                <Typography variant="caption2" style={{ fontSize: 10, color: isDark ? '#E9D5FF' : '#9333EA', letterSpacing: 1, fontWeight: 'bold' }}>
+                  INSPIRATION
+                </Typography>
+              </View>
+              
+              <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+                <Typography variant="body" style={{ color: isDark ? '#F3E8FF' : '#4C1D95', fontFamily: theme.typography.families.headingSemibold, fontStyle: 'italic', lineHeight: 22, marginBottom: 12 }} numberOfLines={4}>
+                  "{MOTIVATIONS[motivationIndex].quote}"
+                </Typography>
+                <Typography variant="caption2" style={{ color: isDark ? '#D8B4FE' : '#7E22CE', fontFamily: theme.typography.families.primaryBold, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.5 }}>
+                  — {MOTIVATIONS[motivationIndex].author}
+                </Typography>
+              </Animated.View>
+            </View>
+          </View>
+
+          {/* ── Baby Size Card ── */}
+          <View style={[styles.fullCard, { borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)', padding: 0, overflow: 'hidden' }]}>
+            <BlurView intensity={isDark ? 40 : 80} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+            <LinearGradient
+              colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'transparent']}
+              style={StyleSheet.absoluteFillObject}
+            />
+            
+            {/* Top Display Area (Matches Image Background) */}
+            <View style={{ height: 180, width: '100%', backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
+              <Image 
+                source={babySize.image} 
+                style={{ width: '80%', height: '80%' }} 
+                resizeMode="contain" 
               />
-              <Typography variant="caption2" style={styles.halfCardLabel}>BABY SIZE</Typography>
-              <Typography style={styles.halfCardEmoji}>{babySize.icon}</Typography>
-              <Typography variant="title3" style={styles.halfCardTitle}>{babySize.length}</Typography>
-              <Typography variant="caption1" style={styles.halfCardSub}>Est. {babySize.weight}</Typography>
             </View>
 
-            {/* Right: Inspiration */}
-            <View style={[styles.halfCard, { padding: 0, borderWidth: 0 }]}>
-              <LinearGradient
-                colors={isDark ? ['#3B0764', '#1E1B4B'] : ['#FAF5FF', '#F3E8FF']}
-                style={[StyleSheet.absoluteFillObject, { borderRadius: 24 }]}
-                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-              />
-              <Typography style={{ position: 'absolute', right: -10, top: -20, fontSize: 80, color: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', fontFamily: 'serif' }}>
-                “
-              </Typography>
-              <View style={{ padding: 18, flex: 1, justifyContent: 'space-between' }}>
-                <View style={[styles.milestoneBadge, { backgroundColor: 'transparent', paddingHorizontal: 0, marginBottom: 0 }]}>
-                  <Heart size={12} color={isDark ? "#D8B4FE" : "#9333EA"} />
-                  <Typography variant="caption2" style={{ fontSize: 9, color: isDark ? '#D8B4FE' : '#9333EA', letterSpacing: 1, marginLeft: 4 }}>
-                    INSPIRATION
-                  </Typography>
+            {/* Details Area */}
+            <View style={{ padding: 24 }}>
+              <Typography variant="caption2" style={[styles.halfCardLabel, { marginBottom: 6, letterSpacing: 1.5 }]}>CURRENT BABY SIZE</Typography>
+              <Typography variant="title2" style={[styles.halfCardTitle, { marginBottom: 16, fontSize: 26 }]}>{babySize.fruitName}</Typography>
+              
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                <View style={{ flex: 1, backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', padding: 16, borderRadius: 16 }}>
+                  <Typography variant="caption2" style={{ color: theme.colors.textMedium, marginBottom: 4 }}>EST. LENGTH</Typography>
+                  <Typography variant="title3" style={{ color: theme.colors.textHigh, fontSize: 18 }}>{babySize.length}</Typography>
                 </View>
-                <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
-                  <Typography variant="caption1" style={{ color: isDark ? '#F3E8FF' : '#4C1D95', fontFamily: theme.typography.families.headingSemibold, fontStyle: 'italic', lineHeight: 18 }} numberOfLines={5}>
-                    "{MOTIVATIONS[motivationIndex].quote}"
-                  </Typography>
-                </Animated.View>
+                <View style={{ flex: 1, backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', padding: 16, borderRadius: 16 }}>
+                  <Typography variant="caption2" style={{ color: theme.colors.textMedium, marginBottom: 4 }}>EST. WEIGHT</Typography>
+                  <Typography variant="title3" style={{ color: theme.colors.textHigh, fontSize: 18 }}>{babySize.weight}</Typography>
+                </View>
               </View>
             </View>
           </View>
 
           {/* ── Today's Tip (Full Width Editorial) ── */}
-          <View style={[styles.fullCard, { backgroundColor: isDark ? '#2A241A' : '#FDF8F0', padding: 20, paddingTop: 24, minHeight: 100 }]}>
+          <View style={[styles.fullCard, { padding: 20, paddingTop: 24, minHeight: 100, borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)', overflow: 'hidden' }]}>
+            <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+            <LinearGradient
+              colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(253,248,240,0.8)', 'rgba(253,248,240,0.3)']}
+              style={StyleSheet.absoluteFillObject}
+            />
             <View style={styles.dateBadgeContainer}>
               <View style={styles.dateBadgeBg} />
               <Typography variant="caption1" style={styles.dateBadgeText}>{todayDateFormatted}</Typography>
