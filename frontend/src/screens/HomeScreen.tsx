@@ -23,11 +23,11 @@ const CARD_WIDTH = width - 48;
 
 // ── Data ────────────────────────────────────────────────
 const FRUIT_SIZE_MAP: Record<number, { image: any; fruitName: string; weight: string; length: string }> = {
-  2:  { image: require('../../assets/images/fruit_2_clean.jpg'), fruitName: 'Poppy Seed', weight: '< 1 g', length: '1 mm' },
-  7:  { image: require('../../assets/images/fruit_7.jpg'), fruitName: 'Blueberry', weight: '1 g', length: '1.6 cm' },
-  14: { image: require('../../assets/images/fruit_14.jpg'), fruitName: 'Lemon', weight: '43 g', length: '8.7 cm' },
-  35: { image: require('../../assets/images/fruit_35.jpg'), fruitName: 'Honeydew', weight: '2.4 kg', length: '46.2 cm' },
-  41: { image: require('../../assets/images/fruit_41.jpg'), fruitName: 'Watermelon', weight: '3.5 kg', length: '51.2 cm' },
+  2:  { image: require('../../assets/images/fruit_2_clean.png'), fruitName: 'Poppy Seed', weight: '< 1 g', length: '1 mm' },
+  7:  { image: require('../../assets/images/fruit_7.png'), fruitName: 'Blueberry', weight: '1 g', length: '1.6 cm' },
+  14: { image: require('../../assets/images/fruit_14.png'), fruitName: 'Lemon', weight: '43 g', length: '8.7 cm' },
+  35: { image: require('../../assets/images/fruit_35.png'), fruitName: 'Honeydew', weight: '2.4 kg', length: '46.2 cm' },
+  41: { image: require('../../assets/images/fruit_41.png'), fruitName: 'Watermelon', weight: '3.5 kg', length: '51.2 cm' },
 };
 
 const getBabySize = (weeks: number) => {
@@ -374,7 +374,7 @@ export default function HomeScreen({ navigation }: any) {
                 </View>
               </View>
             </View>
-          </View>
+          </Animated.View>
 
           {/* ── Inspiration Card ── */}
           <View style={[styles.fullCard, { padding: 0, overflow: 'hidden', borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)' }]}>
@@ -397,7 +397,7 @@ export default function HomeScreen({ navigation }: any) {
                 <Typography variant="body" style={{ color: isDark ? '#F3E8FF' : '#4C1D95', fontFamily: theme.typography.families.headingSemibold, fontStyle: 'italic', lineHeight: 22, marginBottom: 12 }} numberOfLines={4}>
                   "{MOTIVATIONS[motivationIndex].quote}"
                 </Typography>
-                <Typography variant="caption2" style={{ color: isDark ? '#D8B4FE' : '#7E22CE', fontFamily: theme.typography.families.primaryBold, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.5 }}>
+                <Typography variant="caption2" style={{ color: isDark ? '#D8B4FE' : '#7E22CE', fontFamily: theme.typography.families.headingBold, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.5 }}>
                   — {MOTIVATIONS[motivationIndex].author}
                 </Typography>
               </Animated.View>
@@ -412,21 +412,21 @@ export default function HomeScreen({ navigation }: any) {
               style={StyleSheet.absoluteFillObject}
             />
             
-            {/* Top Display Area (Matches Image Background) */}
-            <View style={{ height: 180, width: '100%', backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
-              <Image 
-                source={babySize.image} 
-                style={{ width: '80%', height: '80%' }} 
-                resizeMode="contain" 
-              />
-            </View>
-
-            {/* Details Area */}
-            <View style={{ padding: 24 }}>
-              <Typography variant="caption2" style={[styles.halfCardLabel, { marginBottom: 6, letterSpacing: 1.5 }]}>CURRENT BABY SIZE</Typography>
-              <Typography variant="title2" style={[styles.halfCardTitle, { marginBottom: 16, fontSize: 26 }]}>{babySize.fruitName}</Typography>
+            {/* Centered Image (Floating) */}
+            <View style={{ padding: 24, alignItems: 'center' }}>
+              <Typography variant="caption2" style={[styles.halfCardLabel, { marginBottom: 20, letterSpacing: 1.5 }]}>CURRENT BABY SIZE</Typography>
               
-              <View style={{ flexDirection: 'row', gap: 12 }}>
+              <View style={{ width: 140, height: 140, justifyContent: 'center', alignItems: 'center', marginBottom: 24 }}>
+                <Image 
+                  source={babySize.image} 
+                  style={{ width: '100%', height: '100%' }} 
+                  resizeMode="contain" 
+                />
+              </View>
+
+              <Typography variant="title2" style={[styles.halfCardTitle, { marginBottom: 20, fontSize: 26 }]}>{babySize.fruitName}</Typography>
+              
+              <View style={{ flexDirection: 'row', gap: 12, width: '100%' }}>
                 <View style={{ flex: 1, backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', padding: 16, borderRadius: 16 }}>
                   <Typography variant="caption2" style={{ color: theme.colors.textMedium, marginBottom: 4 }}>EST. LENGTH</Typography>
                   <Typography variant="title3" style={{ color: theme.colors.textHigh, fontSize: 18 }}>{babySize.length}</Typography>
@@ -450,8 +450,8 @@ export default function HomeScreen({ navigation }: any) {
               <View style={styles.dateBadgeBg} />
               <Typography variant="caption1" style={styles.dateBadgeText}>{todayDateFormatted}</Typography>
             </View>
-            <Typography variant="title3" style={{ color: theme.colors.textHigh, marginBottom: 8 }}>Today's tip</Typography>
-            <Typography variant="body" style={{ color: theme.colors.textHigh, lineHeight: 22, fontSize: 14 }}>
+            <Typography variant="title3" style={{ color: theme.colors.textHigh, fontFamily: theme.typography.families.headingBold, textTransform: 'uppercase', letterSpacing: 1, fontSize: 12, marginBottom: 12 }}>Today's Tip</Typography>
+            <Typography variant="body" style={{ color: theme.colors.textHigh, fontFamily: theme.typography.families.bodyMedium, lineHeight: 26, fontSize: 16 }}>
               {todayTip.tip}
             </Typography>
           </View>
