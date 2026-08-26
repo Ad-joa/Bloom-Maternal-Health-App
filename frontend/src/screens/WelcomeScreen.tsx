@@ -41,9 +41,41 @@ const SLIDES = [
 type WelcomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Welcome'>;
 type Props = { navigation: WelcomeScreenNavigationProp };
 
-export default function WelcomeScreen({ navigation }: Props) {
+const SlideItem = ({ item }: { item: typeof SLIDES[0] }) => {
   const { theme } = useTheme();
   const styles = getStyles(theme);
+  const lottieRef = React.useRef<LottieView>(null);
+
+  React.useEffect(() => {
+    // Force play on mount to fix autoPlay bugs
+    lottieRef.current?.play();
+  }, []);
+
+  return (
+    <View style={styles.slide}>
+      <View style={styles.slideContent}>
+        <LottieView
+          ref={lottieRef}
+          source={require('../../assets/animations/baby.json')}
+          autoPlay
+          loop
+          style={{ width: 280, height: 280, marginBottom: -10 }}
+          resizeMode="contain"
+        />
+        <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.slideTitle}>
+          {item.title}
+        </Typography>
+        <Typography variant="body" color={theme.colors.textMedium} style={styles.slideDescription}>
+          {item.description}
+        </Typography>
+      </View>
+    </View>
+  );
+};
+
+export default function WelcomeScreen({ navigation }: Props) {
+  const { theme, isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
   const scrollX = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -65,33 +97,7 @@ export default function WelcomeScreen({ navigation }: Props) {
   };
 
   const renderItem = ({ item }: { item: typeof SLIDES[0] }) => {
-    const lottieRef = React.useRef<LottieView>(null);
-
-    React.useEffect(() => {
-      // Force play on mount to fix autoPlay bugs
-      lottieRef.current?.play();
-    }, []);
-
-    return (
-      <View style={styles.slide}>
-        <View style={styles.slideContent}>
-          <LottieView
-            ref={lottieRef}
-            source={require('../../assets/animations/baby.json')}
-            autoPlay
-            loop
-            style={{ width: 280, height: 280, marginBottom: -10 }}
-            resizeMode="contain"
-          />
-          <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.slideTitle}>
-            {item.title}
-          </Typography>
-          <Typography variant="body" color={theme.colors.textMedium} style={styles.slideDescription}>
-            {item.description}
-          </Typography>
-        </View>
-      </View>
-    );
+    return <SlideItem item={item} />;
   };
 
   return (
@@ -143,12 +149,12 @@ export default function WelcomeScreen({ navigation }: Props) {
 
           <BounceButton onPress={scrollToNext} style={styles.ctaButton}>
             <View style={styles.ctaButtonInner}>
-              <Typography variant="headline" color={theme.colors.background} style={styles.ctaText}>
+              <Typography variant="headline" style={styles.ctaText}>
                 {currentIndex === SLIDES.length - 1 ? "Get Started" : "Continue"}
               </Typography>
               {currentIndex === SLIDES.length - 1 && (
-                <View style={[styles.ctaIcon, { backgroundColor: theme.colors.background }]}>
-                  <Ionicons name="arrow-forward" size={18} color={theme.colors.textHigh} />
+                <View style={[styles.ctaIcon, { backgroundColor: isDark ? '#000000' : '#FFFFFF' }]}>
+                  <Ionicons name="arrow-forward" size={18} color={isDark ? '#FFFFFF' : '#000000'} />
                 </View>
               )}
             </View>
@@ -162,7 +168,7 @@ export default function WelcomeScreen({ navigation }: Props) {
   );
 }
 
-const getStyles = (theme: any) => StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -220,7 +226,7 @@ const getStyles = (theme: any) => StyleSheet.create({
     borderRadius: 4,
   },
   ctaButton: {
-    backgroundColor: theme.colors.textHigh,
+    backgroundColor: isDark ? '#FFFFFF' : '#000000',
     width: '100%',
     borderRadius: 32,
     height: 64,
@@ -238,6 +244,7 @@ const getStyles = (theme: any) => StyleSheet.create({
     gap: 12,
   },
   ctaText: {
+    color: isDark ? '#000000' : '#FFFFFF',
     fontSize: 18,
     letterSpacing: 0.2,
   },
