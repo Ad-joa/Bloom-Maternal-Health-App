@@ -38,7 +38,7 @@ const SLIDES = [
     id: '4',
     title: 'Always Available',
     description: 'Works entirely offline. Your data syncs securely only when you are back on Wi-Fi.',
-    animation: require('../../assets/animations/baby.json'), // TODO: Update this when new animations are provided
+    animation: require('../../assets/animations/Ghana flag Lottie JSON animation.json'), // Updated for Always Available screen
   },
 ];
 
