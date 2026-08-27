@@ -566,9 +566,15 @@ app.post('/users/:id/reminders', async (req, res) => {
 app.delete('/users/:id/reminders/:reminder_id', async (req, res) => {
   try {
     const reminderId = parseInt(req.params.reminder_id);
-    await (prisma as any).reminders.delete({ where: { id: reminderId } });
+    if (!isNaN(reminderId)) {
+      await (prisma as any).reminders.delete({ where: { id: reminderId } });
+    }
     res.json({ success: true });
-  } catch (e) {
+  } catch (e: any) {
+    if (e.code === 'P2025') {
+      return res.json({ success: true });
+    }
+    console.error("Delete reminder error:", e);
     res.status(500).json({ error: "Failed to delete reminder" });
   }
 });

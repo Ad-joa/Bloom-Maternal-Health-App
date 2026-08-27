@@ -11,7 +11,7 @@ import * as Notifications from 'expo-notifications';
 import { BackgroundMesh } from '../components/BackgroundMesh';
 import { TextInput } from '../components/TextInput';
 
-import { Bell, Droplet, Pill, Clock } from 'lucide-react-native';
+import { Bell, Droplet, Pill } from 'lucide-react-native';
 import { useAuth } from '../context/AuthContext';
 import { getReminders, createReminder, deleteReminder } from '../api/api';
 
@@ -50,50 +50,60 @@ export default function RemindersScreen() {
 
   const handleToggleHydration = async (value: boolean) => {
     if (!user?.id) return;
-    
-    if (value) {
-      const hasPermission = await registerForPushNotificationsAsync();
-      if (hasPermission) {
-        await scheduleHydrationReminder(parseInt(hydrationTime.split(':')[0]) || 10, 0); 
-        const newRem = await createReminder(user.id, { title: "Stay Hydrated", type: "hydration", time: hydrationTime });
-        setRemindersList(prev => [...prev, newRem]);
+    try {
+      if (value) {
+        const hasPermission = await registerForPushNotificationsAsync();
+        if (hasPermission) {
+          await scheduleHydrationReminder(parseInt(hydrationTime.split(':')[0]) || 10, 0); 
+          const newRem = await createReminder(user.id, { title: "Stay Hydrated", type: "hydration", time: hydrationTime });
+          setRemindersList(prev => [...prev, newRem]);
+        }
+      } else {
+        if (hydrationReminder) {
+          await deleteReminder(user.id, hydrationReminder.id);
+          setRemindersList(prev => prev.filter(r => r.id !== hydrationReminder.id));
+        }
       }
-    } else {
-      if (hydrationReminder) {
-        await deleteReminder(user.id, hydrationReminder.id);
-        setRemindersList(prev => prev.filter(r => r.id !== hydrationReminder.id));
-      }
+    } catch (e) {
+      console.error("Failed to toggle hydration reminder:", e);
     }
   };
 
   const handleToggleMedication = async (value: boolean) => {
     if (!user?.id) return;
-    
-    if (value) {
-      const hasPermission = await registerForPushNotificationsAsync();
-      if (hasPermission) {
-        await scheduleMedicationReminder(parseInt(medicationTime.split(':')[0]) || 8, 0);
-        const newRem = await createReminder(user.id, { title: "Prenatal Vitamins", type: "medication", time: medicationTime });
-        setRemindersList(prev => [...prev, newRem]);
+    try {
+      if (value) {
+        const hasPermission = await registerForPushNotificationsAsync();
+        if (hasPermission) {
+          await scheduleMedicationReminder(parseInt(medicationTime.split(':')[0]) || 8, 0);
+          const newRem = await createReminder(user.id, { title: "Prenatal Vitamins", type: "medication", time: medicationTime });
+          setRemindersList(prev => [...prev, newRem]);
+        }
+      } else {
+        if (medicationReminder) {
+          await deleteReminder(user.id, medicationReminder.id);
+          setRemindersList(prev => prev.filter(r => r.id !== medicationReminder.id));
+        }
       }
-    } else {
-      if (medicationReminder) {
-        await deleteReminder(user.id, medicationReminder.id);
-        setRemindersList(prev => prev.filter(r => r.id !== medicationReminder.id));
-      }
+    } catch (e) {
+      console.error("Failed to toggle medication reminder:", e);
     }
   };
 
   const handleToggleGeneral = async (value: boolean) => {
     if (!user?.id) return;
-    if (value) {
-      const newRem = await createReminder(user.id, { title: "Daily Check-in", type: "generic", time: generalTime });
-      setRemindersList(prev => [...prev, newRem]);
-    } else {
-      if (generalReminder) {
-        await deleteReminder(user.id, generalReminder.id);
-        setRemindersList(prev => prev.filter(r => r.id !== generalReminder.id));
+    try {
+      if (value) {
+        const newRem = await createReminder(user.id, { title: "Daily Check-in", type: "generic", time: generalTime });
+        setRemindersList(prev => [...prev, newRem]);
+      } else {
+        if (generalReminder) {
+          await deleteReminder(user.id, generalReminder.id);
+          setRemindersList(prev => prev.filter(r => r.id !== generalReminder.id));
+        }
       }
+    } catch (e) {
+      console.error("Failed to toggle general reminder:", e);
     }
   };
 
@@ -118,7 +128,7 @@ export default function RemindersScreen() {
               
               <View style={styles.cardHeader}>
                 <View style={[styles.iconBox, { backgroundColor: '#E0F2FE' }]}>
-                  <Droplet color="#0284C7" size={24} />
+                  <Droplet color="#0284C7" size={20} />
                 </View>
                 <Switch 
                   value={hydrationEnabled} 
@@ -133,7 +143,6 @@ export default function RemindersScreen() {
               </View>
 
               <View style={styles.timeInputContainer}>
-                <Clock color={theme.colors.textMedium} size={16} style={{ marginRight: 8 }} />
                 <TextInput
                   value={hydrationReminder?.time || hydrationTime}
                   onChangeText={setHydrationTime}
@@ -152,7 +161,7 @@ export default function RemindersScreen() {
               
               <View style={styles.cardHeader}>
                 <View style={[styles.iconBox, { backgroundColor: '#FCE7F3' }]}>
-                  <Pill color="#BE185D" size={24} />
+                  <Pill color="#BE185D" size={20} />
                 </View>
                 <Switch 
                   value={medicationEnabled} 
@@ -167,7 +176,6 @@ export default function RemindersScreen() {
               </View>
 
               <View style={styles.timeInputContainer}>
-                <Clock color={theme.colors.textMedium} size={16} style={{ marginRight: 8 }} />
                 <TextInput
                   value={medicationReminder?.time || medicationTime}
                   onChangeText={setMedicationTime}
@@ -186,7 +194,7 @@ export default function RemindersScreen() {
               
               <View style={styles.cardHeader}>
                 <View style={[styles.iconBox, { backgroundColor: '#FEF3C7' }]}>
-                  <Bell color="#B45309" size={24} />
+                  <Bell color="#B45309" size={20} />
                 </View>
                 <Switch 
                   value={generalEnabled} 
@@ -201,7 +209,6 @@ export default function RemindersScreen() {
               </View>
 
               <View style={styles.timeInputContainer}>
-                <Clock color={theme.colors.textMedium} size={16} style={{ marginRight: 8 }} />
                 <TextInput
                   value={generalReminder?.time || generalTime}
                   onChangeText={setGeneralTime}
@@ -226,14 +233,14 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   header: { marginBottom: theme.spacing[6] },
   title: { marginBottom: theme.spacing[2], fontFamily: theme.typography.families.headingBold },
   premiumCardWrapper: {
-    borderRadius: 32,
+    borderRadius: 20,
     overflow: 'hidden',
-    marginBottom: 24,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
   },
   premiumCard: {
-    padding: 24,
+    padding: 16,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -242,14 +249,14 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     marginBottom: 16,
   },
   iconBox: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cardBody: {
-    marginBottom: 20,
+    marginBottom: 12,
   },
   timeInputContainer: {
     flexDirection: 'row',
