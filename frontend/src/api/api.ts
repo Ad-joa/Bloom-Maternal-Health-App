@@ -257,6 +257,16 @@ export const updateAncVisit = async (visitId: number, updateData: any) => {
     }
 };
 
+export const deleteAncVisit = async (visitId: number) => {
+    try {
+        const response = await apiClient.delete(`/anc/${visitId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error deleting ANC visit:", error);
+        throw error;
+    }
+};
+
 export const getPartnerSummary = async (userId: number) => {
     try {
         const response = await apiClient.get(`/users/${userId}/partner-summary`);

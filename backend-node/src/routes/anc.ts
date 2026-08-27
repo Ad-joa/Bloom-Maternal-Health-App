@@ -72,4 +72,27 @@ router.put('/:id', authenticateToken, async (req: any, res: any) => {
   }
 });
 
+// DELETE /anc/:id - Delete an ANC visit
+router.delete('/:id', authenticateToken, async (req: any, res: any) => {
+  try {
+    const userId = req.user.userId;
+    const visitId = parseInt(req.params.id);
+
+    // Ensure the visit belongs to the user
+    const visit = await (prisma as any).anc_visits.findFirst({
+      where: { id: visitId, user_id: userId }
+    });
+    if (!visit) return res.status(404).json({ detail: "Visit not found" });
+
+    await (prisma as any).anc_visits.delete({
+      where: { id: visitId }
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting ANC visit:", error);
+    res.status(500).json({ detail: "Server error deleting ANC visit" });
+  }
+});
+
 export default router;
