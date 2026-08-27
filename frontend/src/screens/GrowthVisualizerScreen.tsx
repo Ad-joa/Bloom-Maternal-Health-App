@@ -15,11 +15,11 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'GrowthVisua
 type Props = { navigation: NavigationProp };
 
 const TIMELINE_DATA = [
-  { week: 2, topImg: require('../../assets/images/fetus_2.jpg'), bottomImg: require('../../assets/images/fruit_2_clean.png'), topSize: 40, bottomSize: 40 },
-  { week: 7, topImg: require('../../assets/images/fetus_7.jpg'), bottomImg: require('../../assets/images/fruit_7.png'), topSize: 55, bottomSize: 55 },
-  { week: 14, topImg: require('../../assets/images/fetus_14.jpg'), bottomImg: require('../../assets/images/fruit_14.png'), topSize: 70, bottomSize: 70 },
-  { week: 35, topImg: require('../../assets/images/fetus_35.jpg'), bottomImg: require('../../assets/images/fruit_35.png'), topSize: 90, bottomSize: 90 },
-  { week: 41, topImg: require('../../assets/images/fetus_41.jpg'), bottomImg: require('../../assets/images/fruit_41.png'), topSize: 110, bottomSize: 110 },
+  { week: 2, img: require('../../assets/images/fetus_2.jpg'), size: 40 },
+  { week: 7, img: require('../../assets/images/fetus_7.jpg'), size: 55 },
+  { week: 14, img: require('../../assets/images/fetus_14.jpg'), size: 70 },
+  { week: 35, img: require('../../assets/images/fetus_35.jpg'), size: 90 },
+  { week: 41, img: require('../../assets/images/fetus_41.jpg'), size: 110 },
 ];
 
 export default function GrowthVisualizerScreen({ navigation }: Props) {
@@ -55,13 +55,10 @@ export default function GrowthVisualizerScreen({ navigation }: Props) {
 
               return (
                 <View key={item.week.toString()} style={[styles.timelineItem, { left: centerPos }]}>
-                  <View style={[styles.topIconContainer, { width: item.topSize, height: item.topSize, borderRadius: item.topSize / 2, bottom: 185 }]}>
-                    <Image source={item.topImg} style={{ width: '100%', height: '100%', resizeMode: 'cover' }} />
+                  <View style={[styles.iconContainer, { width: item.size, height: item.size, borderRadius: item.size / 2, top: 175 - item.size / 2 }]}>
+                    <Image source={item.img} style={{ width: '100%', height: '100%', resizeMode: 'cover' }} />
                   </View>
-                  <View style={[styles.bottomIconContainer, { width: item.bottomSize, height: item.bottomSize, borderRadius: item.bottomSize / 2, top: 185 }]}>
-                    <Image source={item.bottomImg} style={{ width: '100%', height: '100%', resizeMode: 'cover' }} />
-                  </View>
-                  <Typography variant="body" style={styles.weekLabel}>{item.week}</Typography>
+                  <Typography variant="body" style={[styles.weekLabel, { top: 175 + item.size / 2 + 16 }]}>{item.week}</Typography>
                 </View>
               );
             })}
@@ -153,21 +150,7 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     top: 0,
     bottom: 0,
   },
-  topIconContainer: {
-    position: 'absolute',
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    backgroundColor: '#000',
-    borderWidth: 2,
-    borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#FFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  bottomIconContainer: {
+  iconContainer: {
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
@@ -183,7 +166,6 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   },
   weekLabel: {
     position: 'absolute',
-    top: 305,
     color: theme.colors.textHigh,
     fontWeight: '800',
     fontSize: 18,

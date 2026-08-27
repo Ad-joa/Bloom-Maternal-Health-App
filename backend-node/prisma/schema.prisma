@@ -28,6 +28,8 @@ model users {
   role                    String         @default("mother") // "mother", "nurse", "admin"
   partner_code            String?        @unique
   linked_user_id          Int?
+  has_accepted_terms      Boolean        @default(false)
+  terms_accepted_at       DateTime?
   symptom_logs            symptom_logs[]
   anc_visits              anc_visits[]
   reminders               reminders[]

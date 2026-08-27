@@ -21,21 +21,20 @@ import Svg, { Circle } from 'react-native-svg';
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width - 48;
 
-// ── Data ────────────────────────────────────────────────
-const FRUIT_SIZE_MAP: Record<number, { image: any; fruitName: string; weight: string; length: string }> = {
-  2:  { image: require('../../assets/images/fruit_2_clean.png'), fruitName: 'Poppy Seed', weight: '< 1 g', length: '1 mm' },
-  7:  { image: require('../../assets/images/fruit_7.png'), fruitName: 'Blueberry', weight: '1 g', length: '1.6 cm' },
-  14: { image: require('../../assets/images/fruit_14.png'), fruitName: 'Lemon', weight: '43 g', length: '8.7 cm' },
-  35: { image: require('../../assets/images/fruit_35.png'), fruitName: 'Honeydew', weight: '2.4 kg', length: '46.2 cm' },
-  41: { image: require('../../assets/images/fruit_41.png'), fruitName: 'Watermelon', weight: '3.5 kg', length: '51.2 cm' },
+const FETUS_SIZE_MAP: Record<number, { image: any; stageName: string; weight: string; length: string }> = {
+  2:  { image: require('../../assets/images/fetus_2.jpg'), stageName: 'Blastocyst', weight: '< 1 g', length: '1 mm' },
+  7:  { image: require('../../assets/images/fetus_7.jpg'), stageName: 'Embryo', weight: '1 g', length: '1.6 cm' },
+  14: { image: require('../../assets/images/fetus_14.jpg'), stageName: 'Early Fetus', weight: '43 g', length: '8.7 cm' },
+  35: { image: require('../../assets/images/fetus_35.jpg'), stageName: 'Late Preterm', weight: '2.4 kg', length: '46.2 cm' },
+  41: { image: require('../../assets/images/fetus_41.jpg'), stageName: 'Full Term', weight: '3.5 kg', length: '51.2 cm' },
 };
 
 const getBabySize = (weeks: number) => {
-  const keys = Object.keys(FRUIT_SIZE_MAP).map(Number).sort((a, b) => a - b);
+  const keys = Object.keys(FETUS_SIZE_MAP).map(Number).sort((a, b) => a - b);
   const closest = keys.reduce((prev, curr) =>
     Math.abs(curr - weeks) < Math.abs(prev - weeks) ? curr : prev
   );
-  return FRUIT_SIZE_MAP[closest] ?? FRUIT_SIZE_MAP[14];
+  return FETUS_SIZE_MAP[closest] ?? FETUS_SIZE_MAP[14];
 };
 
 const DAILY_TIPS = [
@@ -46,6 +45,29 @@ const DAILY_TIPS = [
   { tip: 'Rest with your feet elevated for 15 minutes.', icon: '🛋️' },
   { tip: 'Connect with a friend who lifts your spirit.', icon: '❤️' },
   { tip: 'Take your prenatal vitamin if you haven\'t today.', icon: '💊' },
+  { tip: 'Try prenatal yoga to ease back pain and stretch out.', icon: '🧘‍♀️' },
+  { tip: 'Snack on almonds or walnuts for healthy fats and energy.', icon: '🥜' },
+  { tip: 'Listen to your favorite calming music for 10 minutes.', icon: '🎵' },
+  { tip: 'Do a few pelvic floor (Kegel) exercises while sitting.', icon: '💪' },
+  { tip: 'Read a chapter of a book to unwind before bed.', icon: '📖' },
+  { tip: 'Incorporate leafy greens like spinach into your meals today.', icon: '🥗' },
+  { tip: 'Massage your belly with a gentle, hydrating lotion.', icon: '🧴' },
+  { tip: 'Take a warm, relaxing bath (not too hot!) tonight.', icon: '🛁' },
+  { tip: 'Journal your thoughts or pregnancy milestones for 5 minutes.', icon: '📝' },
+  { tip: 'Get some fresh air and sunlight to boost your vitamin D.', icon: '☀️' },
+  { tip: 'Prep some healthy snacks so they are ready when hunger strikes.', icon: '🍎' },
+  { tip: 'Practice sleeping on your left side to improve blood flow.', icon: '🛏️' },
+  { tip: 'Take a moment to talk or sing to your baby.', icon: '🎶' },
+  { tip: 'Limit caffeine today and opt for a warm herbal tea.', icon: '🍵' },
+  { tip: 'Stretch your calves gently before bed to prevent leg cramps.', icon: '🦵' },
+  { tip: 'Focus on small, frequent meals to keep nausea at bay.', icon: '🥪' },
+  { tip: 'Ask for help with a chore you usually do yourself.', icon: '🤝' },
+  { tip: 'Treat yourself to your favorite healthy pregnancy craving.', icon: '🍓' },
+  { tip: 'Spend a few minutes visualizing a positive birth experience.', icon: '✨' },
+  { tip: 'Avoid screens 30 minutes before bed for better sleep.', icon: '📱' },
+  { tip: 'Eat an iron-rich meal, like lentils, beans, or lean meat.', icon: '🥩' },
+  { tip: 'Take deep breaths if you feel overwhelmed. You are doing great.', icon: '🌬️' },
+  { tip: 'Plan a relaxing date night or self-care evening.', icon: '🕯️' }
 ];
 
 const WEEKLY_DATA: Record<number, { fetal: string; maternal: string; todo: string; ancPreview: string }> = {
@@ -56,7 +78,7 @@ const WEEKLY_DATA: Record<number, { fetal: string; maternal: string; todo: strin
   28: { fetal: 'Baby\'s eyes can now open and close.', maternal: 'Third trimester begins! Fatigue may return.', todo: 'Take Glucose Tolerance Test', ancPreview: 'Antibody screen (if Rh negative) & iron check' },
   32: { fetal: 'Baby is practicing breathing movements.', maternal: 'Shortness of breath as uterus pushes up.', todo: 'Pack your hospital bag', ancPreview: 'Discuss birth plan & signs of preterm labor' },
   36: { fetal: 'Baby is rapidly gaining fat (1 oz/day).', maternal: 'Baby might "drop" lower into your pelvis.', todo: 'Install the car seat', ancPreview: 'Group B Strep (GBS) swab test' },
-  40: { fetal: 'Baby is fully cooked and ready to meet you!', maternal: 'The waiting game. Rest as much as possible.', todo: 'Rest and watch for signs of active labor', ancPreview: 'Cervical check & membrane sweep discussion' },
+  40: { fetal: 'Your baby has reached full term and is ready to meet you!', maternal: 'The waiting game. Rest as much as possible.', todo: 'Rest and watch for signs of active labor', ancPreview: 'Cervical check & membrane sweep discussion' },
 };
 
 const getWeeklyData = (weeks: number) => {
@@ -163,7 +185,8 @@ export default function HomeScreen({ navigation }: any) {
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  const dayIndex = new Date().getDay() % DAILY_TIPS.length;
+  const dayOfYear = Math.floor((new Date().getTime() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24);
+  const dayIndex = dayOfYear % DAILY_TIPS.length;
   const todayTip = DAILY_TIPS[dayIndex];
   
   const todayDateFormatted = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
@@ -423,7 +446,7 @@ export default function HomeScreen({ navigation }: any) {
             
             {/* Centered Image (Floating) */}
             <View style={{ padding: 24, alignItems: 'center' }}>
-              <Typography variant="caption2" style={[styles.halfCardLabel, { marginBottom: 20, letterSpacing: 1.5 }]}>CURRENT BABY SIZE</Typography>
+              <Typography variant="caption2" style={[styles.halfCardLabel, { marginBottom: 20, letterSpacing: 1.5 }]}>FETAL DEVELOPMENT</Typography>
               
               <View style={{ 
                 width: 140, 
@@ -431,7 +454,7 @@ export default function HomeScreen({ navigation }: any) {
                 justifyContent: 'center', 
                 alignItems: 'center', 
                 marginBottom: 24,
-                backgroundColor: '#FFFFFF',
+                backgroundColor: '#000000',
                 borderRadius: 70,
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 4 },
@@ -441,12 +464,12 @@ export default function HomeScreen({ navigation }: any) {
               }}>
                 <Image 
                   source={babySize.image} 
-                  style={{ width: '80%', height: '80%' }} 
-                  resizeMode="contain" 
+                  style={{ width: '100%', height: '100%', borderRadius: 70 }} 
+                  resizeMode="cover" 
                 />
               </View>
 
-              <Typography variant="title2" style={[styles.halfCardTitle, { marginBottom: 20, fontSize: 26 }]}>{babySize.fruitName}</Typography>
+              <Typography variant="title2" style={[styles.halfCardTitle, { marginBottom: 20, fontSize: 26 }]}>{babySize.stageName}</Typography>
               
               <View style={{ flexDirection: 'row', gap: 12, width: '100%' }}>
                 <View style={{ flex: 1, backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', padding: 16, borderRadius: 16 }}>

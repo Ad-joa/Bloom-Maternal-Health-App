@@ -18,7 +18,7 @@ type AuthMode = 'login' | 'signup' | 'reset';
 type RegistrationStep = 'details' | 'verification' | 'complete';
 
 type AuthScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Auth' | 'Welcome'>;
-type Props = { navigation: AuthScreenNavigationProp };
+type Props = { navigation: AuthScreenNavigationProp; route?: any };
 
 // --- Password Strength Utility ---
 interface PasswordStrength {
@@ -47,7 +47,7 @@ const calculatePasswordStrength = (password: string): PasswordStrength => {
   return { score, feedback };
 };
 
-export default function AuthScreen({ navigation }: Props) {
+export default function AuthScreen({ navigation, route }: Props) {
   const { theme } = useTheme();
   const { isDark } = useTheme();
   const styles = getStyles(theme, isDark);
@@ -115,7 +115,8 @@ export default function AuthScreen({ navigation }: Props) {
           const dataToSubmit = { 
             name: formData.name, 
             email: formData.email, 
-            password: formData.password 
+            password: formData.password,
+            has_accepted_terms: route?.params?.hasAcceptedTerms || false
           };
           const response = await registerUser(dataToSubmit);
           setRegisteredUser(response);

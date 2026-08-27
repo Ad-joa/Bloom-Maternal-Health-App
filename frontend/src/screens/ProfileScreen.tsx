@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView, Switch, StatusBar } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Switch, StatusBar, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import { getSymptomLogs } from '../api/api';
+import { getSymptomLogs, deleteAccount } from '../api/api';
 import { BackgroundMesh } from '../components/BackgroundMesh';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -39,6 +39,28 @@ export default function ProfileScreen({ navigation }: any) {
   const changeLanguage = (lang: string) => {
     i18n.changeLanguage(lang);
     setSelectedLang(lang);
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Delete Account",
+      "Are you sure you want to permanently delete your account? This action cannot be undone and all your health data will be lost.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete Permanently", 
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteAccount();
+              logout();
+            } catch (e) {
+              Alert.alert("Error", "Failed to delete account. Please try again.");
+            }
+          }
+        }
+      ]
+    );
   };
 
   const handleExportPDF = async () => {
@@ -293,6 +315,14 @@ export default function ProfileScreen({ navigation }: any) {
             <View style={styles.logoutCard}>
               <Ionicons name="log-out" size={20} color={theme.colors.danger} />
               <Typography variant="body" style={styles.logoutText}>Log Out</Typography>
+            </View>
+          </TouchableOpacity>
+
+          {/* Delete Account */}
+          <TouchableOpacity onPress={handleDeleteAccount} style={[styles.logoutButton, { marginTop: 12 }]} activeOpacity={0.8}>
+            <View style={[styles.logoutCard, { borderColor: '#FF3B30', backgroundColor: 'rgba(255, 59, 48, 0.05)' }]}>
+              <Ionicons name="trash" size={20} color="#FF3B30" />
+              <Typography variant="body" style={[styles.logoutText, { color: '#FF3B30' }]}>Delete Account</Typography>
             </View>
           </TouchableOpacity>
 

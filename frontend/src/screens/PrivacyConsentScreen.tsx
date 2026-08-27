@@ -17,7 +17,7 @@ export default function PrivacyConsentScreen({ navigation }: any) {
 
   const handleProceed = () => {
     if (agreed) {
-      navigation.navigate('Auth'); 
+      navigation.navigate('Auth', { hasAcceptedTerms: true }); 
     }
   };
 

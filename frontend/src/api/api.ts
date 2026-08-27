@@ -162,6 +162,16 @@ export const registerUser = async (userData: any) => {
     }
 };
 
+export const deleteAccount = async () => {
+    try {
+        const response = await apiClient.delete('/auth/account');
+        return response.data;
+    } catch (error) {
+        console.error("Error deleting account:", error);
+        throw error;
+    }
+};
+
 export const onboardUser = async (
     userId: number,
     data: {

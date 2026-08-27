@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../lib/prisma';
 import { z } from 'zod';
 import { validate } from '../middleware/validate';
+import { authenticateToken } from '../middleware/authMiddleware';
 import { AppError } from '../utils/AppError';
 
 const router = express.Router();
@@ -25,7 +26,7 @@ export const excludePassword = (user: any) => {
 
 router.post('/register', async (req, res, next) => {
   try {
-    const { email, password, name, role } = req.body;
+    const { email, password, name, role, has_accepted_terms } = req.body;
     
     const existing = await (prisma as any).users.findUnique({ where: { email } });
     if (existing) {
@@ -38,7 +39,9 @@ router.post('/register', async (req, res, next) => {
         email, 
         name, 
         hashed_password,
-        role: role || 'mother' // Optional: support clinician role
+        role: role || 'mother',
+        has_accepted_terms: has_accepted_terms || false,
+        terms_accepted_at: has_accepted_terms ? new Date() : null
       }
     });
 
@@ -86,6 +89,20 @@ router.post('/login', validate(loginSchema), async (req, res, next) => {
       token,
       user: excludePassword(user)
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.delete('/account', authenticateToken, async (req: any, res, next) => {
+  try {
+    const userId = req.user.userId;
+    
+    await (prisma as any).users.delete({
+      where: { id: userId }
+    });
+
+    res.json({ message: "Account deleted successfully" });
   } catch (error) {
     next(error);
   }
