@@ -24,7 +24,17 @@ export const excludePassword = (user: any) => {
   return userWithoutPassword;
 };
 
-router.post('/register', async (req, res, next) => {
+const registerSchema = z.object({
+  body: z.object({
+    email: z.string().email('Invalid email format'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    name: z.string().optional(),
+    role: z.string().optional(),
+    has_accepted_terms: z.boolean().optional()
+  })
+});
+
+router.post('/register', validate(registerSchema), async (req, res, next) => {
   try {
     const { email, password, name, role, has_accepted_terms } = req.body;
     
