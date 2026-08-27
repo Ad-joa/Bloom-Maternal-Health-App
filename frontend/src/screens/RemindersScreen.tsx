@@ -11,7 +11,7 @@ import * as Notifications from 'expo-notifications';
 import { BackgroundMesh } from '../components/BackgroundMesh';
 import { TextInput } from '../components/TextInput';
 
-import { Bell, Droplet, Pill } from 'lucide-react-native';
+import { Bell, Droplet, Pill, Clock } from 'lucide-react-native';
 import { useAuth } from '../context/AuthContext';
 import { getReminders, createReminder, deleteReminder } from '../api/api';
 
@@ -126,9 +126,15 @@ export default function RemindersScreen() {
             <BlurView intensity={isDark ? 30 : 70} tint={isDark ? 'dark' : 'light'} style={styles.premiumCard}>
               <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.2)']} style={StyleSheet.absoluteFillObject} />
               
-              <View style={styles.cardHeader}>
-                <View style={[styles.iconBox, { backgroundColor: '#E0F2FE' }]}>
-                  <Droplet color="#0284C7" size={20} />
+              <View style={styles.cardTopRow}>
+                <View style={styles.cardHeaderLeft}>
+                  <View style={[styles.iconBox, { backgroundColor: '#E0F2FE' }]}>
+                    <Droplet color="#0284C7" size={20} />
+                  </View>
+                  <View style={styles.headerTextWrap}>
+                    <Typography variant="title2" color={theme.colors.textHigh} style={styles.cardTitle}>Hydration</Typography>
+                    <Typography variant="caption1" color={theme.colors.textMedium}>8-10 glasses daily</Typography>
+                  </View>
                 </View>
                 <Switch 
                   value={hydrationEnabled} 
@@ -136,20 +142,18 @@ export default function RemindersScreen() {
                   trackColor={{ false: 'rgba(0,0,0,0.1)', true: theme.colors.primary }}
                 />
               </View>
-              
-              <View style={styles.cardBody}>
-                <Typography variant="title2" color={theme.colors.textHigh} style={{ fontFamily: theme.typography.families.headingBold }}>Hydration Goal</Typography>
-                <Typography variant="body" color={theme.colors.textMedium} style={{ marginTop: 4 }}>Aim for 8-10 glasses of water daily to support amniotic fluid levels.</Typography>
-              </View>
 
-              <View style={styles.timeInputContainer}>
-                <TextInput
-                  value={hydrationReminder?.time || hydrationTime}
-                  onChangeText={setHydrationTime}
-                  style={styles.timeInput}
-                  placeholderTextColor={theme.colors.textMedium}
-                  editable={!hydrationEnabled}
-                />
+              <View style={styles.cardBottomRow}>
+                <View style={[styles.timePill, hydrationEnabled && styles.timePillActive]}>
+                  <Clock color={hydrationEnabled ? theme.colors.primary : theme.colors.textMedium} size={14} />
+                  <TextInput
+                    value={hydrationReminder?.time || hydrationTime}
+                    onChangeText={setHydrationTime}
+                    style={[styles.timeInputText, hydrationEnabled && { color: theme.colors.primary }]}
+                    placeholderTextColor={theme.colors.textMedium}
+                    editable={!hydrationEnabled}
+                  />
+                </View>
               </View>
             </BlurView>
           </View>
@@ -159,9 +163,15 @@ export default function RemindersScreen() {
             <BlurView intensity={isDark ? 30 : 70} tint={isDark ? 'dark' : 'light'} style={styles.premiumCard}>
               <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.2)']} style={StyleSheet.absoluteFillObject} />
               
-              <View style={styles.cardHeader}>
-                <View style={[styles.iconBox, { backgroundColor: '#FCE7F3' }]}>
-                  <Pill color="#BE185D" size={20} />
+              <View style={styles.cardTopRow}>
+                <View style={styles.cardHeaderLeft}>
+                  <View style={[styles.iconBox, { backgroundColor: '#FCE7F3' }]}>
+                    <Pill color="#BE185D" size={20} />
+                  </View>
+                  <View style={styles.headerTextWrap}>
+                    <Typography variant="title2" color={theme.colors.textHigh} style={styles.cardTitle}>Vitamins</Typography>
+                    <Typography variant="caption1" color={theme.colors.textMedium}>Essential nutrients</Typography>
+                  </View>
                 </View>
                 <Switch 
                   value={medicationEnabled} 
@@ -169,20 +179,18 @@ export default function RemindersScreen() {
                   trackColor={{ false: 'rgba(0,0,0,0.1)', true: theme.colors.primary }}
                 />
               </View>
-              
-              <View style={styles.cardBody}>
-                <Typography variant="title2" color={theme.colors.textHigh} style={{ fontFamily: theme.typography.families.headingBold }}>Prenatal Vitamins</Typography>
-                <Typography variant="body" color={theme.colors.textMedium} style={{ marginTop: 4 }}>Essential nutrients for your baby's development.</Typography>
-              </View>
 
-              <View style={styles.timeInputContainer}>
-                <TextInput
-                  value={medicationReminder?.time || medicationTime}
-                  onChangeText={setMedicationTime}
-                  style={styles.timeInput}
-                  placeholderTextColor={theme.colors.textMedium}
-                  editable={!medicationEnabled}
-                />
+              <View style={styles.cardBottomRow}>
+                <View style={[styles.timePill, medicationEnabled && styles.timePillActive]}>
+                  <Clock color={medicationEnabled ? theme.colors.primary : theme.colors.textMedium} size={14} />
+                  <TextInput
+                    value={medicationReminder?.time || medicationTime}
+                    onChangeText={setMedicationTime}
+                    style={[styles.timeInputText, medicationEnabled && { color: theme.colors.primary }]}
+                    placeholderTextColor={theme.colors.textMedium}
+                    editable={!medicationEnabled}
+                  />
+                </View>
               </View>
             </BlurView>
           </View>
@@ -192,9 +200,15 @@ export default function RemindersScreen() {
             <BlurView intensity={isDark ? 30 : 70} tint={isDark ? 'dark' : 'light'} style={styles.premiumCard}>
               <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.2)']} style={StyleSheet.absoluteFillObject} />
               
-              <View style={styles.cardHeader}>
-                <View style={[styles.iconBox, { backgroundColor: '#FEF3C7' }]}>
-                  <Bell color="#B45309" size={20} />
+              <View style={styles.cardTopRow}>
+                <View style={styles.cardHeaderLeft}>
+                  <View style={[styles.iconBox, { backgroundColor: '#FEF3C7' }]}>
+                    <Bell color="#B45309" size={20} />
+                  </View>
+                  <View style={styles.headerTextWrap}>
+                    <Typography variant="title2" color={theme.colors.textHigh} style={styles.cardTitle}>Daily Check-in</Typography>
+                    <Typography variant="caption1" color={theme.colors.textMedium}>Log your symptoms</Typography>
+                  </View>
                 </View>
                 <Switch 
                   value={generalEnabled} 
@@ -202,20 +216,18 @@ export default function RemindersScreen() {
                   trackColor={{ false: 'rgba(0,0,0,0.1)', true: theme.colors.primary }}
                 />
               </View>
-              
-              <View style={styles.cardBody}>
-                <Typography variant="title2" color={theme.colors.textHigh} style={{ fontFamily: theme.typography.families.headingBold }}>Daily Check-in</Typography>
-                <Typography variant="body" color={theme.colors.textMedium} style={{ marginTop: 4 }}>Take a moment to log your symptoms and connect with Bloom AI.</Typography>
-              </View>
 
-              <View style={styles.timeInputContainer}>
-                <TextInput
-                  value={generalReminder?.time || generalTime}
-                  onChangeText={setGeneralTime}
-                  style={styles.timeInput}
-                  placeholderTextColor={theme.colors.textMedium}
-                  editable={!generalEnabled}
-                />
+              <View style={styles.cardBottomRow}>
+                <View style={[styles.timePill, generalEnabled && styles.timePillActive]}>
+                  <Clock color={generalEnabled ? theme.colors.primary : theme.colors.textMedium} size={14} />
+                  <TextInput
+                    value={generalReminder?.time || generalTime}
+                    onChangeText={setGeneralTime}
+                    style={[styles.timeInputText, generalEnabled && { color: theme.colors.primary }]}
+                    placeholderTextColor={theme.colors.textMedium}
+                    editable={!generalEnabled}
+                  />
+                </View>
               </View>
             </BlurView>
           </View>
@@ -242,38 +254,55 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   premiumCard: {
     padding: 16,
   },
-  cardHeader: {
+  cardTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+  },
+  cardHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  headerTextWrap: {
+    justifyContent: 'center',
+  },
+  cardTitle: {
+    fontFamily: theme.typography.families.headingBold,
   },
   iconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 40,
+    height: 40,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardBody: {
-    marginBottom: 12,
-  },
-  timeInputContainer: {
+  cardBottomRow: {
+    marginTop: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.5)',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+  },
+  timePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: isDark ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.6)',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    gap: 6,
     borderWidth: 1,
     borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
   },
-  timeInput: {
-    flex: 1,
-    fontSize: 16,
+  timePillActive: {
+    backgroundColor: isDark ? 'rgba(theme.colors.primary, 0.1)' : theme.colors.primaryLight + '30',
+    borderColor: theme.colors.primary + '40',
+  },
+  timeInputText: {
+    fontSize: 14,
     fontFamily: theme.typography.families.headingBold,
-    color: theme.colors.textHigh,
+    color: theme.colors.textMedium,
     padding: 0,
-    height: 30,
+    height: 20,
+    minWidth: 70,
   }
 });
