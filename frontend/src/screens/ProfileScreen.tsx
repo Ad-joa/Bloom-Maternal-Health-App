@@ -163,7 +163,7 @@ export default function ProfileScreen({ navigation }: any) {
       value: biometricsEnabled,
       onToggle: toggleBiometrics,
     },
-    { title: 'Help & Support', icon: 'help-circle', onPress: () => {} },
+    { title: 'Help & Support', icon: 'help-circle', onPress: () => navigation.navigate('HelpSupport') },
   ];
 
   return (
