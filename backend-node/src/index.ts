@@ -397,6 +397,22 @@ app.post('/users/:user_id/anc-visits', async (req, res) => {
   }
 });
 
+app.delete('/users/:user_id/anc-visits/:visit_id', async (req, res) => {
+  try {
+    const user_id = parseInt(req.params.user_id);
+    const visit_id = parseInt(req.params.visit_id);
+    
+    await prisma.anc_visits.delete({
+      where: { id: visit_id }
+    });
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ detail: "Server error" });
+  }
+});
+
 app.get('/users/:user_id/partner-summary', async (req, res) => {
   try {
     const user_id = parseInt(req.params.user_id);
