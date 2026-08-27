@@ -256,10 +256,8 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     fontSize: 14,
     fontFamily: theme.typography.families.headingSemibold,
     color: theme.colors.textMedium,
-    padding: 0,
-    margin: 0,
     minWidth: 80,
-    includeFontPadding: false,
-    textAlignVertical: 'center',
+    paddingVertical: 0,
+    marginTop: 2,
   }
 });
