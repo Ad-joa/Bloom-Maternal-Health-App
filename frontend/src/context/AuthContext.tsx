@@ -73,6 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await AsyncStorage.removeItem('@bloom_user');
       await AsyncStorage.removeItem('@bloom_token');
+      await AsyncStorage.removeItem('@app_biometrics_enabled');
       setUser(null);
       setToken(null);
       setIsAuthenticated(false);

@@ -113,7 +113,11 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   bellyAnimation: {
     width: Dimensions.get('window').width * 0.7,
     height: Dimensions.get('window').width * 0.7,
+    borderRadius: (Dimensions.get('window').width * 0.7) / 2,
+    overflow: 'hidden',
+    backgroundColor: '#FFFAF5', // matches the background in TermLoader
     marginBottom: 32,
+    alignSelf: 'center',
   },
   title: {
     color: theme.colors.textHigh,

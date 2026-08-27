@@ -21,6 +21,10 @@ import ANCVisitScreen from './src/screens/ANCVisitScreen';
 import PartnerModeScreen from './src/screens/PartnerModeScreen';
 import CheckInScreen from './src/screens/CheckInScreen';
 import EmergencyLocatorScreen from './src/screens/EmergencyLocatorScreen';
+import MealPlanScreen from './src/screens/MealPlanScreen';
+import RelaxationScreen from './src/screens/RelaxationScreen';
+import FitnessScreen from './src/screens/FitnessScreen';
+import HospitalBagScreen from './src/screens/HospitalBagScreen';
 import { BiometricGate } from './src/components/BiometricGate';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -298,6 +302,26 @@ function Navigation() {
               name="CheckIn"
               component={CheckInScreen}
               options={{ title: 'Daily Check-In' }}
+            />
+            <Stack.Screen
+              name="MealPlan"
+              component={MealPlanScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Relaxation"
+              component={RelaxationScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Fitness"
+              component={FitnessScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="HospitalBag"
+              component={HospitalBagScreen}
+              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="EmergencyLocator"

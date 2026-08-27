@@ -71,10 +71,24 @@ export default function OnboardingScreen({ navigation }: Props) {
   };
 
   const handleNext = () => {
-    if (step === 1 && dueDate) {
-      setIsDeterminingTerm(true);
-      // The TermLoader component handles the timeout and calls onComplete
-      return;
+    if (step === 1 && lastPeriodDate) {
+      const lmpParts = lastPeriodDate.split('/');
+      if (lmpParts.length === 3) {
+        const lmpDate = new Date(`${lmpParts[2]}-${lmpParts[0]}-${lmpParts[1]}T12:00:00Z`);
+        if (!isNaN(lmpDate.getTime())) {
+          const calculatedDueDate = new Date(lmpDate.getTime() + (280 * 24 * 60 * 60 * 1000));
+          const month = String(calculatedDueDate.getUTCMonth() + 1).padStart(2, '0');
+          const day = String(calculatedDueDate.getUTCDate()).padStart(2, '0');
+          const year = calculatedDueDate.getUTCFullYear();
+          const isoDueDate = `${year}-${month}-${day}`;
+          
+          if (dueDate !== isoDueDate) {
+            setDueDate(isoDueDate);
+            setIsDeterminingTerm(true);
+            return;
+          }
+        }
+      }
     }
     
     if (step < TOTAL_STEPS) animateTransition(step + 1);

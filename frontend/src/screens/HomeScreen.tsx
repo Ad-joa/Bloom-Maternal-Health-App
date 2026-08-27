@@ -10,7 +10,7 @@ import { Typography } from '../components/Typography';
 import {
   Activity, Droplets, Stethoscope, Heart, Sun,
   Moon, Sparkles, Bell, ChevronRight, Zap,
-  Baby, Apple, Lightbulb, Calendar, ShoppingBag, Info
+  Baby, Apple, Lightbulb, Calendar, Luggage, Info, Target
 } from 'lucide-react-native';
 import { getWeeksPregnant, getDaysUntilDue } from '../utils/dateUtils';
 import { getAncVisits, getEducationalContent } from '../api/api';
@@ -255,15 +255,28 @@ export default function HomeScreen({ navigation }: any) {
     transform: [{ translateY: headerAnim.interpolate({ inputRange: [0, 1], outputRange: [16, 0] }) }],
   };
 
-  const PREGNANCY_TOOLS = [
-    { label: 'Weight\nTracker',   icon: Activity,    bg: '#F5A623' },
-    { label: 'Kegel\nExercises',  icon: Heart,       bg: '#50E3C2' },
-    { label: 'Kick\nCounter',     icon: Baby,        bg: '#9013FE' },
-    { label: 'Contraction\nCounter', icon: Zap,      bg: '#4A90E2' },
-    { label: 'Calendar\nand Diary',  icon: Calendar, bg: '#E06253' },
-    { label: 'Pregnancy\nItems',  icon: ShoppingBag, bg: '#609B66' },
-    { label: 'Meal\nPlan',        icon: Apple,       bg: '#8CC152' },
+  const ALL_PREGNANCY_TOOLS = [
+    { id: 'Healthy Diet', label: 'Meal\nPlan', icon: Apple, bg: '#8CC152', route: 'MealPlan' },
+    { id: 'Stay Active', label: 'Stay\nActive', icon: Heart, bg: '#50E3C2', route: 'Fitness' },
+    { id: 'Manage Stress', label: 'Manage\nStress', icon: Calendar, bg: '#E06253', route: 'Relaxation' },
+    { id: 'Prepare for Birth', label: 'Hospital\nBag', icon: Luggage, bg: '#609B66', route: 'HospitalBag' },
+    { id: 'weight', label: 'Weight\nTracker', icon: Activity, bg: '#F5A623', route: 'GrowthVisualizer' },
+    { id: 'kick', label: 'Kick\nCounter', icon: Baby, bg: '#9013FE' },
+    { id: 'contraction', label: 'Contraction\nCounter', icon: Zap, bg: '#4A90E2' },
   ];
+
+  const PREGNANCY_TOOLS = React.useMemo(() => {
+    const primaryGoal = user?.primary_goal;
+    if (!primaryGoal) return ALL_PREGNANCY_TOOLS;
+    
+    const tools = [...ALL_PREGNANCY_TOOLS];
+    const index = tools.findIndex(t => t.id === primaryGoal);
+    if (index > -1) {
+      const [primary] = tools.splice(index, 1);
+      return [{ ...primary, isPrimary: true }, ...tools];
+    }
+    return tools;
+  }, [user]);
 
   const calendarDates = React.useMemo(() => {
     const today = new Date();
@@ -577,13 +590,13 @@ export default function HomeScreen({ navigation }: any) {
               <TouchableOpacity
                 key={tool.label}
                 style={[styles.toolCard, { width: 110 }]}
-                onPress={() => Alert.alert('Coming Soon', 'We are building this feature!')}
+                onPress={() => tool.route ? navigation.navigate(tool.route) : Alert.alert('Coming Soon', 'We are building this feature!')}
                 activeOpacity={0.75}
               >
                 <View style={[styles.toolIconWrapper, { backgroundColor: tool.bg }]}>
                   <tool.icon size={26} color={theme.colors.background} strokeWidth={2.5} />
                 </View>
-                <Typography variant="caption1" style={styles.toolLabel} numberOfLines={2}>{tool.label}</Typography>
+                <Typography variant="caption1" style={[styles.toolLabel, tool.isPrimary && { fontFamily: theme.typography.families.headingBold, color: theme.colors.primaryDark }]} numberOfLines={2}>{tool.label}</Typography>
               </TouchableOpacity>
             ))}
           </ScrollView>

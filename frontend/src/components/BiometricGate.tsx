@@ -6,6 +6,7 @@ import { theme } from '../theme/theme';
 import { Typography } from './Typography';
 import { BounceButton } from './BounceButton';
 import { Lock } from 'lucide-react-native';
+import { useAuth } from '../context/AuthContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export const BiometricGate: React.FC<Props> = ({ children }) => {
+  const { isAuthenticated } = useAuth();
   const [isLocked, setIsLocked] = useState(false);
   const [biometricsEnabled, setBiometricsEnabled] = useState(false);
   const appState = React.useRef(AppState.currentState);
@@ -29,17 +31,19 @@ export const BiometricGate: React.FC<Props> = ({ children }) => {
         const isEnabled = enabledStr === 'true';
         setBiometricsEnabled(isEnabled);
         
-        if (isEnabled) {
+        if (isEnabled && isAuthenticated) {
           setIsLocked(true);
-          // Try to authenticate once on startup
+          // Try to authenticate once on startup or when auth changes
           authenticate();
+        } else if (!isAuthenticated) {
+          setIsLocked(false);
         }
       } catch (e) {
         console.error(e);
       }
     };
     init();
-  }, []);
+  }, [isAuthenticated]);
 
   // Handle AppState changes (background to foreground)
   useEffect(() => {
@@ -51,7 +55,7 @@ export const BiometricGate: React.FC<Props> = ({ children }) => {
         // If app comes to foreground and biometrics are enabled, lock it.
         // We skip locking if we are currently authenticating (because returning from 
         // the OS FaceID prompt itself triggers an inactive->active transition).
-        if (biometricsEnabled && !isAuthenticating.current) {
+        if (isAuthenticated && biometricsEnabled && !isAuthenticating.current) {
           setIsLocked(true);
         }
       }
@@ -61,7 +65,7 @@ export const BiometricGate: React.FC<Props> = ({ children }) => {
     return () => {
       subscription.remove();
     };
-  }, [biometricsEnabled]);
+  }, [biometricsEnabled, isAuthenticated]);
 
   const authenticate = async () => {
     if (isAuthenticating.current) return;
@@ -99,7 +103,7 @@ export const BiometricGate: React.FC<Props> = ({ children }) => {
   return (
     <View style={{ flex: 1 }}>
       {children}
-      {isLocked && (
+      {isAuthenticated && isLocked && (
         <View style={[StyleSheet.absoluteFill, { zIndex: 9999, elevation: 9999 }]}>
           <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={StyleSheet.absoluteFillObject} />
           <SafeAreaView style={styles.lockedContainer}>
