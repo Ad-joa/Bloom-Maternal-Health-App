@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Animated, Platform, FlatList, KeyboardAvoidingView, Switch, UIManager, LayoutAnimation, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Animated, Platform, FlatList, KeyboardAvoidingView, Switch, UIManager, LayoutAnimation, ActivityIndicator, Modal, TextInput as RNTextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
@@ -17,6 +17,8 @@ export default function CommunityScreen({ navigation, isNested }: any) {
   const styles = getStyles(theme, isDark);
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [newPostContent, setNewPostContent] = useState('');
 
   React.useEffect(() => {
     // Listen for initial data payload
@@ -25,14 +27,20 @@ export default function CommunityScreen({ navigation, isNested }: any) {
       setLoading(false);
     });
 
-    // Listen for live updates (e.g. someone else likes a post)
+    // Listen for live updates
     socket.on('posts_updated', (data) => {
       setPosts(data);
     });
 
+    // Fallback timeout in case the WebSocket fails to connect
+    const timeout = setTimeout(() => {
+      setLoading(false);
+    }, 2000);
+
     return () => {
       socket.off('init_posts');
       socket.off('posts_updated');
+      clearTimeout(timeout);
     };
   }, []);
 
@@ -52,6 +60,33 @@ export default function CommunityScreen({ navigation, isNested }: any) {
     // Send to backend for real-time broadcast
     socket.emit('toggle_like', id);
   };
+
+  const handleCreatePost = () => {
+    if (!newPostContent.trim()) return;
+    
+    socket.emit('create_post', {
+      author: 'Mama',
+      week: 32,
+      content: newPostContent.trim()
+    });
+    
+    setNewPostContent('');
+    setModalVisible(false);
+  };
+
+  const renderEmptyState = () => (
+    <View style={styles.emptyStateContainer}>
+      <View style={styles.emptyStateIconWrapper}>
+        <Ionicons name="chatbubbles-outline" size={48} color={theme.colors.primaryDark} />
+      </View>
+      <Typography variant="title2" style={{ marginTop: 16, marginBottom: 8, textAlign: 'center' }}>
+        It's quiet in here...
+      </Typography>
+      <Typography variant="body" color={theme.colors.textMedium} style={{ textAlign: 'center', paddingHorizontal: 32 }}>
+        No one has posted in this community yet. Be the first to start the conversation!
+      </Typography>
+    </View>
+  );
 
   const renderPost = ({ item, index }: { item: any, index: number }) => (
     <View >
@@ -110,26 +145,56 @@ export default function CommunityScreen({ navigation, isNested }: any) {
             data={posts}
             keyExtractor={item => item.id}
             renderItem={renderPost}
-            contentContainerStyle={styles.listContent}
+            ListEmptyComponent={renderEmptyState}
+            contentContainerStyle={[styles.listContent, posts.length === 0 && { flex: 1 }]}
             showsVerticalScrollIndicator={false}
           />
         )}
 
-      {/* Floating Action Button for Real-Time Testing */}
+      {/* Floating Action Button */}
       <TouchableOpacity 
         style={styles.fab}
-        onPress={() => {
-          socket.emit('create_post', {
-            author: 'You',
-            week: 28,
-            content: "Just testing the new Real-Time WebSocket connection! This should pop up for everyone instantly."
-          });
-        }}
+        onPress={() => setModalVisible(true)}
       >
-        <BounceButton style={styles.fab}>
+        <View style={styles.fabInner}>
           <Ionicons name="add" size={32} color={theme.colors.background} />
-        </BounceButton>
+        </View>
       </TouchableOpacity>
+
+      {/* Create Post Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: theme.colors.background }]}>
+            <View style={styles.modalHeader}>
+              <Typography variant="title3">Start a Conversation</Typography>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Ionicons name="close" size={24} color={theme.colors.textHigh} />
+              </TouchableOpacity>
+            </View>
+            <RNTextInput
+              style={[styles.modalInput, { color: theme.colors.textHigh, borderColor: theme.colors.border }]}
+              placeholder="What's on your mind?"
+              placeholderTextColor={theme.colors.textMedium}
+              multiline
+              autoFocus
+              value={newPostContent}
+              onChangeText={setNewPostContent}
+            />
+            <BounceButton 
+              style={[styles.modalSubmitButton, { backgroundColor: newPostContent.trim() ? theme.colors.primary : theme.colors.border }]}
+              onPress={handleCreatePost}
+              disabled={!newPostContent.trim()}
+            >
+              <Typography variant="headline" color={theme.colors.background}>Post</Typography>
+            </BounceButton>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </>
   );
 
@@ -153,6 +218,20 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: Dimensions.get('window').height * 0.15,
+  },
+  emptyStateIconWrapper: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -224,5 +303,49 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 6,
+  },
+  fabInner: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: theme.spacing[5],
+    paddingBottom: Platform.OS === 'ios' ? 40 : theme.spacing[5],
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 10,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing[4],
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: theme.spacing[4],
+    fontSize: 16,
+    fontFamily: theme.typography.families.bodyRegular,
+    minHeight: 100,
+    textAlignVertical: 'top',
+    marginBottom: theme.spacing[4],
+  },
+  modalSubmitButton: {
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
   }
 });

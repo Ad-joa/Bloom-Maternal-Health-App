@@ -196,6 +196,24 @@ export const onboardUser = async (
     }
 };
 
+export const getProfile = async () => {
+    try {
+        const response = await apiClient.get('/users/me');
+        return response.data;
+    } catch (error: any) {
+        throw error.response?.data || error.message;
+    }
+};
+
+export const updateUserProfile = async (userId: number, data: any) => {
+    try {
+        const response = await apiClient.put(`/users/${userId}`, data);
+        return response.data;
+    } catch (error: any) {
+        throw error.response?.data || error.message;
+    }
+};
+
 export const getAncVisits = async () => {
     try {
         const response = await apiClient.get(`/anc`);

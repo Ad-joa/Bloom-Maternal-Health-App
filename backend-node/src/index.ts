@@ -464,6 +464,43 @@ app.get('/users/:user_id/partner-summary', async (req, res) => {
   }
 });
 
+app.put('/users/:id', async (req, res) => {
+  try {
+    const user_id = parseInt(req.params.id);
+    const data = req.body;
+
+    const user = await prisma.users.findUnique({ where: { id: user_id } });
+    if (!user) {
+      return res.status(404).json({ detail: "User not found" });
+    }
+
+    const updatedUser = await prisma.users.update({
+      where: { id: user_id },
+      data: {
+        name: data.name ?? user.name,
+        trimester: data.trimester ?? user.trimester,
+        due_date: data.due_date ?? user.due_date,
+        is_first_pregnancy: data.is_first_pregnancy ?? user.is_first_pregnancy,
+        medical_conditions: data.medical_conditions ?? user.medical_conditions,
+        age: data.age ?? user.age,
+        weight: data.weight ?? user.weight,
+        primary_goal: data.primary_goal ?? user.primary_goal,
+        dietary_preferences: data.dietary_preferences ?? user.dietary_preferences,
+        emergency_contact_name: data.emergency_contact_name ?? user.emergency_contact_name,
+        emergency_contact_phone: data.emergency_contact_phone ?? user.emergency_contact_phone,
+        last_period_date: data.last_period_date ?? user.last_period_date,
+        blood_group: data.blood_group ?? user.blood_group,
+        height: data.height ?? user.height,
+      }
+    });
+
+    res.json(excludePassword(updatedUser));
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ detail: "Server error" });
+  }
+});
+
 // --- ANC Visits ---
 app.get('/users/:id/anc-visits', async (req, res) => {
   try {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView, Switch, StatusBar, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Switch, StatusBar, Alert, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
@@ -11,17 +11,46 @@ import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import { getSymptomLogs, deleteAccount } from '../api/api';
+import { getSymptomLogs, deleteAccount, updateUserProfile } from '../api/api';
 import { BackgroundMesh } from '../components/BackgroundMesh';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ProfileScreen({ navigation }: any) {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const { theme, isDark, toggleTheme } = useTheme();
   const styles = getStyles(theme, isDark);
   const { i18n } = useTranslation();
   const [biometricsEnabled, setBiometricsEnabled] = useState(false);
   const [selectedLang, setSelectedLang] = useState(i18n.language || 'en');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: user?.name || '',
+    due_date: user?.due_date || '',
+    trimester: user?.trimester?.toString() || '',
+    last_period_date: user?.last_period_date || '',
+    blood_group: user?.blood_group || '',
+    height: user?.height || '',
+    dietary_preferences: user?.dietary_preferences || '',
+    medical_conditions: user?.medical_conditions || '',
+    emergency_contact_name: user?.emergency_contact_name || '',
+    emergency_contact_phone: user?.emergency_contact_phone || ''
+  });
+
+  const handleSave = async () => {
+    try {
+      if (!user?.id) return;
+      const updatedUser = await updateUserProfile(user.id, {
+        ...editForm,
+        trimester: editForm.trimester ? parseInt(editForm.trimester) : undefined
+      });
+      await updateUser(updatedUser);
+      setIsEditing(false);
+      Alert.alert("Success", "Profile updated successfully!");
+    } catch (e) {
+      console.error(e);
+      Alert.alert("Error", "Failed to update profile.");
+    }
+  };
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -146,9 +175,35 @@ export default function ProfileScreen({ navigation }: any) {
         {/* Header */}
         <View style={styles.header}>
           <Typography variant="largeTitle" style={styles.headerTitle}>Profile</Typography>
-          <TouchableOpacity style={styles.themeToggle} onPress={toggleTheme}>
-            <Ionicons name={isDark ? 'sunny' : 'moon'} size={22} color={theme.colors.primaryDark} />
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            {isEditing ? (
+              <>
+                <TouchableOpacity style={styles.themeToggle} onPress={() => {
+                  setEditForm({
+                    name: user?.name || '', due_date: user?.due_date || '', trimester: user?.trimester?.toString() || '',
+                    last_period_date: user?.last_period_date || '', blood_group: user?.blood_group || '', height: user?.height || '',
+                    dietary_preferences: user?.dietary_preferences || '', medical_conditions: user?.medical_conditions || '',
+                    emergency_contact_name: user?.emergency_contact_name || '', emergency_contact_phone: user?.emergency_contact_phone || ''
+                  });
+                  setIsEditing(false);
+                }}>
+                  <Ionicons name="close" size={22} color={theme.colors.danger} />
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.themeToggle, { backgroundColor: theme.colors.primaryDark, borderColor: theme.colors.primaryDark }]} onPress={handleSave}>
+                  <Ionicons name="checkmark" size={22} color={theme.colors.background} />
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <TouchableOpacity style={styles.themeToggle} onPress={() => setIsEditing(true)}>
+                  <Ionicons name="pencil" size={20} color={theme.colors.primaryDark} />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.themeToggle} onPress={toggleTheme}>
+                  <Ionicons name={isDark ? 'sunny' : 'moon'} size={22} color={theme.colors.primaryDark} />
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
         </View>
 
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -163,7 +218,17 @@ export default function ProfileScreen({ navigation }: any) {
                   {user?.name ? user.name[0].toUpperCase() : 'B'}
                 </Typography>
               </View>
-              <Typography variant="title2" style={styles.name}>{user?.name || 'Bloom User'}</Typography>
+              {isEditing ? (
+                <TextInput
+                  style={[styles.inputInline, { fontSize: 22, fontFamily: theme.typography.families.headingBold, textAlign: 'center', marginBottom: 4 }]}
+                  value={editForm.name}
+                  onChangeText={(val) => setEditForm({ ...editForm, name: val })}
+                  placeholder="Your Name"
+                  placeholderTextColor={theme.colors.textMedium}
+                />
+              ) : (
+                <Typography variant="title2" style={styles.name}>{user?.name || 'Bloom User'}</Typography>
+              )}
               <Typography variant="body" style={styles.email}>{user?.email || 'user@example.com'}</Typography>
             </View>
           </View>
@@ -202,19 +267,28 @@ export default function ProfileScreen({ navigation }: any) {
               <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
               <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
               {[
-                { icon: 'flag', label: 'Primary Goal', value: user?.primary_goal || 'Not set' },
-                { icon: 'calendar', label: 'Due Date', value: user?.due_date ? new Date(user.due_date).toLocaleDateString() : 'Not set' },
-                { icon: 'time', label: 'Trimester', value: user?.trimester ? `Trimester ${user.trimester}` : 'Not set' },
-                { icon: 'water', label: 'Last Period', value: user?.last_period_date ? new Date(user.last_period_date).toLocaleDateString() : 'Not set', danger: true },
-                { icon: 'medkit', label: 'Blood Group', value: user?.blood_group || 'Not set' },
-                { icon: 'body', label: 'Height', value: user?.height || 'Not set' },
+                { icon: 'calendar', label: 'Due Date', value: user?.due_date ? new Date(user.due_date).toLocaleDateString() : 'Not set', field: 'due_date' },
+                { icon: 'time', label: 'Trimester', value: user?.trimester ? `Trimester ${user.trimester}` : 'Not set', field: 'trimester' },
+                { icon: 'water', label: 'Last Period', value: user?.last_period_date ? new Date(user.last_period_date).toLocaleDateString() : 'Not set', field: 'last_period_date', danger: true },
+                { icon: 'medkit', label: 'Blood Group', value: user?.blood_group || 'Not set', field: 'blood_group' },
+                { icon: 'body', label: 'Height', value: user?.height || 'Not set', field: 'height' },
               ].map((row, i, arr) => (
                 <View key={row.label} style={[styles.menuItem, i < arr.length - 1 && styles.menuItemBorder]}>
                   <View style={styles.menuItemLeft}>
                     <Ionicons name={row.icon as any} size={20} color={row.danger ? theme.colors.danger : theme.colors.primaryDark} />
                     <Typography variant="body" style={styles.menuItemText}>{row.label}</Typography>
                   </View>
-                  <Typography variant="body" style={styles.menuItemValue}>{row.value}</Typography>
+                  {isEditing ? (
+                    <TextInput
+                      style={styles.inputInline}
+                      value={(editForm as any)[row.field]}
+                      onChangeText={(val) => setEditForm({ ...editForm, [row.field]: val })}
+                      placeholder={row.label}
+                      placeholderTextColor={theme.colors.textMedium}
+                    />
+                  ) : (
+                    <Typography variant="body" style={styles.menuItemValue}>{row.value}</Typography>
+                  )}
                 </View>
               ))}
             </View>
@@ -227,15 +301,25 @@ export default function ProfileScreen({ navigation }: any) {
               <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
               <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
               {[
-                { icon: 'nutrition', label: 'Dietary Preferences', value: user?.dietary_preferences || 'None' },
-                { icon: 'medical', label: 'Medical Conditions', value: user?.medical_conditions || 'None' },
+                { icon: 'nutrition', label: 'Dietary Prefs', value: user?.dietary_preferences || 'None', field: 'dietary_preferences' },
+                { icon: 'medical', label: 'Conditions', value: user?.medical_conditions || 'None', field: 'medical_conditions' },
               ].map((row, i, arr) => (
                 <View key={row.label} style={[styles.menuItem, i < arr.length - 1 && styles.menuItemBorder]}>
                   <View style={styles.menuItemLeft}>
                     <Ionicons name={row.icon as any} size={20} color={theme.colors.primaryDark} />
                     <Typography variant="body" style={styles.menuItemText}>{row.label}</Typography>
                   </View>
-                  <Typography variant="body" style={styles.menuItemValue}>{row.value}</Typography>
+                  {isEditing ? (
+                    <TextInput
+                      style={styles.inputInline}
+                      value={(editForm as any)[row.field]}
+                      onChangeText={(val) => setEditForm({ ...editForm, [row.field]: val })}
+                      placeholder={row.label}
+                      placeholderTextColor={theme.colors.textMedium}
+                    />
+                  ) : (
+                    <Typography variant="body" style={styles.menuItemValue}>{row.value}</Typography>
+                  )}
                 </View>
               ))}
             </View>
@@ -248,15 +332,25 @@ export default function ProfileScreen({ navigation }: any) {
               <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
               <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
               {[
-                { icon: 'person', label: 'Name', value: user?.emergency_contact_name || 'Not set' },
-                { icon: 'call', label: 'Phone', value: user?.emergency_contact_phone || 'Not set' },
+                { icon: 'person', label: 'Name', value: user?.emergency_contact_name || 'Not set', field: 'emergency_contact_name' },
+                { icon: 'call', label: 'Phone', value: user?.emergency_contact_phone || 'Not set', field: 'emergency_contact_phone' },
               ].map((row, i, arr) => (
                 <View key={row.label} style={[styles.menuItem, i < arr.length - 1 && styles.menuItemBorder]}>
                   <View style={styles.menuItemLeft}>
                     <Ionicons name={row.icon as any} size={20} color={theme.colors.danger} />
                     <Typography variant="body" style={styles.menuItemText}>{row.label}</Typography>
                   </View>
-                  <Typography variant="body" style={styles.menuItemValue}>{row.value}</Typography>
+                  {isEditing ? (
+                    <TextInput
+                      style={styles.inputInline}
+                      value={(editForm as any)[row.field]}
+                      onChangeText={(val) => setEditForm({ ...editForm, [row.field]: val })}
+                      placeholder={row.label}
+                      placeholderTextColor={theme.colors.textMedium}
+                    />
+                  ) : (
+                    <Typography variant="body" style={styles.menuItemValue}>{row.value}</Typography>
+                  )}
                 </View>
               ))}
             </View>
@@ -462,4 +556,15 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     color: theme.colors.danger,
     fontFamily: theme.typography.families.headingBold,
   },
+  inputInline: {
+    flex: 1,
+    textAlign: 'right',
+    color: theme.colors.textHigh,
+    fontFamily: theme.typography.families.bodyMedium,
+    fontSize: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.primary,
+    paddingVertical: 4,
+    marginLeft: 16,
+  }
 });

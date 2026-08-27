@@ -28,6 +28,7 @@ interface AuthContextType {
   token: string | null;
   login: (userData: User, token: string) => void;
   logout: () => void;
+  updateUser: (updatedData: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -65,7 +66,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setToken(tokenData);
       setIsAuthenticated(true);
     } catch (e) {
-      console.error("Failed to save user to storage", e);
+      console.error("Failed to save session", e);
+    }
+  };
+
+  const updateUser = async (updatedData: Partial<User>) => {
+    if (user) {
+      const newUser = { ...user, ...updatedData };
+      setUser(newUser);
+      await AsyncStorage.setItem('@bloom_user', JSON.stringify(newUser));
     }
   };
   
@@ -85,7 +94,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   if (isLoading) return null;
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, token, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, token, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

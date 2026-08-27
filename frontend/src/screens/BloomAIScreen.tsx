@@ -7,7 +7,7 @@ import { BounceButton } from '../components/BounceButton';
 import { BackgroundMesh } from '../components/BackgroundMesh';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import { Send, Flower2 } from 'lucide-react-native';
+import { Send, Flower2, ArrowUp, Sparkles } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { getAdvisory } from '../api/api';
@@ -18,6 +18,24 @@ interface Message {
   text: string;
   sender: 'ai' | 'user';
 }
+
+const PROMPT_POOL = [
+  "Is it safe to eat sushi?",
+  "Why am I so tired?",
+  "What should I pack for the hospital?",
+  "How to manage morning sickness?",
+  "Can I drink coffee while pregnant?",
+  "What are good exercises for the second trimester?",
+  "How do I track fetal kicks?",
+  "Tips for better sleep with a bump?",
+  "When should I call my doctor?",
+  "What is a birth plan?",
+  "How can my partner support me right now?",
+  "Are these Braxton Hicks contractions?",
+  "What foods help with heartburn?",
+  "Is it normal to feel this emotional?",
+  "What should I ask at my next ultrasound?"
+];
 
 export default function BloomAIScreen({ navigation, isNested }: any) {
   const { theme, isDark } = useTheme();
@@ -93,18 +111,19 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
     setInputText(prompt);
   };
 
-  const SUGGESTED_PROMPTS = [
-    "Is it safe to eat sushi?",
-    "Why am I so tired?",
-    "What should I pack for the hospital?",
-    "How to manage morning sickness?"
-  ];
+  const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([]);
+
+  React.useEffect(() => {
+    // Randomly select 4 prompts from the pool every time the screen mounts
+    const shuffled = [...PROMPT_POOL].sort(() => 0.5 - Math.random());
+    setSuggestedPrompts(shuffled.slice(0, 4));
+  }, []);
 
   const renderContent = () => (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : undefined} 
       style={styles.container}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? (isNested ? 180 : 90) : 0}
     >
       {!isNested && (
         <View style={styles.header}>
@@ -167,13 +186,13 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
           <BlurView intensity={isDark ? 30 : 60} tint={isDark ? "dark" : "light"} style={[styles.inputArea, { paddingBottom: keyboardVisible ? (Platform.OS === 'ios' ? 16 : 24) : Math.max(insets.bottom, 16) + 70 }]}>
             {/* Suggested Prompts */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.promptsContainer}>
-              {SUGGESTED_PROMPTS.map((prompt, index) => (
+              {suggestedPrompts.map((prompt, index) => (
                 <BounceButton 
                   key={index} 
                   style={styles.promptChip} 
                   onPress={() => handlePromptPress(prompt)}
                 >
-                  <Typography variant="caption1" color={theme.colors.primaryDark} style={{fontFamily: theme.typography.families.headingBold}}>{prompt}</Typography>
+                  <Typography variant="subhead" color={isDark ? '#E0E7FF' : theme.colors.primaryDark} style={{fontFamily: theme.typography.families.headingSemibold}}>{prompt}</Typography>
                 </BounceButton>
               ))}
             </ScrollView>
@@ -192,10 +211,21 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
               </View>
               <BounceButton 
                 onPress={handleSend}
-                style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
                 disabled={!inputText.trim()}
               >
-                <Send color={theme.colors.background} size={20} style={styles.sendIcon} />
+                {inputText.trim() ? (
+                  <LinearGradient
+                    colors={['#818CF8', '#6366F1']}
+                    start={{x: 0, y: 0}} end={{x: 1, y: 1}}
+                    style={styles.sendButtonActive}
+                  >
+                    <ArrowUp color={theme.colors.background} size={22} strokeWidth={3} />
+                  </LinearGradient>
+                ) : (
+                  <View style={styles.sendButtonDisabled}>
+                    <ArrowUp color={theme.colors.textMedium} size={22} strokeWidth={3} />
+                  </View>
+                )}
               </BounceButton>
             </View>
           </BlurView>
@@ -328,26 +358,25 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     color: theme.colors.textHigh,
     fontFamily: theme.typography.families.bodyRegular,
   },
-  sendButton: {
+  sendButtonActive: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: theme.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: '#6366F1',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 6,
   },
   sendButtonDisabled: {
-    backgroundColor: theme.colors.border,
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  sendIcon: {
-    marginLeft: 2, // optical alignment
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   promptsContainer: {
     paddingHorizontal: theme.spacing[4],
@@ -357,10 +386,17 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   promptChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.primaryLight,
-    paddingHorizontal: theme.spacing[3],
-    paddingVertical: theme.spacing[2],
-    borderRadius: theme.radii.pill,
-    marginRight: theme.spacing[2],
+    backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.7)',
+    borderWidth: 1,
+    borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    marginRight: theme.spacing[3],
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
   }
 });
