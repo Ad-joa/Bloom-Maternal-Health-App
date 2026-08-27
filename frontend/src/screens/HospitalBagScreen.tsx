@@ -54,14 +54,15 @@ export default function HospitalBagScreen({ navigation }: any) {
 
   const toggleItem = (categoryId: number, itemId: string) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    const newData = [...checklist];
-    const category = newData[categoryId];
-    const itemIndex = category.items.findIndex(i => i.id === itemId);
-    
-    if (itemIndex > -1) {
-      category.items[itemIndex].checked = !category.items[itemIndex].checked;
-      setChecklist(newData);
-    }
+    setChecklist(prev => prev.map((cat, cIdx) => {
+      if (cIdx !== categoryId) return cat;
+      return {
+        ...cat,
+        items: cat.items.map(item => 
+          item.id === itemId ? { ...item, checked: !item.checked } : item
+        )
+      };
+    }));
   };
 
   const getProgress = () => {
@@ -129,15 +130,17 @@ export default function HospitalBagScreen({ navigation }: any) {
                 {section.items.map((item, i) => (
                   <TouchableOpacity 
                     key={item.id} 
-                    style={styles.itemRow}
+                    style={[styles.itemRow, i === section.items.length - 1 && { borderBottomWidth: 0 }]}
                     activeOpacity={0.7}
                     onPress={() => toggleItem(catIdx, item.id)}
                   >
-                    {item.checked ? (
-                      <CheckCircle2 size={24} color={section.color} style={{ marginTop: -2 }} />
-                    ) : (
-                      <Circle size={24} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)'} style={{ marginTop: -2 }} />
-                    )}
+                    <View style={styles.iconContainer}>
+                      {item.checked ? (
+                        <CheckCircle2 size={24} color={section.color} />
+                      ) : (
+                        <Circle size={24} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)'} />
+                      )}
+                    </View>
                     <Typography 
                       variant="body" 
                       style={[
@@ -235,24 +238,36 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     fontFamily: theme.typography.families.headingSemibold,
   },
   card: {
-    backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#FAFAFA',
-    borderRadius: 20,
-    padding: 8,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#FFFFFF',
+    borderRadius: 24,
+    padding: 12,
     borderWidth: 1,
-    borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+    borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 2,
   },
   itemRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-    paddingVertical: 12,
+    alignItems: 'center',
+    gap: 16,
+    paddingVertical: 14,
     paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+  },
+  iconContainer: {
+    width: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   itemTitle: {
     color: theme.colors.textHigh,
     fontFamily: theme.typography.families.body,
     flex: 1,
-    lineHeight: 22,
+    fontSize: 16,
   },
   itemTitleChecked: {
     color: theme.colors.textMedium,

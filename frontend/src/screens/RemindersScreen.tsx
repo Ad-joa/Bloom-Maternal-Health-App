@@ -52,12 +52,11 @@ export default function RemindersScreen() {
     if (!user?.id) return;
     try {
       if (value) {
-        const hasPermission = await registerForPushNotificationsAsync();
-        if (hasPermission) {
-          await scheduleHydrationReminder(parseInt(hydrationTime.split(':')[0]) || 10, 0); 
-          const newRem = await createReminder(user.id, { title: "Stay Hydrated", type: "hydration", time: hydrationTime });
-          setRemindersList(prev => [...prev, newRem]);
-        }
+        // Try push notifications, but proceed even if it fails
+        try { await registerForPushNotificationsAsync(); } catch (e) {}
+        await scheduleHydrationReminder(parseInt(hydrationTime.split(':')[0]) || 10, 0); 
+        const newRem = await createReminder(user.id, { title: "Stay Hydrated", type: "hydration", time: hydrationTime });
+        setRemindersList(prev => [...prev, newRem]);
       } else {
         if (hydrationReminder) {
           await deleteReminder(user.id, hydrationReminder.id);
@@ -73,12 +72,10 @@ export default function RemindersScreen() {
     if (!user?.id) return;
     try {
       if (value) {
-        const hasPermission = await registerForPushNotificationsAsync();
-        if (hasPermission) {
-          await scheduleMedicationReminder(parseInt(medicationTime.split(':')[0]) || 8, 0);
-          const newRem = await createReminder(user.id, { title: "Prenatal Vitamins", type: "medication", time: medicationTime });
-          setRemindersList(prev => [...prev, newRem]);
-        }
+        try { await registerForPushNotificationsAsync(); } catch (e) {}
+        await scheduleMedicationReminder(parseInt(medicationTime.split(':')[0]) || 8, 0);
+        const newRem = await createReminder(user.id, { title: "Prenatal Vitamins", type: "medication", time: medicationTime });
+        setRemindersList(prev => [...prev, newRem]);
       } else {
         if (medicationReminder) {
           await deleteReminder(user.id, medicationReminder.id);
@@ -125,15 +122,21 @@ export default function RemindersScreen() {
           <View style={styles.premiumCardWrapper}>
             <BlurView intensity={isDark ? 30 : 70} tint={isDark ? 'dark' : 'light'} style={styles.premiumCard}>
               <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.2)']} style={StyleSheet.absoluteFillObject} />
-              
-              <View style={styles.cardTopRow}>
-                <View style={styles.cardHeaderLeft}>
-                  <View style={[styles.iconBox, { backgroundColor: '#E0F2FE' }]}>
-                    <Droplet color="#0284C7" size={20} />
-                  </View>
-                  <View style={styles.headerTextWrap}>
-                    <Typography variant="title2" color={theme.colors.textHigh} style={styles.cardTitle}>Hydration</Typography>
-                    <Typography variant="caption1" color={theme.colors.textMedium}>8-10 glasses daily</Typography>
+              <View style={styles.cardRow}>
+                <View style={[styles.iconBox, { backgroundColor: '#E0F2FE' }]}>
+                  <Droplet color="#0284C7" size={24} />
+                </View>
+                <View style={styles.cardContent}>
+                  <Typography variant="title2" color={theme.colors.textHigh} style={styles.cardTitle}>Hydration</Typography>
+                  <View style={styles.timeInline}>
+                    <Clock color={theme.colors.textMedium} size={14} />
+                    <TextInput
+                      value={hydrationTime}
+                      onChangeText={setHydrationTime}
+                      style={styles.timeInlineInput}
+                      placeholderTextColor={theme.colors.textMedium}
+                      editable={!hydrationEnabled}
+                    />
                   </View>
                 </View>
                 <Switch 
@@ -142,19 +145,6 @@ export default function RemindersScreen() {
                   trackColor={{ false: 'rgba(0,0,0,0.1)', true: theme.colors.primary }}
                 />
               </View>
-
-              <View style={styles.cardBottomRow}>
-                <View style={[styles.timePill, hydrationEnabled && styles.timePillActive]}>
-                  <Clock color={hydrationEnabled ? theme.colors.primary : theme.colors.textMedium} size={16} />
-                  <TextInput
-                    value={hydrationReminder?.time || hydrationTime}
-                    onChangeText={setHydrationTime}
-                    style={[styles.timeInputText, hydrationEnabled && { color: theme.colors.primary }]}
-                    placeholderTextColor={theme.colors.textMedium}
-                    editable={!hydrationEnabled}
-                  />
-                </View>
-              </View>
             </BlurView>
           </View>
 
@@ -162,35 +152,28 @@ export default function RemindersScreen() {
           <View style={styles.premiumCardWrapper}>
             <BlurView intensity={isDark ? 30 : 70} tint={isDark ? 'dark' : 'light'} style={styles.premiumCard}>
               <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.2)']} style={StyleSheet.absoluteFillObject} />
-              
-              <View style={styles.cardTopRow}>
-                <View style={styles.cardHeaderLeft}>
-                  <View style={[styles.iconBox, { backgroundColor: '#FCE7F3' }]}>
-                    <Pill color="#BE185D" size={20} />
-                  </View>
-                  <View style={styles.headerTextWrap}>
-                    <Typography variant="title2" color={theme.colors.textHigh} style={styles.cardTitle}>Vitamins</Typography>
-                    <Typography variant="caption1" color={theme.colors.textMedium}>Essential nutrients</Typography>
+              <View style={styles.cardRow}>
+                <View style={[styles.iconBox, { backgroundColor: '#FCE7F3' }]}>
+                  <Pill color="#BE185D" size={24} />
+                </View>
+                <View style={styles.cardContent}>
+                  <Typography variant="title2" color={theme.colors.textHigh} style={styles.cardTitle}>Vitamins</Typography>
+                  <View style={styles.timeInline}>
+                    <Clock color={theme.colors.textMedium} size={14} />
+                    <TextInput
+                      value={medicationTime}
+                      onChangeText={setMedicationTime}
+                      style={styles.timeInlineInput}
+                      placeholderTextColor={theme.colors.textMedium}
+                      editable={!medicationEnabled}
+                    />
                   </View>
                 </View>
                 <Switch 
                   value={medicationEnabled} 
-                  onValueChange={handleToggleMedication}
+                  onValueChange={handleToggleMedication} 
                   trackColor={{ false: 'rgba(0,0,0,0.1)', true: theme.colors.primary }}
                 />
-              </View>
-
-              <View style={styles.cardBottomRow}>
-                <View style={[styles.timePill, medicationEnabled && styles.timePillActive]}>
-                  <Clock color={medicationEnabled ? theme.colors.primary : theme.colors.textMedium} size={16} />
-                  <TextInput
-                    value={medicationReminder?.time || medicationTime}
-                    onChangeText={setMedicationTime}
-                    style={[styles.timeInputText, medicationEnabled && { color: theme.colors.primary }]}
-                    placeholderTextColor={theme.colors.textMedium}
-                    editable={!medicationEnabled}
-                  />
-                </View>
               </View>
             </BlurView>
           </View>
@@ -199,35 +182,28 @@ export default function RemindersScreen() {
           <View style={styles.premiumCardWrapper}>
             <BlurView intensity={isDark ? 30 : 70} tint={isDark ? 'dark' : 'light'} style={styles.premiumCard}>
               <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.2)']} style={StyleSheet.absoluteFillObject} />
-              
-              <View style={styles.cardTopRow}>
-                <View style={styles.cardHeaderLeft}>
-                  <View style={[styles.iconBox, { backgroundColor: '#FEF3C7' }]}>
-                    <Bell color="#B45309" size={20} />
-                  </View>
-                  <View style={styles.headerTextWrap}>
-                    <Typography variant="title2" color={theme.colors.textHigh} style={styles.cardTitle}>Daily Check-in</Typography>
-                    <Typography variant="caption1" color={theme.colors.textMedium}>Log your symptoms</Typography>
+              <View style={styles.cardRow}>
+                <View style={[styles.iconBox, { backgroundColor: '#FEF3C7' }]}>
+                  <Bell color="#B45309" size={24} />
+                </View>
+                <View style={styles.cardContent}>
+                  <Typography variant="title2" color={theme.colors.textHigh} style={styles.cardTitle}>Daily Check-in</Typography>
+                  <View style={styles.timeInline}>
+                    <Clock color={theme.colors.textMedium} size={14} />
+                    <TextInput
+                      value={generalTime}
+                      onChangeText={setGeneralTime}
+                      style={styles.timeInlineInput}
+                      placeholderTextColor={theme.colors.textMedium}
+                      editable={!generalEnabled}
+                    />
                   </View>
                 </View>
                 <Switch 
                   value={generalEnabled} 
-                  onValueChange={handleToggleGeneral}
+                  onValueChange={handleToggleGeneral} 
                   trackColor={{ false: 'rgba(0,0,0,0.1)', true: theme.colors.primary }}
                 />
-              </View>
-
-              <View style={styles.cardBottomRow}>
-                <View style={[styles.timePill, generalEnabled && styles.timePillActive]}>
-                  <Clock color={generalEnabled ? theme.colors.primary : theme.colors.textMedium} size={16} />
-                  <TextInput
-                    value={generalReminder?.time || generalTime}
-                    onChangeText={setGeneralTime}
-                    style={[styles.timeInputText, generalEnabled && { color: theme.colors.primary }]}
-                    placeholderTextColor={theme.colors.textMedium}
-                    editable={!generalEnabled}
-                  />
-                </View>
               </View>
             </BlurView>
           </View>
@@ -245,66 +221,45 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   header: { marginBottom: theme.spacing[6] },
   title: { marginBottom: theme.spacing[2], fontFamily: theme.typography.families.headingBold },
   premiumCardWrapper: {
-    borderRadius: 20,
+    borderRadius: 24,
     overflow: 'hidden',
-    marginBottom: 12,
+    marginBottom: 16,
     borderWidth: 1,
     borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
   },
   premiumCard: {
-    padding: 16,
+    padding: 20,
   },
-  cardTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  cardHeaderLeft: {
+  cardRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
   },
-  headerTextWrap: {
+  iconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  cardContent: {
+    flex: 1,
     justifyContent: 'center',
   },
   cardTitle: {
     fontFamily: theme.typography.families.headingBold,
+    marginBottom: 4,
   },
-  iconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cardBottomRow: {
-    marginTop: 16,
+  timeInline: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
   },
-  timePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: isDark ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.6)',
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    height: 36,
-    width: 100,
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-  },
-  timePillActive: {
-    backgroundColor: isDark ? 'rgba(theme.colors.primary, 0.1)' : theme.colors.primaryLight + '30',
-    borderColor: theme.colors.primary + '40',
-  },
-  timeInputText: {
-    fontSize: 15,
-    fontFamily: theme.typography.families.headingBold,
+  timeInlineInput: {
+    fontSize: 14,
+    fontFamily: theme.typography.families.headingSemibold,
     color: theme.colors.textMedium,
     padding: 0,
-    height: 20,
-    width: 50,
-    textAlign: 'center',
+    minWidth: 80,
   }
 });
