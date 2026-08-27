@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Modal, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Modal, Alert, Dimensions } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
-import { CheckCircle2, CalendarHeart, Plus, Check } from 'lucide-react-native';
+import { CheckCircle2, CalendarHeart, Plus, Check, Circle, X } from 'lucide-react-native';
 import { useAuth } from '../context/AuthContext';
 import { getAncVisits, createAncVisit, updateAncVisit, getSymptomLogs } from '../api/api';
 import { TextInput } from '../components/TextInput';
 import { Button } from '../components/Button';
+import { BackgroundMesh } from '../components/BackgroundMesh';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const { width } = Dimensions.get('window');
 
 export default function ANCVisitScreen() {
   const { theme } = useTheme();
@@ -17,6 +22,17 @@ export default function ANCVisitScreen() {
   const [visits, setVisits] = useState<any[]>([]);
   const [notes, setNotes] = useState<any[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
+  
+  // Dynamic Checklist State
+  const [checklist, setChecklist] = useState([
+    { id: 1, text: 'Maternal Health Record Book', checked: true },
+    { id: 2, text: 'National Health Insurance Card', checked: true },
+    { id: 3, text: 'List of questions for Dr. Mensah', checked: false }
+  ]);
+
+  const toggleChecklist = (id: number) => {
+    setChecklist(prev => prev.map(item => item.id === id ? { ...item, checked: !item.checked } : item));
+  };
   
   // New Visit Form
   const [newDate, setNewDate] = useState('');
@@ -74,20 +90,23 @@ export default function ANCVisitScreen() {
   const pastVisits = visits.filter(v => v.status === 'completed' || v.attendance_status === 'attended' || (v.status === 'scheduled' && v !== nextVisit)); 
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-          <Typography variant="largeTitle" color={theme.colors.primaryDark}>
-            Antenatal Care
+    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+      <BackgroundMesh />
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+            <Typography variant="largeTitle" color={theme.colors.textHigh} style={{ fontFamily: theme.typography.families.headingBold }}>
+              Antenatal Care
+            </Typography>
+            <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.addBtn}>
+              <LinearGradient colors={[theme.colors.primary, theme.colors.primaryDark]} style={StyleSheet.absoluteFillObject} />
+              <Plus color={theme.colors.background} size={24} />
+            </TouchableOpacity>
+          </View>
+          <Typography variant="body" color={theme.colors.textMedium} style={{marginTop: 8}}>
+            Keep track of your hospital visits.
           </Typography>
-          <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.addBtn}>
-            <Plus color={theme.colors.background} size={24} />
-          </TouchableOpacity>
         </View>
-        <Typography variant="body" color={theme.colors.textMedium} style={{marginTop: 8}}>
-          Keep track of your hospital visits.
-        </Typography>
-      </View>
 
       <Typography variant="title3" style={styles.sectionTitle}>
         Next Appointment
@@ -113,20 +132,28 @@ export default function ANCVisitScreen() {
       <Typography variant="title3" style={styles.sectionTitle}>
         Preparation Checklist
       </Typography>
-      <Card style={styles.card} variant="elevated">
-        <View style={styles.checkItem}>
-          <CheckCircle2 color={theme.colors.success} size={20} />
-          <Typography style={styles.checkText}>Maternal Health Record Book</Typography>
-        </View>
-        <View style={styles.checkItem}>
-          <CheckCircle2 color={theme.colors.success} size={20} />
-          <Typography style={styles.checkText}>National Health Insurance Card</Typography>
-        </View>
-        <View style={styles.checkItem}>
-          <CheckCircle2 color={theme.colors.textMedium} size={20} />
-          <Typography style={styles.checkText}>List of questions for Dr. Mensah</Typography>
-        </View>
-      </Card>
+      <View style={[styles.cardContainer]}>
+        <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+        <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
+        
+        {checklist.map((item, index) => (
+          <TouchableOpacity 
+            key={item.id} 
+            style={[styles.checkItem, index < checklist.length - 1 && styles.borderBottom]} 
+            onPress={() => toggleChecklist(item.id)}
+            activeOpacity={0.7}
+          >
+            {item.checked ? (
+              <CheckCircle2 color={theme.colors.primary} size={24} fill={theme.colors.primaryLight} />
+            ) : (
+              <Circle color={theme.colors.textMedium} size={24} />
+            )}
+            <Typography style={[styles.checkText, item.checked && { color: theme.colors.textMedium, textDecorationLine: 'line-through' }]}>
+              {item.text}
+            </Typography>
+          </TouchableOpacity>
+        ))}
+      </View>
 
       <Typography variant="title3" style={styles.sectionTitle}>
         Doctor's Cheat Sheet
@@ -183,65 +210,138 @@ export default function ANCVisitScreen() {
       )}
 
       {/* Add Visit Modal */}
-      <Modal visible={modalVisible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
+      <Modal visible={modalVisible} transparent animationType="fade">
+        <BlurView intensity={90} tint={isDark ? 'dark' : 'light'} style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Typography variant="title3" style={{marginBottom: 16}}>Schedule Visit</Typography>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <Typography variant="title2" style={{ fontFamily: theme.typography.families.headingBold }}>Schedule Visit</Typography>
+              <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeBtn}>
+                <X color={theme.colors.textHigh} size={20} />
+              </TouchableOpacity>
+            </View>
             
-            <TextInput
-              placeholder="Date (e.g. 25th Nov)"
-              value={newDate}
-              onChangeText={setNewDate}
-            />
-            <TextInput
-              placeholder="Time (e.g. 10:00 AM)"
-              value={newTime}
-              onChangeText={setNewTime}
-            />
-            <TextInput
-              placeholder="Doctor (Optional)"
-              value={newDoctor}
-              onChangeText={setNewDoctor}
-            />
+            <View style={styles.inputGroup}>
+              <Typography variant="caption1" color={theme.colors.textMedium} style={{ marginBottom: 8, marginLeft: 4 }}>DATE</Typography>
+              <TextInput
+                placeholder="e.g. Nov 25th"
+                value={newDate}
+                onChangeText={setNewDate}
+                style={styles.premiumInput}
+                placeholderTextColor={theme.colors.textMedium}
+              />
+            </View>
             
-            <Button title="Save Appointment" onPress={handleSaveVisit} style={{marginTop: 16}} />
-            <Button title="Cancel" onPress={() => setModalVisible(false)} variant="secondary" style={{marginTop: 8}} />
+            <View style={styles.inputGroup}>
+              <Typography variant="caption1" color={theme.colors.textMedium} style={{ marginBottom: 8, marginLeft: 4 }}>TIME</Typography>
+              <TextInput
+                placeholder="e.g. 10:00 AM"
+                value={newTime}
+                onChangeText={setNewTime}
+                style={styles.premiumInput}
+                placeholderTextColor={theme.colors.textMedium}
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Typography variant="caption1" color={theme.colors.textMedium} style={{ marginBottom: 8, marginLeft: 4 }}>DOCTOR (OPTIONAL)</Typography>
+              <TextInput
+                placeholder="e.g. Dr. Mensah"
+                value={newDoctor}
+                onChangeText={setNewDoctor}
+                style={styles.premiumInput}
+                placeholderTextColor={theme.colors.textMedium}
+              />
+            </View>
+            
+            <TouchableOpacity style={styles.premiumSaveBtn} onPress={handleSaveVisit} activeOpacity={0.8}>
+              <LinearGradient colors={[theme.colors.primary, theme.colors.primaryDark]} style={StyleSheet.absoluteFillObject} />
+              <Typography variant="headline" color={theme.colors.background}>Confirm Appointment</Typography>
+            </TouchableOpacity>
           </View>
-        </View>
+        </BlurView>
       </Modal>
 
+      <View style={{height: 100}} />
     </ScrollView>
+    </View>
   );
 }
 
 const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   addBtn: {
-    backgroundColor: theme.colors.primary,
-    padding: 8,
-    borderRadius: 20,
+    padding: 12,
+    borderRadius: 24,
+    overflow: 'hidden',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
-    padding: 24,
+    padding: 20,
+    backgroundColor: 'rgba(0,0,0,0.2)',
   },
   modalContent: {
-    backgroundColor: isDark ? theme.colors.background : theme.colors.surface,
-    borderRadius: 24,
+    backgroundColor: isDark ? theme.colors.surface : '#FFFFFF',
+    borderRadius: 32,
     padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 10,
+    borderWidth: 1,
+    borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)',
+  },
+  closeBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  inputGroup: {
+    marginBottom: 20,
+  },
+  premiumInput: {
+    backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.03)',
+    borderWidth: 1,
+    borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+    borderRadius: 16,
+    fontSize: 16,
+    fontFamily: theme.typography.families.bodyMedium,
+    color: theme.colors.textHigh,
+  },
+  premiumSaveBtn: {
+    height: 56,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    marginTop: 8,
+  },
+  cardContainer: {
+    borderRadius: 24,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)',
+    marginBottom: 24,
+  },
+  borderBottom: {
+    borderBottomWidth: 1,
+    borderBottomColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
   },
   container: {
     flexGrow: 1,
     padding: theme.spacing[5],
-    backgroundColor: theme.colors.surfaceVariant,
+    paddingTop: 60,
   },
   header: {
     marginBottom: theme.spacing[6],
   },
   sectionTitle: {
     marginBottom: theme.spacing[3],
-    marginTop: theme.spacing[4],
+    color: theme.colors.textMedium,
+    fontFamily: theme.typography.families.headingBold,
   },
   highlightCard: {
     backgroundColor: theme.colors.primaryLight,
@@ -258,11 +358,13 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   checkItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    padding: 16,
   },
   checkText: {
     marginLeft: 12,
     color: theme.colors.textHigh,
+    fontFamily: theme.typography.families.bodyMedium,
+    fontSize: 16,
   },
   bullet: {
     marginBottom: 8,
@@ -286,8 +388,4 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  pastCard: {
-    marginBottom: theme.spacing[3],
-    backgroundColor: theme.colors.surface,
-  }
 });

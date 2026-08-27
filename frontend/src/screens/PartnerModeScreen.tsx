@@ -12,6 +12,10 @@ import { getPartnerDashboard, getProfile, linkPartner } from '../api/api';
 import { getWeeksPregnant, getDaysUntilDue } from '../utils/dateUtils';
 import { TextInput } from '../components/TextInput';
 import { Button } from '../components/Button';
+import { Image, Dimensions } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const { width, height } = Dimensions.get('window');
 
 export default function PartnerModeScreen({ navigation }: any) {
 
@@ -60,17 +64,16 @@ export default function PartnerModeScreen({ navigation }: any) {
   };
 
   const isLinked = !!profile?.linked_user_id;
-  const weeksPregnant = user?.due_date ? getWeeksPregnant(user.due_date) : 24;
+  const weeksPregnant = user?.due_date ? getWeeksPregnant(user.due_date) : 14;
   
-  // Simple mock mapping for baby size based on weeks
-  const getBabySize = (weeks: number) => {
-
-
-    if (weeks < 13) return { emoji: '🍋', name: 'Lemon' };
-    if (weeks < 27) return { emoji: '🌽', name: 'Ear of Corn' };
-    return { emoji: '🍉', name: 'Watermelon' };
+  const getFetusImage = (weeks: number) => {
+    if (weeks < 6) return require('../../assets/images/fetus_2.jpg');
+    if (weeks < 11) return require('../../assets/images/fetus_7.jpg');
+    if (weeks < 28) return require('../../assets/images/fetus_14.jpg');
+    if (weeks < 39) return require('../../assets/images/fetus_35.jpg');
+    return require('../../assets/images/fetus_41.jpg');
   };
-  const babySize = getBabySize(weeksPregnant);
+  const babyImage = getFetusImage(weeksPregnant);
 
   if (loading) {
     return (
@@ -82,23 +85,54 @@ export default function PartnerModeScreen({ navigation }: any) {
 
   if (!isLinked) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}>
+        <BackgroundMesh />
         <SafeAreaView style={styles.safeArea}>
           <View style={{ flex: 1, padding: 24, justifyContent: 'center' }}>
-            <Typography variant="largeTitle" align="center" style={{ marginBottom: 16 }}>Partner Sync</Typography>
-            <Typography variant="body" align="center" style={{ marginBottom: 32 }}>
-              To sync accounts, ask your partner for their 6-digit code or enter a code below.
-            </Typography>
-            <Typography variant="headline" align="center" color={theme.colors.primary} style={{ marginBottom: 32 }}>
-              Your Sync Code: {profile?.partner_code || user?.id?.toString().padStart(6, '0')}
-            </Typography>
-            <TextInput 
-              placeholder="Enter Partner's Code"
-              value={linkCode}
-              onChangeText={setLinkCode}
-            />
-            <Button title="Link Accounts" onPress={handleLink} style={{ marginTop: 16 }} />
-            <Button title="Back" onPress={() => navigation.goBack()} variant="secondary" style={{ marginTop: 16 }} />
+            <View style={styles.linkCard}>
+              <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+              <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.2)']} style={StyleSheet.absoluteFillObject} />
+              
+              <View style={styles.iconCircle}>
+                <Heart color={theme.colors.primary} size={32} fill={theme.colors.primaryLight} />
+              </View>
+
+              <Typography variant="title1" align="center" style={{ marginBottom: 16, fontFamily: theme.typography.families.headingBold }}>
+                Partner Sync
+              </Typography>
+              
+              <Typography variant="body" align="center" style={{ marginBottom: 32, color: theme.colors.textMedium }}>
+                Stay connected through every step of the journey. Enter your partner's 6-digit sync code below.
+              </Typography>
+
+              <View style={styles.codeBox}>
+                <Typography variant="caption1" color={theme.colors.textMedium} align="center">YOUR SYNC CODE</Typography>
+                <Typography variant="largeTitle" align="center" color={theme.colors.primaryDark} style={{ letterSpacing: 8, marginTop: 8 }}>
+                  {profile?.partner_code || user?.id?.toString().padStart(6, '0')}
+                </Typography>
+              </View>
+
+              <View style={{marginTop: 32}}>
+                <TextInput 
+                  placeholder="Enter Partner's Code"
+                  value={linkCode}
+                  onChangeText={setLinkCode}
+                  style={styles.premiumInput}
+                  placeholderTextColor={theme.colors.textMedium}
+                  keyboardType="number-pad"
+                  maxLength={6}
+                />
+              </View>
+
+              <TouchableOpacity style={styles.premiumLinkBtn} onPress={handleLink} activeOpacity={0.8}>
+                <LinearGradient colors={[theme.colors.primary, theme.colors.primaryDark]} style={StyleSheet.absoluteFillObject} />
+                <Typography variant="headline" color={theme.colors.background}>Sync Accounts</Typography>
+              </TouchableOpacity>
+              
+              <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginTop: 24, padding: 8 }}>
+                <Typography align="center" color={theme.colors.textMedium}>Maybe Later</Typography>
+              </TouchableOpacity>
+            </View>
           </View>
         </SafeAreaView>
       </View>
@@ -130,8 +164,18 @@ export default function PartnerModeScreen({ navigation }: any) {
             </TouchableOpacity>
           </FadeSlideIn>
 
+          {/* Visual Fetus Representation */}
+          <FadeSlideIn delay={300} duration={500} direction="up" style={styles.imageContainer}>
+            <Image source={babyImage} style={styles.fetusImage} resizeMode="cover" />
+            <LinearGradient colors={['transparent', isDark ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.8)', theme.colors.background]} style={StyleSheet.absoluteFillObject} />
+            <View style={styles.imageOverlay}>
+              <Typography variant="largeTitle" color={theme.colors.textHigh} style={{ fontFamily: theme.typography.families.headingBold }}>Week {weeksPregnant}</Typography>
+              <Typography variant="body" color={theme.colors.textMedium}>{getDaysUntilDue(user?.due_date || '')} days until due date</Typography>
+            </View>
+          </FadeSlideIn>
+
           {/* Stats Grid */}
-          <FadeSlideIn delay={200} duration={500} direction="down">
+          <FadeSlideIn delay={400} duration={500} direction="up">
             <View style={styles.grid}>
               <View style={styles.gridCardWrapper}>
                 <BlurView intensity={80} tint="light" style={styles.gridCard}>
@@ -149,9 +193,9 @@ export default function PartnerModeScreen({ navigation }: any) {
                   <View style={[styles.cardIcon, { backgroundColor: 'rgba(255, 240, 239, 0.8)' }]}>
                     <Baby size={20} color="#E07A5F" strokeWidth={2.5} />
                   </View>
-                  <Typography variant="caption1" color="#636366" style={styles.cardLabel}>BABY SIZE</Typography>
-                  <Typography style={styles.babyEmoji}>{babySize.emoji}</Typography>
-                  <Typography variant="caption2" color="#8E8E93">{babySize.name}</Typography>
+                  <Typography variant="caption1" color="#636366" style={styles.cardLabel}>DUE DATE</Typography>
+                  <Typography style={styles.cardValue} numberOfLines={1} adjustsFontSizeToFit>{getDaysUntilDue(user?.due_date || '')}</Typography>
+                  <Typography variant="caption2" color="#8E8E93">Days Left</Typography>
                 </BlurView>
               </View>
             </View>
@@ -261,6 +305,77 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
     fontSize: 16,
     color: '#636366',
+  },
+  dateText: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 16,
+    color: '#1C1C1E',
+  },
+  logText: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 15,
+    color: '#8E8E93',
+    lineHeight: 22,
+  },
+  linkCard: {
+    borderRadius: 32,
+    overflow: 'hidden',
+    padding: 32,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
+  },
+  iconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: theme.colors.primaryLight + '40',
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginBottom: 24,
+  },
+  codeBox: {
+    backgroundColor: 'rgba(0,0,0,0.03)',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
+  },
+  premiumInput: {
+    backgroundColor: 'rgba(0,0,0,0.03)',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
+    borderRadius: 16,
+    fontSize: 24,
+    fontFamily: theme.typography.families.headingBold,
+    color: theme.colors.textHigh,
+    textAlign: 'center',
+    paddingVertical: 16,
+  },
+  premiumLinkBtn: {
+    height: 56,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    marginTop: 24,
+  },
+  imageContainer: {
+    width: width - 48,
+    height: 300,
+    borderRadius: 32,
+    overflow: 'hidden',
+    marginBottom: 24,
+    backgroundColor: '#000',
+  },
+  fetusImage: {
+    width: '100%',
+    height: '100%',
+  },
+  imageOverlay: {
+    position: 'absolute',
+    bottom: 24,
+    left: 24,
   },
   closeBtn: {
     borderRadius: 24,
