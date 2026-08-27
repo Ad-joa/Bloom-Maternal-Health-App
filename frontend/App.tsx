@@ -25,6 +25,7 @@ import MealPlanScreen from './src/screens/MealPlanScreen';
 import RelaxationScreen from './src/screens/RelaxationScreen';
 import FitnessScreen from './src/screens/FitnessScreen';
 import HospitalBagScreen from './src/screens/HospitalBagScreen';
+import HelpSupportScreen from './src/screens/HelpSupportScreen';
 import { BiometricGate } from './src/components/BiometricGate';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -75,6 +76,7 @@ export type RootStackParamList = {
   Relaxation: undefined;
   Fitness: undefined;
   HospitalBag: undefined;
+  HelpSupport: undefined;
 };
 
 export type MainTabParamList = {
@@ -296,6 +298,11 @@ function Navigation() {
               name="ANCVisit"
               component={ANCVisitScreen}
               options={{ title: 'ANC Visits' }}
+            />
+            <Stack.Screen
+              name="HelpSupport"
+              component={HelpSupportScreen}
+              options={{ title: 'Help & Support' }}
             />
             <Stack.Screen
               name="PartnerMode"
