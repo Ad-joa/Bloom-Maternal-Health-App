@@ -122,7 +122,7 @@ export default function CommunityScreen({ navigation, isNested }: any) {
           socket.emit('create_post', {
             author: 'You',
             week: 28,
-            content: "Just testing the new Real-Time WebSocket connection! This should pop up for everyone instantly. 👋"
+            content: "Just testing the new Real-Time WebSocket connection! This should pop up for everyone instantly."
           });
         }}
       >

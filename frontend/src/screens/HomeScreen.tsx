@@ -286,7 +286,7 @@ export default function HomeScreen({ navigation }: any) {
                 <Typography variant="caption1" style={styles.greetingText}>{greeting}</Typography>
               </View>
               <Typography variant="title1" style={styles.nameText}>
-                {user?.name ? user.name : 'Mama'} 👋
+                {user?.name ? user.name : 'Mama'}
               </Typography>
             </View>
             <TouchableOpacity style={styles.bellBtn} onPress={() => {}}>
