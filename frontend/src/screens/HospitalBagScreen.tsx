@@ -49,7 +49,7 @@ const INITIAL_CHECKLIST = [
 export default function HospitalBagScreen({ navigation }: any) {
   const { theme, isDark } = useTheme();
   const styles = getStyles(theme, isDark);
-  
+
   const [checklist, setChecklist] = useState(INITIAL_CHECKLIST);
 
   const toggleItem = (categoryId: number, itemId: string) => {
@@ -58,7 +58,7 @@ export default function HospitalBagScreen({ navigation }: any) {
       if (cIdx !== categoryId) return cat;
       return {
         ...cat,
-        items: cat.items.map(item => 
+        items: cat.items.map(item =>
           item.id === itemId ? { ...item, checked: !item.checked } : item
         )
       };
@@ -92,7 +92,7 @@ export default function HospitalBagScreen({ navigation }: any) {
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-          
+
           <LinearGradient
             colors={isDark ? ['rgba(224,98,83,0.15)', 'rgba(0,0,0,0)'] : ['rgba(224,98,83,0.15)', 'rgba(255,255,255,0)']}
             style={styles.heroCard}
@@ -104,7 +104,7 @@ export default function HospitalBagScreen({ navigation }: any) {
             <Typography variant="body" style={styles.heroBody}>
               Pack your hospital bag around week 36 so you're ready whenever baby decides to arrive!
             </Typography>
-            
+
             <View style={styles.progressContainer}>
               <View style={styles.progressBarBg}>
                 <View style={[styles.progressBarFill, { width: `${progress.percentage}%` }]} />
@@ -128,8 +128,8 @@ export default function HospitalBagScreen({ navigation }: any) {
 
               <View style={styles.card}>
                 {section.items.map((item, i) => (
-                  <TouchableOpacity 
-                    key={item.id} 
+                  <TouchableOpacity
+                    key={item.id}
                     style={[styles.itemRow, i === section.items.length - 1 && { borderBottomWidth: 0 }]}
                     activeOpacity={0.7}
                     onPress={() => toggleItem(catIdx, item.id)}
@@ -141,10 +141,10 @@ export default function HospitalBagScreen({ navigation }: any) {
                         <Circle size={24} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)'} />
                       )}
                     </View>
-                    <Typography 
-                      variant="body" 
+                    <Typography
+                      variant="body"
                       style={[
-                        styles.itemTitle, 
+                        styles.itemTitle,
                         item.checked && styles.itemTitleChecked
                       ]}
                     >
@@ -155,7 +155,7 @@ export default function HospitalBagScreen({ navigation }: any) {
               </View>
             </View>
           ))}
-          
+
         </ScrollView>
       </SafeAreaView>
     </View>

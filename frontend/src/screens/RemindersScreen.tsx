@@ -113,7 +113,7 @@ export default function RemindersScreen() {
             <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.title}>
               Daily Goals
             </Typography>
-            <Typography variant="body" color={theme.colors.textMedium}>
+            <Typography variant="body" style={{ color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)' }}>
               Custom reminders to keep you on track.
             </Typography>
           </View>
@@ -135,7 +135,6 @@ export default function RemindersScreen() {
                       onChangeText={setHydrationTime}
                       style={styles.timeInlineInput}
                       placeholderTextColor={theme.colors.textMedium}
-                      editable={!hydrationEnabled}
                     />
                   </View>
                 </View>
@@ -165,7 +164,6 @@ export default function RemindersScreen() {
                       onChangeText={setMedicationTime}
                       style={styles.timeInlineInput}
                       placeholderTextColor={theme.colors.textMedium}
-                      editable={!medicationEnabled}
                     />
                   </View>
                 </View>
@@ -195,7 +193,6 @@ export default function RemindersScreen() {
                       onChangeText={setGeneralTime}
                       style={styles.timeInlineInput}
                       placeholderTextColor={theme.colors.textMedium}
-                      editable={!generalEnabled}
                     />
                   </View>
                 </View>
@@ -221,26 +218,26 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   header: { marginBottom: theme.spacing[6] },
   title: { marginBottom: theme.spacing[2], fontFamily: theme.typography.families.headingBold },
   premiumCardWrapper: {
-    borderRadius: 24,
+    borderRadius: 20,
     overflow: 'hidden',
-    marginBottom: 16,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
   },
   premiumCard: {
-    padding: 20,
+    padding: 16,
   },
   cardRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   iconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 16,
+    marginRight: 14,
   },
   cardContent: {
     flex: 1,
@@ -260,6 +257,9 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     fontFamily: theme.typography.families.headingSemibold,
     color: theme.colors.textMedium,
     padding: 0,
+    margin: 0,
     minWidth: 80,
+    includeFontPadding: false,
+    textAlignVertical: 'center',
   }
 });
