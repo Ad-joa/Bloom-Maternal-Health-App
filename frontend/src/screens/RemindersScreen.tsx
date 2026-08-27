@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Animated, Platform, FlatList, KeyboardAvoidingView, Switch, UIManager, LayoutAnimation, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Animated, Platform, FlatList, KeyboardAvoidingView, Switch, UIManager, LayoutAnimation, ActivityIndicator, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
@@ -15,6 +15,19 @@ import { Bell, Droplet, Pill, Clock } from 'lucide-react-native';
 import { useAuth } from '../context/AuthContext';
 import { getReminders, createReminder, deleteReminder } from '../api/api';
 
+function parseTimeString(timeStr: string) {
+  const match = timeStr.trim().match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+  if (!match) return { hour: 10, minute: 0 };
+  let hour = parseInt(match[1], 10);
+  const minute = parseInt(match[2], 10);
+  const ampm = match[3]?.toUpperCase();
+
+  if (ampm === 'PM' && hour < 12) hour += 12;
+  if (ampm === 'AM' && hour === 12) hour = 0;
+
+  return { hour, minute };
+}
+
 export default function RemindersScreen() {
   const { theme } = useTheme();
   const { isDark } = useTheme();
@@ -28,14 +41,21 @@ export default function RemindersScreen() {
   const [medicationTime, setMedicationTime] = useState('08:00 AM');
   const [generalTime, setGeneralTime] = useState('12:00 PM');
 
+  // Modal State
+  const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [modalTime, setModalTime] = useState('');
+  
+  // Optimistic switch state for instant visual feedback
+  const [optimisticSwitches, setOptimisticSwitches] = useState<{ [key: string]: boolean }>({});
+
   // Derive switch states from backend data
   const hydrationReminder = remindersList.find(r => r.type === 'hydration');
   const medicationReminder = remindersList.find(r => r.type === 'medication');
   const generalReminder = remindersList.find(r => r.type === 'generic');
 
-  const hydrationEnabled = !!hydrationReminder?.is_active;
-  const medicationEnabled = !!medicationReminder?.is_active;
-  const generalEnabled = !!generalReminder?.is_active;
+  const hydrationEnabled = optimisticSwitches.hydration !== undefined ? optimisticSwitches.hydration : !!hydrationReminder?.is_active;
+  const medicationEnabled = optimisticSwitches.medication !== undefined ? optimisticSwitches.medication : !!medicationReminder?.is_active;
+  const generalEnabled = optimisticSwitches.generic !== undefined ? optimisticSwitches.generic : !!generalReminder?.is_active;
 
   useEffect(() => {
     const fetchReminders = async () => {
@@ -48,60 +68,81 @@ export default function RemindersScreen() {
     fetchReminders();
   }, [user]);
 
-  const handleToggleHydration = async (value: boolean) => {
+  const handleToggle = async (type: string, value: boolean, existingReminder: any) => {
     if (!user?.id) return;
-    try {
-      if (value) {
-        // Try push notifications, but proceed even if it fails
-        try { await registerForPushNotificationsAsync(); } catch (e) {}
-        await scheduleHydrationReminder(parseInt(hydrationTime.split(':')[0]) || 10, 0); 
-        const newRem = await createReminder(user.id, { title: "Stay Hydrated", type: "hydration", time: hydrationTime });
-        setRemindersList(prev => [...prev, newRem]);
-      } else {
-        if (hydrationReminder) {
-          await deleteReminder(user.id, hydrationReminder.id);
-          setRemindersList(prev => prev.filter(r => r.id !== hydrationReminder.id));
+    
+    // Immediately set optimistic state so switch feels instant
+    setOptimisticSwitches(prev => ({ ...prev, [type]: value }));
+    
+    if (value) {
+      // Open modal to pick time instead of creating immediately
+      setActiveModal(type);
+      if (type === 'hydration') setModalTime(hydrationTime);
+      else if (type === 'medication') setModalTime(medicationTime);
+      else if (type === 'generic') setModalTime(generalTime);
+    } else {
+      // Toggle off
+      if (existingReminder) {
+        setRemindersList(prev => prev.filter(r => r.id !== existingReminder.id));
+        try {
+          await deleteReminder(user.id, existingReminder.id);
+        } catch (e) {
+          console.error("Failed to delete reminder:", e);
+          // Revert optimistic state on failure
+          setRemindersList(prev => [...prev, existingReminder]);
+          setOptimisticSwitches(prev => ({ ...prev, [type]: true }));
         }
       }
-    } catch (e) {
-      console.error("Failed to toggle hydration reminder:", e);
     }
   };
 
-  const handleToggleMedication = async (value: boolean) => {
-    if (!user?.id) return;
+  const handleModalSave = async () => {
+    if (!user?.id || !activeModal) return;
+    
     try {
-      if (value) {
-        try { await registerForPushNotificationsAsync(); } catch (e) {}
-        await scheduleMedicationReminder(parseInt(medicationTime.split(':')[0]) || 8, 0);
-        const newRem = await createReminder(user.id, { title: "Prenatal Vitamins", type: "medication", time: medicationTime });
-        setRemindersList(prev => [...prev, newRem]);
-      } else {
-        if (medicationReminder) {
-          await deleteReminder(user.id, medicationReminder.id);
-          setRemindersList(prev => prev.filter(r => r.id !== medicationReminder.id));
-        }
+      try { await registerForPushNotificationsAsync(); } catch (e) {}
+      
+      let title = "";
+      const { hour, minute } = parseTimeString(modalTime);
+
+      if (activeModal === 'hydration') {
+        title = "Stay Hydrated";
+        await scheduleHydrationReminder(hour, minute); 
+        setHydrationTime(modalTime);
+      } else if (activeModal === 'medication') {
+        title = "Prenatal Vitamins";
+        await scheduleMedicationReminder(hour, minute);
+        setMedicationTime(modalTime);
+      } else if (activeModal === 'generic') {
+        title = "Daily Check-in";
+        setGeneralTime(modalTime);
       }
+      
+      const newRem = await createReminder(user.id, { title, type: activeModal, time: modalTime });
+      setRemindersList(prev => [...prev, newRem]);
+      
+      // Clean up optimistic state
+      setOptimisticSwitches(prev => {
+        const next = { ...prev };
+        delete next[activeModal];
+        return next;
+      });
+      
     } catch (e) {
-      console.error("Failed to toggle medication reminder:", e);
+      console.error("Failed to setup reminder:", e);
+      // Revert optimistic state on failure
+      setOptimisticSwitches(prev => ({ ...prev, [activeModal]: false }));
+    } finally {
+      setActiveModal(null);
     }
   };
 
-  const handleToggleGeneral = async (value: boolean) => {
-    if (!user?.id) return;
-    try {
-      if (value) {
-        const newRem = await createReminder(user.id, { title: "Daily Check-in", type: "generic", time: generalTime });
-        setRemindersList(prev => [...prev, newRem]);
-      } else {
-        if (generalReminder) {
-          await deleteReminder(user.id, generalReminder.id);
-          setRemindersList(prev => prev.filter(r => r.id !== generalReminder.id));
-        }
-      }
-    } catch (e) {
-      console.error("Failed to toggle general reminder:", e);
+  const handleModalCancel = () => {
+    if (activeModal) {
+      // Revert optimistic toggle if they cancel the setup
+      setOptimisticSwitches(prev => ({ ...prev, [activeModal]: false }));
     }
+    setActiveModal(null);
   };
 
   return (
@@ -131,7 +172,7 @@ export default function RemindersScreen() {
                 </View>
                 <Switch 
                   value={hydrationEnabled} 
-                  onValueChange={handleToggleHydration} 
+                  onValueChange={(v) => handleToggle('hydration', v, hydrationReminder)} 
                   trackColor={{ false: 'rgba(0,0,0,0.1)', true: theme.colors.primary }}
                 />
               </View>
@@ -151,7 +192,7 @@ export default function RemindersScreen() {
                 </View>
                 <Switch 
                   value={medicationEnabled} 
-                  onValueChange={handleToggleMedication} 
+                  onValueChange={(v) => handleToggle('medication', v, medicationReminder)} 
                   trackColor={{ false: 'rgba(0,0,0,0.1)', true: theme.colors.primary }}
                 />
               </View>
@@ -171,7 +212,7 @@ export default function RemindersScreen() {
                 </View>
                 <Switch 
                   value={generalEnabled} 
-                  onValueChange={handleToggleGeneral} 
+                  onValueChange={(v) => handleToggle('generic', v, generalReminder)} 
                   trackColor={{ false: 'rgba(0,0,0,0.1)', true: theme.colors.primary }}
                 />
               </View>
@@ -180,6 +221,37 @@ export default function RemindersScreen() {
 
         </ScrollView>
       </SafeAreaView>
+
+      {/* Time Picker Modal */}
+      <Modal
+        visible={!!activeModal}
+        transparent
+        animationType="fade"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: theme.colors.surface }]}>
+            <Typography variant="title3" style={{ marginBottom: 16 }}>Set Reminder Time</Typography>
+            <View style={styles.modalInputWrapper}>
+              <TextInput
+                value={modalTime}
+                onChangeText={setModalTime}
+                style={styles.modalInput}
+                placeholder="e.g. 10:00 AM"
+                placeholderTextColor={theme.colors.textMedium}
+              />
+            </View>
+            <View style={styles.modalActions}>
+              <TouchableOpacity onPress={handleModalCancel} style={styles.modalBtn}>
+                <Typography variant="body" color={theme.colors.textMedium}>Cancel</Typography>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleModalSave} style={[styles.modalBtn, { backgroundColor: theme.colors.primary }]}>
+                <Typography variant="body" color={theme.colors.background}>Save</Typography>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
     </View>
   );
 }
@@ -223,17 +295,50 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     fontFamily: theme.typography.families.headingBold,
     flexShrink: 1,
   },
-  timeInline: {
-    flexDirection: 'row',
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
     alignItems: 'center',
-    gap: 6,
+    justifyContent: 'center',
+    padding: 24,
   },
-  timeInlineInput: {
-    fontSize: 14,
-    fontFamily: theme.typography.families.headingSemibold,
-    color: theme.colors.textMedium,
-    minWidth: 80,
-    paddingVertical: 0,
-    marginTop: 2,
+  modalContent: {
+    width: '100%',
+    borderRadius: 20,
+    padding: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 16,
+    elevation: 4,
+  },
+  modalInputWrapper: {
+    width: '100%',
+    borderWidth: 1,
+    borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 24,
+  },
+  modalInput: {
+    fontSize: 18,
+    fontFamily: theme.typography.families.headingBold,
+    color: theme.colors.textHigh,
+    textAlign: 'center',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 16,
+    width: '100%',
+  },
+  modalBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
   }
 });
