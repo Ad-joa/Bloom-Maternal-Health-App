@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
 import { BackgroundMesh } from '../components/BackgroundMesh';
 import { X, Heart, Calendar, Droplets, Moon, Baby, Stethoscope } from 'lucide-react-native';
@@ -19,12 +19,21 @@ const { width, height } = Dimensions.get('window');
 
 export default function PartnerModeScreen({ navigation }: any) {
 
-
+  const { theme, isDark } = useTheme();
   const { user } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [linkCode, setLinkCode] = useState('');
+  const styles = getStyles(theme, isDark);
+
+  // ─── Support Item sub-component ──────────────────────────
+  const SupportItem = ({ icon, bg, text }: { icon: React.ReactNode; bg: string; text: string }) => (
+    <View style={styles.supportItem}>
+      <View style={[styles.supportIcon, { backgroundColor: bg }]}>{icon}</View>
+      <Typography variant="body" color={theme.colors.textHigh} style={styles.supportText}>{text}</Typography>
+    </View>
+  );
   
   useEffect(() => {
     const loadData = async () => {
@@ -261,16 +270,8 @@ export default function PartnerModeScreen({ navigation }: any) {
   );
 }
 
-// ─── Support Item sub-component ──────────────────────────
-const SupportItem = ({ icon, bg, text }: { icon: React.ReactNode; bg: string; text: string }) => (
-  <View style={styles.supportItem}>
-    <View style={[styles.supportIcon, { backgroundColor: bg }]}>{icon}</View>
-    <Typography variant="body" color={theme.colors.textHigh} style={styles.supportText}>{text}</Typography>
-  </View>
-);
-
 // ─── Styles ──────────────────────────────────────────────
-const styles = StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',
