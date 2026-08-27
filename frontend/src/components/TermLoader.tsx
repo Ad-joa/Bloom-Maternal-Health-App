@@ -69,7 +69,7 @@ export function TermLoader({ onComplete }: { onComplete: () => void }) {
         <View style={styles.lottieWrapper}>
           <LottieView
             ref={lottieRef}
-            source={require('../../assets/belly.json')}
+            source={require('../../assets/animations/belly.json')}
             autoPlay
             loop={false}
             style={styles.lottie}

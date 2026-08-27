@@ -15,11 +15,11 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'GrowthVisua
 type Props = { navigation: NavigationProp };
 
 const TIMELINE_DATA = [
-  { week: 2, topImg: require('../../assets/images/fetus_2.jpg'), bottomImg: require('../../assets/images/fruit_2.jpg'), topSize: 40, bottomSize: 40 },
-  { week: 7, topImg: require('../../assets/images/fetus_7.jpg'), bottomImg: require('../../assets/images/fruit_7.jpg'), topSize: 55, bottomSize: 55 },
-  { week: 14, topImg: require('../../assets/images/fetus_14.jpg'), bottomImg: require('../../assets/images/fruit_14.jpg'), topSize: 70, bottomSize: 70 },
-  { week: 35, topImg: require('../../assets/images/fetus_35.jpg'), bottomImg: require('../../assets/images/fruit_35.jpg'), topSize: 90, bottomSize: 90 },
-  { week: 41, topImg: require('../../assets/images/fetus_41.jpg'), bottomImg: require('../../assets/images/fruit_41.jpg'), topSize: 110, bottomSize: 110 },
+  { week: 2, topImg: require('../../assets/images/fetus_2.jpg'), bottomImg: require('../../assets/images/fruit_2_clean.png'), topSize: 40, bottomSize: 40 },
+  { week: 7, topImg: require('../../assets/images/fetus_7.jpg'), bottomImg: require('../../assets/images/fruit_7.png'), topSize: 55, bottomSize: 55 },
+  { week: 14, topImg: require('../../assets/images/fetus_14.jpg'), bottomImg: require('../../assets/images/fruit_14.png'), topSize: 70, bottomSize: 70 },
+  { week: 35, topImg: require('../../assets/images/fetus_35.jpg'), bottomImg: require('../../assets/images/fruit_35.png'), topSize: 90, bottomSize: 90 },
+  { week: 41, topImg: require('../../assets/images/fetus_41.jpg'), bottomImg: require('../../assets/images/fruit_41.png'), topSize: 110, bottomSize: 110 },
 ];
 
 export default function GrowthVisualizerScreen({ navigation }: Props) {
