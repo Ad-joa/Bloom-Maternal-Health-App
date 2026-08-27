@@ -145,7 +145,7 @@ export default function RemindersScreen() {
 
               <View style={styles.cardBottomRow}>
                 <View style={[styles.timePill, hydrationEnabled && styles.timePillActive]}>
-                  <Clock color={hydrationEnabled ? theme.colors.primary : theme.colors.textMedium} size={14} />
+                  <Clock color={hydrationEnabled ? theme.colors.primary : theme.colors.textMedium} size={16} />
                   <TextInput
                     value={hydrationReminder?.time || hydrationTime}
                     onChangeText={setHydrationTime}
@@ -182,7 +182,7 @@ export default function RemindersScreen() {
 
               <View style={styles.cardBottomRow}>
                 <View style={[styles.timePill, medicationEnabled && styles.timePillActive]}>
-                  <Clock color={medicationEnabled ? theme.colors.primary : theme.colors.textMedium} size={14} />
+                  <Clock color={medicationEnabled ? theme.colors.primary : theme.colors.textMedium} size={16} />
                   <TextInput
                     value={medicationReminder?.time || medicationTime}
                     onChangeText={setMedicationTime}
@@ -219,7 +219,7 @@ export default function RemindersScreen() {
 
               <View style={styles.cardBottomRow}>
                 <View style={[styles.timePill, generalEnabled && styles.timePillActive]}>
-                  <Clock color={generalEnabled ? theme.colors.primary : theme.colors.textMedium} size={14} />
+                  <Clock color={generalEnabled ? theme.colors.primary : theme.colors.textMedium} size={16} />
                   <TextInput
                     value={generalReminder?.time || generalTime}
                     onChangeText={setGeneralTime}
@@ -287,9 +287,10 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     alignItems: 'center',
     backgroundColor: isDark ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.6)',
     borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    gap: 6,
+    paddingHorizontal: 14,
+    height: 36,
+    width: 100,
+    justifyContent: 'space-between',
     borderWidth: 1,
     borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
   },
@@ -298,11 +299,12 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     borderColor: theme.colors.primary + '40',
   },
   timeInputText: {
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: theme.typography.families.headingBold,
     color: theme.colors.textMedium,
     padding: 0,
     height: 20,
-    minWidth: 70,
+    width: 50,
+    textAlign: 'center',
   }
 });
