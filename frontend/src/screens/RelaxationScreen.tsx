@@ -33,7 +33,7 @@ export default function RelaxationScreen({ navigation }: any) {
     const inhale = Animated.timing(breatheAnim, {
       toValue: 1.5,
       duration: 4000,
-      easing: Easing.inOut(Easing.sine),
+      easing: Easing.inOut(Easing.sin),
       useNativeDriver: true,
     });
     const hold1 = Animated.timing(breatheAnim, {
@@ -44,7 +44,7 @@ export default function RelaxationScreen({ navigation }: any) {
     const exhale = Animated.timing(breatheAnim, {
       toValue: 1,
       duration: 8000,
-      easing: Easing.inOut(Easing.sine),
+      easing: Easing.inOut(Easing.sin),
       useNativeDriver: true,
     });
 

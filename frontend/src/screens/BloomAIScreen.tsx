@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Animated, Platform, FlatList, KeyboardAvoidingView, Switch, UIManager, LayoutAnimation, ActivityIndicator, TextInput as RNTextInput, Keyboard } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
 import { BounceButton } from '../components/BounceButton';
@@ -8,6 +8,7 @@ import { BackgroundMesh } from '../components/BackgroundMesh';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { Send, Flower2 } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { getAdvisory } from '../api/api';
 import { useAuth } from '../context/AuthContext';
@@ -21,9 +22,11 @@ interface Message {
 export default function BloomAIScreen({ navigation, isNested }: any) {
   const { theme, isDark } = useTheme();
   const styles = getStyles(theme, isDark);
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
+  const pulseAnim = useRef(new Animated.Value(0.5)).current;
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const [messages, setMessages] = useState<Message[]>([
@@ -36,8 +39,24 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
     return () => { showSub.remove(); hideSub.remove(); };
   }, []);
 
+  React.useEffect(() => {
+    if (loading) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 0.5, duration: 600, useNativeDriver: true })
+        ])
+      ).start();
+    } else {
+      pulseAnim.setValue(0.5);
+    }
+  }, [loading]);
+
   const handleSend = async () => {
     if (!inputText.trim()) return;
+    
+    // Smooth layout animation for new bubbles
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     
     // Add user message
     const userText = inputText.trim();
@@ -51,6 +70,7 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
       const response = await getAdvisory([userText]);
       const adviceStr = typeof response.advice === 'string' ? response.advice : response.advice.text;
       
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setMessages(prev => [...prev, { 
         id: (Date.now() + 1).toString(), 
         text: adviceStr || "I am having trouble processing that right now.", 
@@ -58,6 +78,7 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
       }]);
     } catch (error) {
       console.error(error);
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setMessages(prev => [...prev, { 
         id: (Date.now() + 1).toString(), 
         text: "I couldn't reach the server. Please try again later.", 
@@ -116,19 +137,19 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
                     <Flower2 size={18} color={theme.colors.background} />
                   </View>
                 )}
-                <View 
-                  style={[
-                    styles.bubble, 
-                    msg.sender === 'user' ? styles.bubbleUser : styles.bubbleAI
-                  ]}
-                >
-                  <Typography 
-                    variant="body" 
-                    color={msg.sender === 'user' ? '#fff' : theme.colors.textHigh}
+                {msg.sender === 'user' ? (
+                  <LinearGradient
+                    colors={['#818CF8', '#6366F1']}
+                    start={{x: 0, y: 0}} end={{x: 1, y: 1}}
+                    style={[styles.bubble, styles.bubbleUser]}
                   >
-                    {msg.text}
-                  </Typography>
-                </View>
+                    <Typography variant="body" color="#fff">{msg.text}</Typography>
+                  </LinearGradient>
+                ) : (
+                  <View style={[styles.bubble, styles.bubbleAI]}>
+                    <Typography variant="body" color={theme.colors.textHigh}>{msg.text}</Typography>
+                  </View>
+                )}
               </View>
             ))}
             {loading && (
@@ -136,14 +157,14 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
                 <View style={styles.aiAvatar}>
                   <Flower2 size={18} color={theme.colors.background} />
                 </View>
-                <View style={[styles.bubble, styles.bubbleAI, styles.loadingBubble]}>
-                  <ActivityIndicator size="small" color={theme.colors.primary} />
-                </View>
+                <Animated.View style={[styles.bubble, styles.bubbleAI, styles.loadingBubble, { opacity: pulseAnim }]}>
+                  <Typography variant="caption1" color={theme.colors.textMedium} style={{ fontStyle: 'italic' }}>Bloom AI is typing...</Typography>
+                </Animated.View>
               </View>
             )}
           </ScrollView>
           
-          <BlurView intensity={80} tint="light" style={[styles.inputArea, { paddingBottom: keyboardVisible ? (Platform.OS === 'ios' ? 16 : 24) : 110 }]}>
+          <BlurView intensity={isDark ? 30 : 60} tint={isDark ? "dark" : "light"} style={[styles.inputArea, { paddingBottom: keyboardVisible ? (Platform.OS === 'ios' ? 16 : 24) : Math.max(insets.bottom, 16) + 70 }]}>
             {/* Suggested Prompts */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.promptsContainer}>
               {SUGGESTED_PROMPTS.map((prompt, index) => (

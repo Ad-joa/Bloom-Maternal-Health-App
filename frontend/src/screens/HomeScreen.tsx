@@ -255,7 +255,7 @@ export default function HomeScreen({ navigation }: any) {
     transform: [{ translateY: headerAnim.interpolate({ inputRange: [0, 1], outputRange: [16, 0] }) }],
   };
 
-  const ALL_PREGNANCY_TOOLS = [
+  const ALL_PREGNANCY_TOOLS: any[] = [
     { id: 'Healthy Diet', label: 'Meal\nPlan', icon: Apple, bg: '#8CC152', route: 'MealPlan' },
     { id: 'Stay Active', label: 'Stay\nActive', icon: Heart, bg: '#50E3C2', route: 'Fitness' },
     { id: 'Manage Stress', label: 'Manage\nStress', icon: Calendar, bg: '#E06253', route: 'Relaxation' },

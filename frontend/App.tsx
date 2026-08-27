@@ -71,6 +71,10 @@ export type RootStackParamList = {
   CheckIn: undefined;
   EmergencyLocator: undefined;
   PrivacyConsent: undefined;
+  MealPlan: undefined;
+  Relaxation: undefined;
+  Fitness: undefined;
+  HospitalBag: undefined;
 };
 
 export type MainTabParamList = {
