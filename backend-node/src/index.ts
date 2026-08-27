@@ -28,7 +28,7 @@ const io = new Server(httpServer, {
 // IMPORTANT: You must add GEMINI_API_KEY to your .env file
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || 'MISSING_KEY' });
 
-const prisma = new PrismaClient();
+import prisma from './lib/prisma';
 
 app.use(cors());
 app.use(express.json());
