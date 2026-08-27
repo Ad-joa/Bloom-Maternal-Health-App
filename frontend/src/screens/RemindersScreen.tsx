@@ -128,15 +128,6 @@ export default function RemindersScreen() {
                 </View>
                 <View style={styles.cardContent}>
                   <Typography variant="title2" color={theme.colors.textHigh} style={styles.cardTitle}>Hydration</Typography>
-                  <View style={styles.timeInline}>
-                    <Clock color={theme.colors.textMedium} size={14} />
-                    <TextInput
-                      value={hydrationTime}
-                      onChangeText={setHydrationTime}
-                      style={styles.timeInlineInput}
-                      placeholderTextColor={theme.colors.textMedium}
-                    />
-                  </View>
                 </View>
                 <Switch 
                   value={hydrationEnabled} 
@@ -157,15 +148,6 @@ export default function RemindersScreen() {
                 </View>
                 <View style={styles.cardContent}>
                   <Typography variant="title2" color={theme.colors.textHigh} style={styles.cardTitle}>Vitamins</Typography>
-                  <View style={styles.timeInline}>
-                    <Clock color={theme.colors.textMedium} size={14} />
-                    <TextInput
-                      value={medicationTime}
-                      onChangeText={setMedicationTime}
-                      style={styles.timeInlineInput}
-                      placeholderTextColor={theme.colors.textMedium}
-                    />
-                  </View>
                 </View>
                 <Switch 
                   value={medicationEnabled} 
@@ -186,15 +168,6 @@ export default function RemindersScreen() {
                 </View>
                 <View style={styles.cardContent}>
                   <Typography variant="title2" color={theme.colors.textHigh} style={styles.cardTitle}>Daily Check-in</Typography>
-                  <View style={styles.timeInline}>
-                    <Clock color={theme.colors.textMedium} size={14} />
-                    <TextInput
-                      value={generalTime}
-                      onChangeText={setGeneralTime}
-                      style={styles.timeInlineInput}
-                      placeholderTextColor={theme.colors.textMedium}
-                    />
-                  </View>
                 </View>
                 <Switch 
                   value={generalEnabled} 
@@ -241,11 +214,14 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   },
   cardContent: {
     flex: 1,
-    justifyContent: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingRight: 12,
   },
   cardTitle: {
     fontFamily: theme.typography.families.headingBold,
-    marginBottom: 4,
+    flexShrink: 1,
   },
   timeInline: {
     flexDirection: 'row',
