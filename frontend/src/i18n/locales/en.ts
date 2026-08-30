@@ -30,7 +30,7 @@ export default {
         title: 'When was the first day of your last period?',
         subtitle: "We'll use this to safely calculate your expected due date.",
         label: 'Last Period Date',
-        placeholder: 'MM/DD/YYYY'
+        placeholder: 'DD/MM/YYYY'
       },
       step2: {
         title: 'Which trimester are you in?',

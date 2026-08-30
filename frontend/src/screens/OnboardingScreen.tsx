@@ -81,7 +81,7 @@ export default function OnboardingScreen({ navigation }: Props) {
       const cleanedDate = lastPeriodDate.trim().replace(/-/g, '/');
       const lmpParts = cleanedDate.split('/');
       if (lmpParts.length !== 3) {
-        Alert.alert("Invalid Format", "Please enter date as MM/DD/YYYY");
+        Alert.alert("Invalid Format", "Please enter date as DD/MM/YYYY");
         return;
       }
       const monthStr = lmpParts[0].trim().padStart(2, '0');
@@ -122,11 +122,11 @@ export default function OnboardingScreen({ navigation }: Props) {
       setLoading(true);
       try {
         const payload: any = {};
-        const enforceMMDDYYYY = (dateStr: string) => {
+        const enforceDDMMYYYY = (dateStr: string) => {
           if (!dateStr) return dateStr;
           if (dateStr.includes('-')) {
              const [y, m, d] = dateStr.split('-');
-             if (y && m && d) return `${m.padStart(2, '0')}/${d.padStart(2, '0')}/${y}`;
+             if (y && m && d) return `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y}`;
           }
           return dateStr;
         };
@@ -135,7 +135,7 @@ export default function OnboardingScreen({ navigation }: Props) {
           const t = parseInt(trimester, 10);
           if (!isNaN(t)) payload.trimester = t;
         }
-        if (dueDate) payload.due_date = enforceMMDDYYYY(dueDate);
+        if (dueDate) payload.due_date = enforceDDMMYYYY(dueDate);
         if (isFirstPregnancy !== null) payload.is_first_pregnancy = isFirstPregnancy;
         if (age) {
           const a = parseInt(age, 10);
@@ -153,17 +153,17 @@ export default function OnboardingScreen({ navigation }: Props) {
           const cleanedDate = lastPeriodDate.trim().replace(/-/g, '/');
           const lmpParts = cleanedDate.split('/');
           if (lmpParts.length === 3) {
-            const monthStr = lmpParts[0].trim().padStart(2, '0');
-            const dayStr = lmpParts[1].trim().padStart(2, '0');
+            const dayStr = lmpParts[0].trim().padStart(2, '0');
+            const monthStr = lmpParts[1].trim().padStart(2, '0');
             const yearStr = lmpParts[2].trim();
             const lmpDate = new Date(`${yearStr}-${monthStr}-${dayStr}T12:00:00Z`);
             if (!isNaN(lmpDate.getTime())) {
               const calculatedDueDate = new Date(lmpDate.getTime() + (280 * 24 * 60 * 60 * 1000));
-              // Format to MM/DD/YYYY
+              // Format to DD/MM/YYYY
               const month = String(calculatedDueDate.getUTCMonth() + 1).padStart(2, '0');
               const day = String(calculatedDueDate.getUTCDate()).padStart(2, '0');
               const year = calculatedDueDate.getUTCFullYear();
-              payload.due_date = `${month}/${day}/${year}`;
+              payload.due_date = `${day}/${month}/${year}`;
             }
           }
         }
@@ -227,7 +227,7 @@ export default function OnboardingScreen({ navigation }: Props) {
             <Typography variant="body" color={theme.colors.textMedium} style={styles.questionSubtitle}>
               {t('onboarding.step1.subtitle', 'We\'ll use this to safely calculate your expected due date.')}
             </Typography>
-            <TextInput label={t('onboarding.step1.label', 'Last Period Date')} placeholder={t('onboarding.step1.placeholder', 'MM/DD/YYYY')} value={lastPeriodDate} onChangeText={setLastPeriodDate} />
+            <TextInput label={t('onboarding.step1.label', 'Last Period Date')} placeholder={t('onboarding.step1.placeholder', 'DD/MM/YYYY')} value={lastPeriodDate} onChangeText={setLastPeriodDate} />
           </View>
         );
       case 2:

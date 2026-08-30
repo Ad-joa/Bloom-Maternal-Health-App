@@ -319,9 +319,9 @@ export default function ANCVisitScreen() {
               </View>
               
               <View style={styles.inputGroup}>
-                <Typography variant="caption1" color={theme.colors.textMedium} style={{ marginBottom: 8, marginLeft: 4 }}>DATE (YYYY-MM-DD)</Typography>
+                <Typography variant="caption1" color={theme.colors.textMedium} style={{ marginBottom: 8, marginLeft: 4 }}>DATE (DD/MM/YYYY)</Typography>
                 <TextInput
-                  placeholder="e.g. 2024-11-25"
+                  placeholder="e.g. 25/11/2024"
                   value={newDate}
                   onChangeText={setNewDate}
                   style={styles.premiumInput}

@@ -1,15 +1,18 @@
-const parseDateSafely = (dateStr: string): Date => {
-  let d = new Date(dateStr);
-  if (isNaN(d.getTime())) {
+export const parseDateSafely = (dateStr: string): Date => {
+  if (!dateStr) return new Date(NaN);
+  
+  if (dateStr.includes('/')) {
     const parts = dateStr.split('/');
     if (parts.length === 3) {
-      d = new Date(parseInt(parts[2]), parseInt(parts[0]) - 1, parseInt(parts[1]));
-    } else if (dateStr.includes('-')) {
-      const p2 = dateStr.split('T')[0].split('-');
-      if (p2.length === 3) d = new Date(parseInt(p2[0]), parseInt(p2[1]) - 1, parseInt(p2[2]));
+      // DD/MM/YYYY
+      return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
     }
+  } else if (dateStr.includes('-')) {
+    const p2 = dateStr.split('T')[0].split('-');
+    if (p2.length === 3) return new Date(parseInt(p2[0]), parseInt(p2[1]) - 1, parseInt(p2[2]));
   }
-  return d;
+  
+  return new Date(dateStr);
 };
 
 export const getDaysUntilDue = (dueDateStr: string): number => {

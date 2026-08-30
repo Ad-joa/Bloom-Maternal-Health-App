@@ -13,6 +13,7 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as ImagePicker from 'expo-image-picker';
 import { getSymptomLogs, deleteAccount, updateUserProfile, getBaseUrl } from '../api/api';
+import { parseDateSafely } from '../utils/dateUtils';
 import { BackgroundMesh } from '../components/BackgroundMesh';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -48,8 +49,8 @@ export default function ProfileScreen({ navigation }: any) {
         const cleanedDate = editForm.last_period_date.trim().replace(/-/g, '/');
         const lmpParts = cleanedDate.split('/');
         if (lmpParts.length === 3) {
-          const monthStr = lmpParts[0].trim().padStart(2, '0');
-          const dayStr = lmpParts[1].trim().padStart(2, '0');
+          const dayStr = lmpParts[0].trim().padStart(2, '0');
+          const monthStr = lmpParts[1].trim().padStart(2, '0');
           const yearStr = lmpParts[2].trim();
           const lmpDate = new Date(`${yearStr}-${monthStr}-${dayStr}T12:00:00Z`);
           if (!isNaN(lmpDate.getTime())) {
@@ -57,7 +58,7 @@ export default function ProfileScreen({ navigation }: any) {
             const month = String(calculatedDueDate.getUTCMonth() + 1).padStart(2, '0');
             const day = String(calculatedDueDate.getUTCDate()).padStart(2, '0');
             const year = calculatedDueDate.getUTCFullYear();
-            finalDueDate = `${year}-${month}-${day}`;
+            finalDueDate = `${day}/${month}/${year}`;
           }
         }
       }
@@ -337,7 +338,7 @@ export default function ProfileScreen({ navigation }: any) {
               <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
               <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
               {[
-                { icon: 'calendar', label: t('profile.dueDate', 'Due Date'), value: user?.due_date ? new Date(user.due_date).toLocaleDateString() : t('profile.notSet', 'Not set'), field: 'due_date' },
+                { icon: 'calendar', label: t('profile.dueDate', 'Due Date'), value: user?.due_date ? parseDateSafely(user.due_date).toLocaleDateString() : t('profile.notSet', 'Not set'), field: 'due_date' },
                 { icon: 'time', label: t('profile.trimesterTitle', 'Trimester'), value: user?.trimester ? `${t('home.trimester', 'Trimester')} ${user.trimester}` : t('profile.notSet', 'Not set'), field: 'trimester' },
                 { icon: 'water', label: t('profile.lastPeriod', 'Last Period'), value: user?.last_period_date || t('profile.notSet', 'Not set'), field: 'last_period_date', danger: true },
                 { icon: 'medkit', label: t('profile.bloodGroup', 'Blood Group'), value: user?.blood_group || t('profile.notSet', 'Not set'), field: 'blood_group' },

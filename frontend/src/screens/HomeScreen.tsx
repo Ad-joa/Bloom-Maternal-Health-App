@@ -13,7 +13,7 @@ import {
   Baby, Apple, Lightbulb, Calendar, Luggage, Info, Target,
   Headphones, PlayCircle, BookOpen, FileText
 } from 'lucide-react-native';
-import { getWeeksPregnant, getDaysUntilDue } from '../utils/dateUtils';
+import { getWeeksPregnant, getDaysUntilDue, parseDateSafely } from '../utils/dateUtils';
 import { getAncVisits, getEducationalContent } from '../api/api';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
@@ -172,18 +172,7 @@ export default function HomeScreen({ navigation }: any) {
 
   const formatDueDate = (dateStr: string) => {
     if (!dateStr) return 'Unknown';
-    let d = new Date(dateStr);
-    if (isNaN(d.getTime())) {
-      // Fallback for MM/DD/YYYY
-      const parts = dateStr.split('/');
-      if (parts.length === 3) {
-        d = new Date(parseInt(parts[2]), parseInt(parts[0]) - 1, parseInt(parts[1]));
-      } else if (dateStr.includes('-')) {
-        // Fallback for YYYY-MM-DD
-        const p2 = dateStr.split('T')[0].split('-');
-        if (p2.length === 3) d = new Date(parseInt(p2[0]), parseInt(p2[1]) - 1, parseInt(p2[2]));
-      }
-    }
+    let d = parseDateSafely(dateStr);
     if (isNaN(d.getTime())) return dateStr; // Just return raw string if parsing fails
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
