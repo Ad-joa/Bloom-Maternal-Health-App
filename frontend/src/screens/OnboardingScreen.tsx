@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Animated, Platform, FlatList, KeyboardAvoidingView, Switch, UIManager, LayoutAnimation, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Animated, Platform, FlatList, KeyboardAvoidingView, Switch, UIManager, LayoutAnimation, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
@@ -71,23 +71,31 @@ export default function OnboardingScreen({ navigation }: Props) {
   };
 
   const handleNext = () => {
-    if (step === 1 && lastPeriodDate) {
+    if (step === 1) {
+      if (!lastPeriodDate) {
+        Alert.alert("Required", "Please enter your last period date.");
+        return;
+      }
       const lmpParts = lastPeriodDate.split('/');
-      if (lmpParts.length === 3) {
-        const lmpDate = new Date(`${lmpParts[2]}-${lmpParts[0]}-${lmpParts[1]}T12:00:00Z`);
-        if (!isNaN(lmpDate.getTime())) {
-          const calculatedDueDate = new Date(lmpDate.getTime() + (280 * 24 * 60 * 60 * 1000));
-          const month = String(calculatedDueDate.getUTCMonth() + 1).padStart(2, '0');
-          const day = String(calculatedDueDate.getUTCDate()).padStart(2, '0');
-          const year = calculatedDueDate.getUTCFullYear();
-          const isoDueDate = `${year}-${month}-${day}`;
-          
-          if (dueDate !== isoDueDate) {
-            setDueDate(isoDueDate);
-            setIsDeterminingTerm(true);
-            return;
-          }
-        }
+      if (lmpParts.length !== 3) {
+        Alert.alert("Invalid Format", "Please enter date as MM/DD/YYYY");
+        return;
+      }
+      const lmpDate = new Date(`${lmpParts[2]}-${lmpParts[0]}-${lmpParts[1]}T12:00:00Z`);
+      if (isNaN(lmpDate.getTime())) {
+        Alert.alert("Invalid Date", "Please enter a valid date");
+        return;
+      }
+      const calculatedDueDate = new Date(lmpDate.getTime() + (280 * 24 * 60 * 60 * 1000));
+      const month = String(calculatedDueDate.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(calculatedDueDate.getUTCDate()).padStart(2, '0');
+      const year = calculatedDueDate.getUTCFullYear();
+      const isoDueDate = `${year}-${month}-${day}`;
+      
+      if (dueDate !== isoDueDate) {
+        setDueDate(isoDueDate);
+        setIsDeterminingTerm(true);
+        return;
       }
     }
     
@@ -358,7 +366,7 @@ export default function OnboardingScreen({ navigation }: Props) {
   };
 
   const isNextDisabled = () => {
-    if (step === 1 && !dueDate) return true;
+    if (step === 1 && !lastPeriodDate) return true;
     if (step === 2 && !trimester) return true;
     if (step === 3 && isFirstPregnancy === null) return true;
     if (step === 4 && (!age || !weight)) return true;
@@ -406,7 +414,7 @@ export default function OnboardingScreen({ navigation }: Props) {
               <Button 
                 title={loading ? "Saving..." : (step === TOTAL_STEPS ? "Complete Profile" : "Continue")} 
                 onPress={handleNext}
-                disabled={loading}
+                disabled={loading || isNextDisabled()}
               />
             </View>
           </KeyboardAvoidingView>
