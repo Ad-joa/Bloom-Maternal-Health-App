@@ -269,7 +269,7 @@ export default function ProfileScreen({ navigation }: any) {
               {[
                 { icon: 'calendar', label: 'Due Date', value: user?.due_date ? new Date(user.due_date).toLocaleDateString() : 'Not set', field: 'due_date' },
                 { icon: 'time', label: 'Trimester', value: user?.trimester ? `Trimester ${user.trimester}` : 'Not set', field: 'trimester' },
-                { icon: 'water', label: 'Last Period', value: user?.last_period_date ? new Date(user.last_period_date).toLocaleDateString() : 'Not set', field: 'last_period_date', danger: true },
+                { icon: 'water', label: 'Last Period', value: user?.last_period_date || 'Not set', field: 'last_period_date', danger: true },
                 { icon: 'medkit', label: 'Blood Group', value: user?.blood_group || 'Not set', field: 'blood_group' },
                 { icon: 'body', label: 'Height', value: user?.height || 'Not set', field: 'height' },
               ].map((row, i, arr) => (
