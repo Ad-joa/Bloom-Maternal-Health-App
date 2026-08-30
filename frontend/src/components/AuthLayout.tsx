@@ -57,7 +57,7 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
                 {/* Header */}
                 <FadeSlideIn delay={100} duration={500} direction="down" style={styles.header}>
                   <Animated.View style={[styles.logoContainer, { transform: [{ translateY: logoTranslateY }] }]}>
-                    <Image source={require('../../assets/images/logo.jpg')} style={styles.logo} resizeMode="cover" />
+                    <Image source={require('../../assets/images/logo.jpg')} style={styles.logo} resizeMode="contain" />
                   </Animated.View>
                   <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.titleText}>
                     {title}
@@ -131,11 +131,12 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     elevation: 10,
   },
   logo: {
-    width: 240,
-    height: 120,
-    borderRadius: 24,
-    borderWidth: 1.5,
-    borderColor: 'rgba(212,175,55, 0.4)',
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    borderWidth: 2,
+    borderColor: 'rgba(212,175,55, 0.6)',
+    backgroundColor: '#FFFFFF',
   },
   titleText: {
     fontSize: 34, // True iOS Large Title size
