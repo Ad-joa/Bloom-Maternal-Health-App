@@ -166,7 +166,7 @@ export default {
       partnerMode: 'Hokafoɔ Kwan',
       reminders: 'Daa Nkaekaeɛ',
       appLanguage: 'App Kasa',
-      appLock: 'App Kasa',
+      appLock: 'App Banbɔ',
       helpSupport: 'Mmoa',
       exportMedical: 'Yi Apɔwmuden Nkrataa (PDF)',
       logout: 'Pue',

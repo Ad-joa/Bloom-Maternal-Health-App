@@ -413,7 +413,7 @@ export default function ProfileScreen({ navigation }: any) {
               <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
               {menuItems.map((item, index) => (
                 <TouchableOpacity
-                  key={item.title}
+                  key={`${item.title}-${index}`}
                   style={[styles.menuItem, index !== menuItems.length - 1 && styles.menuItemBorder]}
                   onPress={item.onPress || (item.route ? () => navigation.navigate(item.route!) : undefined)}
                   activeOpacity={0.7}
