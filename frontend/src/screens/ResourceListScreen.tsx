@@ -29,23 +29,28 @@ export default function ResourceListScreen({ route, navigation }: any) {
 
   const MOCK_RESOURCES = {
     audio: [
-      { id: '1', title: 'First Trimester Nutrition Guide', duration: '15 mins', author: 'Bloom Podcast', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=400&q=80', audioFile: require('../../assets/podcasts/podcast1.mp3') },
-      { id: '2', title: 'Preparing for Labor', duration: '22 mins', author: 'Bloom Podcast', image: 'https://images.unsplash.com/photo-1512438248247-f0f2a5a8b7f0?auto=format&fit=crop&w=400&q=80', audioFile: require('../../assets/podcasts/podcast2.mp3') },
-      { id: '3', title: 'Managing Postpartum Anxiety', duration: '18 mins', author: 'Bloom Mental Health', image: 'https://images.unsplash.com/photo-1531353826977-0941b4779a1c?auto=format&fit=crop&w=400&q=80', audioFile: require('../../assets/podcasts/podcast3.mp3') },
-      { id: '4', title: 'Your Birthing Plan Q&A', duration: '30 mins', author: 'Bloom Podcast', image: 'https://images.unsplash.com/photo-1507838153414-b4b713384a76?auto=format&fit=crop&w=400&q=80', audioFile: require('../../assets/podcasts/podcast1.mp3') },
-      { id: '5', title: 'The Importance of Hydration', duration: '12 mins', author: 'Bloom Podcast', image: 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=400&q=80', audioFile: require('../../assets/podcasts/podcast2.mp3') },
+      { id: '1', title: 'The Pregnancy Podcast: First Trimester Basics', duration: '45 mins', author: 'Vanessa Merten', image: 'https://images.unsplash.com/photo-1512438248247-f0f2a5a8b7f0?auto=format&fit=crop&w=400&q=80', audioFile: { uri: 'https://archive.org/download/librivoxaudio/oliver_twist_01_dickens_64kb.mp3' } },
+      { id: '2', title: 'Is It Normal? Pregnancy Health', duration: '35 mins', author: 'Jessie Ware', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=400&q=80', audioFile: { uri: 'https://archive.org/download/librivoxaudio/oliver_twist_02_dickens_64kb.mp3' } },
+      { id: '3', title: 'Evidence Based Birth: Labor Prep', duration: '50 mins', author: 'Rebecca Dekker', image: 'https://images.unsplash.com/photo-1531353826977-0941b4779a1c?auto=format&fit=crop&w=400&q=80', audioFile: { uri: 'https://archive.org/download/librivoxaudio/oliver_twist_03_dickens_64kb.mp3' } },
+      { id: '4', title: 'Birthful: Navigating Hospital Births', duration: '40 mins', author: 'Adriana Lozada', image: 'https://images.unsplash.com/photo-1507838153414-b4b713384a76?auto=format&fit=crop&w=400&q=80', audioFile: { uri: 'https://archive.org/download/librivoxaudio/oliver_twist_04_dickens_64kb.mp3' } },
+      { id: '5', title: 'Mom and Mind: Postpartum Support', duration: '60 mins', author: 'Dr. Kat', image: 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=400&q=80', audioFile: { uri: 'https://archive.org/download/librivoxaudio/oliver_twist_05_dickens_64kb.mp3' } },
     ],
     video: [
       { id: '1', title: 'Prenatal Yoga - First Trimester', duration: '20 mins', author: 'Yoga with Anna', image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=600&q=80' },
       { id: '2', title: 'Preparing Your Hospital Bag', duration: '12 mins', author: 'Mama Tips', image: 'https://images.unsplash.com/photo-1555243896-771a8239ac20?auto=format&fit=crop&w=600&q=80' },
       { id: '3', title: 'Pelvic Floor Exercises', duration: '15 mins', author: 'Dr. Sarah', image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=600&q=80' },
       { id: '4', title: 'Signs of Labor Approaching', duration: '8 mins', author: 'Mama Tips', image: 'https://images.unsplash.com/photo-1516726817505-f5ed825624d8?auto=format&fit=crop&w=600&q=80' },
+      { id: '5', title: 'How to Breastfeed: A Beginner\'s Guide', duration: '18 mins', author: 'Lactation Consultant', image: 'https://images.unsplash.com/photo-1531983412531-1f49a365ffed?auto=format&fit=crop&w=600&q=80' },
+      { id: '6', title: 'Postpartum Core Recovery', duration: '25 mins', author: 'FitMom', image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=600&q=80' },
+      { id: '7', title: 'Newborn Bathing Tutorial', duration: '10 mins', author: 'Nurse Emma', image: 'https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=600&q=80' },
     ],
     book: [
       { id: '1', title: 'Expecting Better', author: 'Emily Oster', pages: '320 pages', image: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=400&q=80' },
       { id: '2', title: 'The Mama Natural', author: 'Genevieve Howland', pages: '450 pages', image: 'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&w=400&q=80' },
       { id: '3', title: 'Ina May\'s Guide to Childbirth', author: 'Ina May Gaskin', pages: '348 pages', image: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=400&q=80' },
       { id: '4', title: 'The Fourth Trimester', author: 'Kimberly Ann Johnson', pages: '288 pages', image: 'https://images.unsplash.com/photo-1524909623862-2bd3fb895e6f?auto=format&fit=crop&w=400&q=80' },
+      { id: '5', title: 'Real Food for Pregnancy', author: 'Lily Nichols', pages: '354 pages', image: 'https://images.unsplash.com/photo-1490818387583-1b5ba4596956?auto=format&fit=crop&w=400&q=80' },
+      { id: '6', title: 'The Birth Partner', author: 'Penny Simkin', pages: '416 pages', image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=400&q=80' },
     ],
     article: [
       { id: '1', title: 'Foods to Avoid During Pregnancy', snippet: 'A comprehensive list of what to eat and what to avoid.', readTime: '5 min read' },
@@ -53,6 +58,9 @@ export default function ResourceListScreen({ route, navigation }: any) {
       { id: '3', title: 'The Importance of Hydration', snippet: 'Why drinking enough water is crucial for you and your baby.', readTime: '4 min read' },
       { id: '4', title: 'Sleeping Positions for 3rd Trimester', snippet: 'Tips and tricks to get comfortable when your belly is growing.', readTime: '6 min read' },
       { id: '5', title: 'Postpartum Mental Health', snippet: 'What to expect in the weeks following delivery.', readTime: '8 min read' },
+      { id: '6', title: 'Creating a Birth Plan', snippet: 'Essential items to include when communicating your delivery preferences.', readTime: '7 min read' },
+      { id: '7', title: 'Navigating Morning Sickness', snippet: 'Remedies and tips to help you get through the first trimester nausea.', readTime: '5 min read' },
+      { id: '8', title: 'Exercise Guidelines for Pregnancy', snippet: 'Safe ways to stay active and healthy while expecting.', readTime: '6 min read' },
     ]
   };
 
