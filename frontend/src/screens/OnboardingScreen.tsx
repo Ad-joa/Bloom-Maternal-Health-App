@@ -76,14 +76,15 @@ export default function OnboardingScreen({ navigation }: Props) {
         Alert.alert("Required", "Please enter your last period date.");
         return;
       }
-      const lmpParts = lastPeriodDate.split('/');
+      const cleanedDate = lastPeriodDate.trim().replace(/-/g, '/');
+      const lmpParts = cleanedDate.split('/');
       if (lmpParts.length !== 3) {
         Alert.alert("Invalid Format", "Please enter date as MM/DD/YYYY");
         return;
       }
-      const monthStr = lmpParts[0].padStart(2, '0');
-      const dayStr = lmpParts[1].padStart(2, '0');
-      const yearStr = lmpParts[2];
+      const monthStr = lmpParts[0].trim().padStart(2, '0');
+      const dayStr = lmpParts[1].trim().padStart(2, '0');
+      const yearStr = lmpParts[2].trim();
       const lmpDate = new Date(`${yearStr}-${monthStr}-${dayStr}T12:00:00Z`);
       if (isNaN(lmpDate.getTime())) {
         Alert.alert("Invalid Date", "Please enter a valid date");
@@ -141,11 +142,12 @@ export default function OnboardingScreen({ navigation }: Props) {
         if (lastPeriodDate) {
           payload.last_period_date = lastPeriodDate;
           // Standard medical calculation (Naegele's rule): LMP + 280 days
-          const lmpParts = lastPeriodDate.split('/');
+          const cleanedDate = lastPeriodDate.trim().replace(/-/g, '/');
+          const lmpParts = cleanedDate.split('/');
           if (lmpParts.length === 3) {
-            const monthStr = lmpParts[0].padStart(2, '0');
-            const dayStr = lmpParts[1].padStart(2, '0');
-            const yearStr = lmpParts[2];
+            const monthStr = lmpParts[0].trim().padStart(2, '0');
+            const dayStr = lmpParts[1].trim().padStart(2, '0');
+            const yearStr = lmpParts[2].trim();
             const lmpDate = new Date(`${yearStr}-${monthStr}-${dayStr}T12:00:00Z`);
             if (!isNaN(lmpDate.getTime())) {
               const calculatedDueDate = new Date(lmpDate.getTime() + (280 * 24 * 60 * 60 * 1000));
