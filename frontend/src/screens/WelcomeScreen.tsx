@@ -82,6 +82,34 @@ export default function WelcomeScreen({ navigation }: Props) {
   const scrollX = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const logoScale = useRef(new Animated.Value(0.9)).current;
+  const logoTranslateY = useRef(new Animated.Value(10)).current;
+
+  React.useEffect(() => {
+    // Entrance + Continuous floating animation
+    Animated.parallel([
+      Animated.spring(logoScale, {
+        toValue: 1,
+        tension: 10,
+        friction: 4,
+        useNativeDriver: true,
+      }),
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(logoTranslateY, {
+            toValue: -5,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(logoTranslateY, {
+            toValue: 5,
+            duration: 2000,
+            useNativeDriver: true,
+          })
+        ])
+      )
+    ]).start();
+  }, []);
 
   const viewableItemsChanged = useRef(({ viewableItems }: any) => {
     if (viewableItems && viewableItems.length > 0) {
@@ -107,9 +135,9 @@ export default function WelcomeScreen({ navigation }: Props) {
     <View style={styles.container}>
       <BackgroundMesh />
       <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-        <View style={styles.logoContainer}>
-          <Image source={require('../../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
-        </View>
+        <Animated.View style={[styles.logoContainer, { transform: [{ scale: logoScale }, { translateY: logoTranslateY }] }]}>
+          <Image source={require('../../assets/images/logo.jpg')} style={styles.logo} resizeMode="contain" />
+        </Animated.View>
         {/* Carousel */}
         <Animated.FlatList
           ref={flatListRef}
@@ -187,10 +215,19 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     marginTop: 20,
     marginBottom: -10, // Bring carousel closer
     zIndex: 10,
+    shadowColor: '#D4AF37',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 10,
   },
   logo: {
-    width: 200,
-    height: 80,
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    borderWidth: 2,
+    borderColor: 'rgba(212,175,55, 0.6)',
+    backgroundColor: '#FFFFFF',
   },
   slide: {
     width,
