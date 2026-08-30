@@ -1,26 +1,39 @@
-import React from 'react';
-import { View, ScrollView, StyleSheet, TouchableOpacity, Image, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, ScrollView, StyleSheet, TouchableOpacity, Image, Platform, Linking, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
-import { ChevronLeft, PlayCircle, Headphones, BookOpen, FileText, Clock, User, ChevronRight } from 'lucide-react-native';
+import { ChevronLeft, PlayCircle, PauseCircle, Headphones, BookOpen, FileText, Clock, User, ChevronRight } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
+import { Audio } from 'expo-av';
 
 export default function ResourceListScreen({ route, navigation }: any) {
   const { category, title } = route.params || { category: 'article', title: 'Resources' };
   const { theme, isDark } = useTheme();
   const { t } = useTranslation();
   const styles = getStyles(theme, isDark);
+  
+  const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (sound) {
+        sound.unloadAsync();
+      }
+    };
+  }, [sound]);
 
   const MOCK_RESOURCES = {
     audio: [
-      { id: '1', title: 'Guided Meditation for Labor', duration: '15 mins', author: 'Dr. Jane Smith', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=400&q=80' },
-      { id: '2', title: 'Birth Affirmations', duration: '10 mins', author: 'Mama Care', image: 'https://images.unsplash.com/photo-1512438248247-f0f2a5a8b7f0?auto=format&fit=crop&w=400&q=80' },
-      { id: '3', title: 'Pregnancy Sleep Sounds', duration: '45 mins', author: 'Deep Rest', image: 'https://images.unsplash.com/photo-1531353826977-0941b4779a1c?auto=format&fit=crop&w=400&q=80' },
-      { id: '4', title: 'Soothing Classical for Baby', duration: '60 mins', author: 'Mozart Mix', image: 'https://images.unsplash.com/photo-1507838153414-b4b713384a76?auto=format&fit=crop&w=400&q=80' },
-      { id: '5', title: 'Anxiety Relief Breathing', duration: '8 mins', author: 'Dr. Jane Smith', image: 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=400&q=80' },
+      { id: '1', title: 'Guided Meditation for Labor', duration: '15 mins', author: 'Dr. Jane Smith', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=400&q=80', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
+      { id: '2', title: 'Birth Affirmations', duration: '10 mins', author: 'Mama Care', image: 'https://images.unsplash.com/photo-1512438248247-f0f2a5a8b7f0?auto=format&fit=crop&w=400&q=80', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3' },
+      { id: '3', title: 'Pregnancy Sleep Sounds', duration: '45 mins', author: 'Deep Rest', image: 'https://images.unsplash.com/photo-1531353826977-0941b4779a1c?auto=format&fit=crop&w=400&q=80', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3' },
+      { id: '4', title: 'Soothing Classical for Baby', duration: '60 mins', author: 'Mozart Mix', image: 'https://images.unsplash.com/photo-1507838153414-b4b713384a76?auto=format&fit=crop&w=400&q=80', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3' },
+      { id: '5', title: 'Anxiety Relief Breathing', duration: '8 mins', author: 'Dr. Jane Smith', image: 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=400&q=80', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3' },
     ],
     video: [
       { id: '1', title: 'Prenatal Yoga - First Trimester', duration: '20 mins', author: 'Yoga with Anna', image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=600&q=80' },
@@ -45,50 +58,114 @@ export default function ResourceListScreen({ route, navigation }: any) {
 
   const resources = (MOCK_RESOURCES as any)[category] || MOCK_RESOURCES.article;
 
-  const renderAudio = (item: any) => (
-    <TouchableOpacity key={item.id} style={styles.audioCard} activeOpacity={0.8}>
-      <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
-      <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.3)']} style={StyleSheet.absoluteFillObject} />
+  const handleAudioPress = async (item: any) => {
+    if (playingAudioId === item.id && sound) {
+      const status = await sound.getStatusAsync();
+      if (status.isLoaded) {
+        if (status.isPlaying) {
+          await sound.pauseAsync();
+          setIsPlaying(false);
+        } else {
+          await sound.playAsync();
+          setIsPlaying(true);
+        }
+      }
+    } else {
+      if (sound) {
+        await sound.unloadAsync();
+        setSound(null);
+      }
+      setPlayingAudioId(item.id);
+      setIsPlaying(false);
       
-      <Image source={{ uri: item.image }} style={styles.audioImage} />
-      <View style={styles.audioInfo}>
-        <Typography variant="headline" style={{ color: theme.colors.textHigh, marginBottom: 4 }}>{item.title}</Typography>
-        <Typography variant="caption1" style={{ color: theme.colors.textMedium }}>{item.author}</Typography>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
-          <Clock size={12} color={theme.colors.textMedium} style={{ marginRight: 4 }} />
-          <Typography variant="caption2" style={{ color: theme.colors.textMedium }}>{item.duration}</Typography>
+      try {
+        const { sound: newSound } = await Audio.Sound.createAsync(
+          { uri: item.audioUrl },
+          { shouldPlay: true }
+        );
+        setSound(newSound);
+        setIsPlaying(true);
+
+        newSound.setOnPlaybackStatusUpdate((status) => {
+          if (status.isLoaded && status.didJustFinish) {
+            setIsPlaying(false);
+          }
+        });
+      } catch (e) {
+        console.error(e);
+        Alert.alert('Error', 'Could not play audio track.');
+        setPlayingAudioId(null);
+        setIsPlaying(false);
+      }
+    }
+  };
+
+  const handleVideoPress = (item: any) => {
+    Linking.openURL('https://www.youtube.com/results?search_query=' + encodeURIComponent(item.title)).catch(() => {
+      Alert.alert('Error', 'Could not open video link.');
+    });
+  };
+
+  const handleBookPress = (item: any) => {
+    Linking.openURL('https://www.google.com/search?tbm=bks&q=' + encodeURIComponent(item.title + ' ' + item.author)).catch(() => {
+      Alert.alert('Error', 'Could not open book link.');
+    });
+  };
+
+  const handleArticlePress = (item: any) => {
+    navigation.navigate('Article', { 
+      articleId: item.id, 
+      title: item.title, 
+      content: item.snippet + '\n\nThis is a mock article content. In a full production app, this would fetch the full HTML or markdown from the backend. The purpose is to provide educational maternal health content to the user.' 
+    });
+  };
+
+  const renderAudio = (item: any) => {
+    const isThisAudioPlaying = playingAudioId === item.id && isPlaying;
+    return (
+      <TouchableOpacity key={item.id} style={styles.audioCard} activeOpacity={0.8} onPress={() => handleAudioPress(item)}>
+        <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+        <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.3)']} style={StyleSheet.absoluteFillObject} />
+        
+        <Image source={{ uri: item.image }} style={styles.audioImage} />
+        <View style={styles.audioInfo}>
+          <Typography variant="headline" style={{ color: theme.colors.textHigh, marginBottom: 4 }}>{item.title}</Typography>
+          <Typography variant="caption1" style={{ color: theme.colors.textMedium }}>{item.author}</Typography>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
+            <Clock size={12} color={theme.colors.textMedium} style={{ marginRight: 4 }} />
+            <Typography variant="caption2" style={{ color: theme.colors.textMedium }}>{item.duration}</Typography>
+          </View>
         </View>
-      </View>
-      <View style={styles.playBtnCircle}>
-        <PlayCircle size={28} color={theme.colors.primaryDark} strokeWidth={2} />
-      </View>
-    </TouchableOpacity>
-  );
+        <View style={styles.playBtnCircle}>
+          {isThisAudioPlaying ? (
+            <PauseCircle size={28} color={theme.colors.primaryDark} strokeWidth={2} />
+          ) : (
+            <PlayCircle size={28} color={theme.colors.primaryDark} strokeWidth={2} />
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   const renderVideo = (item: any) => (
-    <TouchableOpacity key={item.id} style={styles.videoCard} activeOpacity={0.85}>
+    <TouchableOpacity key={item.id} style={styles.videoCard} activeOpacity={0.85} onPress={() => handleVideoPress(item)}>
       <Image source={{ uri: item.image }} style={styles.videoImage} />
       <View style={styles.videoOverlay}>
-        <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFillObject} />
-        <PlayCircle size={48} color="#FFFFFF" strokeWidth={1.5} style={{ opacity: 0.9 }} />
-      </View>
-      <View style={styles.videoInfoBg}>
-        <BlurView intensity={isDark ? 40 : 80} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
-        <View style={styles.videoInfo}>
-          <View>
-            <Typography variant="headline" style={{ color: theme.colors.textHigh, marginBottom: 2 }}>{item.title}</Typography>
-            <Typography variant="caption2" style={{ color: theme.colors.textMedium }}>{item.author}</Typography>
-          </View>
-          <View style={styles.durationBadge}>
-            <Typography variant="caption2" style={{ color: '#FFF' }}>{item.duration}</Typography>
-          </View>
+        <LinearGradient 
+          colors={['transparent', 'rgba(0,0,0,0.85)']} 
+          style={StyleSheet.absoluteFillObject} 
+        />
+        <View style={styles.playBtnLarge}>
+          <PlayCircle size={48} color="#FFF" strokeWidth={1.5} />
         </View>
+        <Typography variant="title2" style={{ color: '#FFF', textAlign: 'center', marginTop: 12, textShadowColor: 'rgba(0,0,0,0.7)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 }}>{item.title}</Typography>
+        <Typography variant="caption1" style={{ color: 'rgba(255,255,255,0.9)', marginTop: 4 }}>{item.duration}</Typography>
       </View>
     </TouchableOpacity>
   );
 
   const renderBook = (item: any) => (
-    <TouchableOpacity key={item.id} style={styles.bookCard} activeOpacity={0.8}>
+    <TouchableOpacity key={item.id} style={styles.bookCard} activeOpacity={0.8} onPress={() => handleBookPress(item)}>
       <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
       <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.3)']} style={StyleSheet.absoluteFillObject} />
       
@@ -106,7 +183,7 @@ export default function ResourceListScreen({ route, navigation }: any) {
   );
 
   const renderArticle = (item: any) => (
-    <TouchableOpacity key={item.id} style={styles.articleCard} activeOpacity={0.8}>
+    <TouchableOpacity key={item.id} style={styles.articleCard} activeOpacity={0.8} onPress={() => handleArticlePress(item)}>
       <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
       <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.3)']} style={StyleSheet.absoluteFillObject} />
       

@@ -40,13 +40,13 @@ export default function ArticleScreen({ route, navigation }: Props) {
     <LinearGradient colors={[theme.colors.background, theme.colors.surfaceVariant, theme.colors.primaryLight]} style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Placeholder for an article header image */}
-        <View style={[styles.headerImagePlaceholder, { opacity: fadeAnim }]}>
+        <Animated.View style={[styles.headerImagePlaceholder, { opacity: fadeAnim }]}>
           <Typography variant="title2" color={theme.colors.background} style={styles.imageText}>
             Bloom Guide
           </Typography>
-        </View>
+        </Animated.View>
 
-        <View style={[
+        <Animated.View style={[
           styles.contentContainer, 
           { 
             opacity: fadeAnim,
@@ -72,11 +72,11 @@ export default function ArticleScreen({ route, navigation }: Props) {
             Rest when you need to rest. Your body is working overtime to build a new life, and fatigue is a natural response. Don’t feel guilty for taking that afternoon nap.
           </Typography>
 
-          <View style={styles.pullQuote}>
+          <Animated.View style={styles.pullQuote}>
             <Typography variant="headline" color={theme.colors.primaryDark} style={{ fontStyle: 'italic' }}>
               "The most important thing she'd learned over the years was that there was no way to be a perfect mother and a million ways to be a good one."
             </Typography>
-          </View>
+          </Animated.View>
 
           <Typography variant="title3" color={theme.colors.textHigh} style={styles.subtitle}>
             2. Stay Hydrated
@@ -88,7 +88,7 @@ export default function ArticleScreen({ route, navigation }: Props) {
           <Typography variant="body" color={theme.colors.textMedium} style={styles.paragraph}>
             {content}
           </Typography>
-        </View>
+        </Animated.View>
       </ScrollView>
     </LinearGradient>
   );
