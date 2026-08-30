@@ -29,11 +29,11 @@ export default function ResourceListScreen({ route, navigation }: any) {
 
   const MOCK_RESOURCES = {
     audio: [
-      { id: '1', title: 'Guided Meditation for Labor', duration: '15 mins', author: 'Dr. Jane Smith', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=400&q=80', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
-      { id: '2', title: 'Birth Affirmations', duration: '10 mins', author: 'Mama Care', image: 'https://images.unsplash.com/photo-1512438248247-f0f2a5a8b7f0?auto=format&fit=crop&w=400&q=80', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3' },
-      { id: '3', title: 'Pregnancy Sleep Sounds', duration: '45 mins', author: 'Deep Rest', image: 'https://images.unsplash.com/photo-1531353826977-0941b4779a1c?auto=format&fit=crop&w=400&q=80', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3' },
-      { id: '4', title: 'Soothing Classical for Baby', duration: '60 mins', author: 'Mozart Mix', image: 'https://images.unsplash.com/photo-1507838153414-b4b713384a76?auto=format&fit=crop&w=400&q=80', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3' },
-      { id: '5', title: 'Anxiety Relief Breathing', duration: '8 mins', author: 'Dr. Jane Smith', image: 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=400&q=80', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3' },
+      { id: '1', title: 'First Trimester Nutrition Guide', duration: '15 mins', author: 'Bloom Podcast', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=400&q=80', audioFile: require('../../assets/podcasts/podcast1.mp3') },
+      { id: '2', title: 'Preparing for Labor', duration: '22 mins', author: 'Bloom Podcast', image: 'https://images.unsplash.com/photo-1512438248247-f0f2a5a8b7f0?auto=format&fit=crop&w=400&q=80', audioFile: require('../../assets/podcasts/podcast2.mp3') },
+      { id: '3', title: 'Managing Postpartum Anxiety', duration: '18 mins', author: 'Bloom Mental Health', image: 'https://images.unsplash.com/photo-1531353826977-0941b4779a1c?auto=format&fit=crop&w=400&q=80', audioFile: require('../../assets/podcasts/podcast3.mp3') },
+      { id: '4', title: 'Your Birthing Plan Q&A', duration: '30 mins', author: 'Bloom Podcast', image: 'https://images.unsplash.com/photo-1507838153414-b4b713384a76?auto=format&fit=crop&w=400&q=80', audioFile: require('../../assets/podcasts/podcast1.mp3') },
+      { id: '5', title: 'The Importance of Hydration', duration: '12 mins', author: 'Bloom Podcast', image: 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=400&q=80', audioFile: require('../../assets/podcasts/podcast2.mp3') },
     ],
     video: [
       { id: '1', title: 'Prenatal Yoga - First Trimester', duration: '20 mins', author: 'Yoga with Anna', image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=600&q=80' },
@@ -80,7 +80,7 @@ export default function ResourceListScreen({ route, navigation }: any) {
       
       try {
         const { sound: newSound } = await Audio.Sound.createAsync(
-          { uri: item.audioUrl },
+          item.audioFile,
           { shouldPlay: true }
         );
         setSound(newSound);
@@ -307,6 +307,14 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   videoOverlay: {
     position: 'absolute',
     top: 0, left: 0, right: 0, bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  playBtnLarge: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
   },
