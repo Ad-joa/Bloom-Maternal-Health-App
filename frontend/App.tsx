@@ -26,6 +26,9 @@ import RelaxationScreen from './src/screens/RelaxationScreen';
 import FitnessScreen from './src/screens/FitnessScreen';
 import HospitalBagScreen from './src/screens/HospitalBagScreen';
 import HelpSupportScreen from './src/screens/HelpSupportScreen';
+import ResourceListScreen from './src/screens/ResourceListScreen';
+import KickCounterScreen from './src/screens/KickCounterScreen';
+import BreathingExerciseScreen from './src/screens/BreathingExerciseScreen';
 import { BiometricGate } from './src/components/BiometricGate';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -78,6 +81,9 @@ export type RootStackParamList = {
   Fitness: undefined;
   HospitalBag: undefined;
   HelpSupport: undefined;
+  ResourceList: { category: string; title: string };
+  KickCounter: undefined;
+  BreathingExercise: undefined;
 };
 
 export type MainTabParamList = {
@@ -355,6 +361,21 @@ function Navigation() {
             <Stack.Screen
               name="EmergencyLocator"
               component={EmergencyLocatorScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="ResourceList"
+              component={ResourceListScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="KickCounter"
+              component={KickCounterScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="BreathingExercise"
+              component={BreathingExerciseScreen}
               options={{ headerShown: false }}
             />
           </>

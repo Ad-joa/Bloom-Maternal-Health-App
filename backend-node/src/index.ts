@@ -166,6 +166,22 @@ app.post('/advisory', authenticateToken, async (req: any, res: any) => {
           Age: ${user.age || 'Unknown'}.
         `;
       }
+      
+      const recentLogs = await prisma.symptom_logs.findMany({
+        where: { user_id: user_id },
+        orderBy: { created_at: 'desc' },
+        take: 5
+      });
+      
+      if (recentLogs && recentLogs.length > 0) {
+        userDetails += `\nHere is a summary of her recent daily logs (most recent first):\n`;
+        recentLogs.forEach((log: any) => {
+          const date = log.created_at ? new Date(log.created_at).toLocaleDateString() : 'Unknown Date';
+          userDetails += `- Date: ${date}, Symptoms: ${log.symptoms || 'None'}, Severity: ${log.severity || 'N/A'}, Blood Pressure: ${log.blood_pressure || 'N/A'}, Weight: ${log.weight ? log.weight + 'kg' : 'N/A'}\n`;
+        });
+      } else {
+        userDetails += `\nNo recent logs found.`;
+      }
     }
 
     // Safety First: Use the local rules engine to detect critical danger signs immediately
@@ -185,9 +201,10 @@ app.post('/advisory', authenticateToken, async (req: any, res: any) => {
       Instructions:
       1. BE PROACTIVE & CONTEXT-AWARE: Actively weave her trimester, age, medical conditions, and primary goal into your responses. For example, if she is in her 3rd trimester and her goal is to prepare for birth, relate her current feelings to that specific context.
       2. BE A COMPANION: Do not just spit out facts. Validate her feelings, celebrate her milestones, and occasionally ask a gentle follow-up question to see how she is really doing.
-      3. NO MARKDOWN OR SPECIAL CHARACTERS: You must write in plain text ONLY. Absolutely NO asterisks (*), hashtags (#), or bolding. Use standard paragraph breaks, numbers (1, 2, 3), or dashes (-) for lists instead of asterisks.
-      4. KEEP IT EXTREMELY PRECISE & BRIEF: Maximum 1-2 short paragraphs or plain text lists. DO NOT write long paragraphs unless she explicitly demands more details.
-      5. SAFETY DISCLAIMER: Always include a brief, gentle reminder to consult her doctor for medical concerns.
+      3. REFERENCE RECENT LOGS: Review her recent logs provided in her profile. If her current message relates to a recently logged symptom, or if she has an ongoing pattern, acknowledge it to show you remember and care. If she hasn't logged recently, you may gently encourage her to log her vitals when appropriate.
+      4. NO MARKDOWN OR SPECIAL CHARACTERS: You must write in plain text ONLY. Absolutely NO asterisks (*), hashtags (#), or bolding. Use standard paragraph breaks, numbers (1, 2, 3), or dashes (-) for lists instead of asterisks.
+      5. KEEP IT EXTREMELY PRECISE & BRIEF: Maximum 1-2 short paragraphs or plain text lists. DO NOT write long paragraphs unless she explicitly demands more details.
+      6. SAFETY DISCLAIMER: Always include a brief, gentle reminder to consult her doctor for medical concerns.
     `;
 
     const userPrompt = Array.isArray(symptoms) ? symptoms.join(', ') : symptoms;

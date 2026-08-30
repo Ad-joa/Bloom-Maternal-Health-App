@@ -10,7 +10,8 @@ import { Typography } from '../components/Typography';
 import {
   Activity, Droplets, Stethoscope, Heart, Sun,
   Moon, Sparkles, Bell, ChevronRight, Zap,
-  Baby, Apple, Lightbulb, Calendar, Luggage, Info, Target
+  Baby, Apple, Lightbulb, Calendar, Luggage, Info, Target,
+  Headphones, PlayCircle, BookOpen, FileText
 } from 'lucide-react-native';
 import { getWeeksPregnant, getDaysUntilDue } from '../utils/dateUtils';
 import { getAncVisits, getEducationalContent } from '../api/api';
@@ -257,29 +258,17 @@ export default function HomeScreen({ navigation }: any) {
     transform: [{ translateY: headerAnim.interpolate({ inputRange: [0, 1], outputRange: [16, 0] }) }],
   };
 
-  const ALL_PREGNANCY_TOOLS: any[] = [
-    { id: 'Healthy Diet', label: t('home.tools.mealPlan', 'Meal\nPlan'), icon: Apple, bg: '#8CC152', route: 'MealPlan' },
-    { id: 'Stay Active', label: t('home.tools.stayActive', 'Stay\nActive'), icon: Heart, bg: '#50E3C2', route: 'Fitness' },
-    { id: 'Manage Stress', label: t('home.tools.manageStress', 'Manage\nStress'), icon: Calendar, bg: '#E06253', route: 'Relaxation' },
-    { id: 'Prepare for Birth', label: t('home.tools.hospitalBag', 'Hospital\nBag'), icon: Luggage, bg: '#609B66', route: 'HospitalBag' },
-    { id: 'weight', label: t('home.tools.weightTracker', 'Weight\nTracker'), icon: Activity, bg: '#F5A623', route: 'GrowthVisualizer' },
-    { id: 'kick', label: t('home.tools.kickCounter', 'Kick\nCounter'), icon: Baby, bg: '#9013FE' },
-    { id: 'contraction', label: t('home.tools.contractionCounter', 'Contraction\nCounter'), icon: Zap, bg: '#4A90E2' },
+  const PREGNANCY_RESOURCES = [
+    { id: 'audio', label: t('home.resources.audio', 'Audio'), icon: Headphones, bg: '#818CF8', route: 'ResourceList', params: { category: 'audio', title: t('home.resources.audio', 'Audio') } },
+    { id: 'video', label: t('home.resources.video', 'Videos'), icon: PlayCircle, bg: '#F87171', route: 'ResourceList', params: { category: 'video', title: t('home.resources.video', 'Videos') } },
+    { id: 'book', label: t('home.resources.book', 'Books'), icon: BookOpen, bg: '#34D399', route: 'ResourceList', params: { category: 'book', title: t('home.resources.book', 'Books') } },
+    { id: 'article', label: t('home.resources.article', 'Articles'), icon: FileText, bg: '#FBBF24', route: 'ResourceList', params: { category: 'article', title: t('home.resources.article', 'Articles') } },
   ];
 
-  const PREGNANCY_TOOLS = React.useMemo(() => {
-    const primaryGoal = user?.primary_goal;
-    if (!primaryGoal) return ALL_PREGNANCY_TOOLS;
-    
-    const tools = [...ALL_PREGNANCY_TOOLS];
-    const index = tools.findIndex(t => t.id === primaryGoal);
-    if (index > -1) {
-      const [primary] = tools.splice(index, 1);
-      return [{ ...primary, isPrimary: true }, ...tools];
-    }
-    return tools;
-  }, [user]);
-
+  const INTERACTIVE_TOOLS = [
+    { id: 'kick', label: t('home.interactive.kickCounter', 'Kick Counter'), icon: Baby, bg: '#9013FE', route: 'KickCounter' },
+    { id: 'breathe', label: t('home.interactive.breathing', 'Breathing'), icon: Zap, bg: '#4A90E2', route: 'BreathingExercise' },
+  ];
   const calendarDates = React.useMemo(() => {
     const today = new Date();
     const dates = [];
@@ -579,16 +568,40 @@ export default function HomeScreen({ navigation }: any) {
             )}
           </View>
 
-          {/* ── Pregnancy Tools ── */}
+          {/* ── Pregnancy Resources ── */}
           <View style={[styles.sectionHeader, { marginTop: 16 }]}>
-            <Typography variant="title2" style={styles.sectionTitle}>{t('home.pregnancyTools', 'YOUR PREGNANCY TOOLS')}</Typography>
+            <Typography variant="title2" style={styles.sectionTitle}>{t('home.pregnancyResources', 'PREGNANCY RESOURCES')}</Typography>
           </View>
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false} 
             contentContainerStyle={{ paddingHorizontal: 24, gap: 12, paddingBottom: 24 }}
           >
-            {PREGNANCY_TOOLS.map((tool) => (
+            {PREGNANCY_RESOURCES.map((tool) => (
+              <TouchableOpacity
+                key={tool.label}
+                style={[styles.toolCard, { width: 110 }]}
+                onPress={() => tool.route ? navigation.navigate(tool.route, tool.params) : Alert.alert('Coming Soon', 'We are building this feature!')}
+                activeOpacity={0.75}
+              >
+                <View style={[styles.toolIconWrapper, { backgroundColor: tool.bg }]}>
+                  <tool.icon size={26} color={theme.colors.background} strokeWidth={2.5} />
+                </View>
+                <Typography variant="caption1" style={styles.toolLabel} numberOfLines={2}>{tool.label}</Typography>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          {/* ── Interactive Tools ── */}
+          <View style={[styles.sectionHeader, { marginTop: 8 }]}>
+            <Typography variant="title2" style={styles.sectionTitle}>{t('home.interactiveTools', 'INTERACTIVE TOOLS')}</Typography>
+          </View>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            contentContainerStyle={{ paddingHorizontal: 24, gap: 12, paddingBottom: 32 }}
+          >
+            {INTERACTIVE_TOOLS.map((tool) => (
               <TouchableOpacity
                 key={tool.label}
                 style={[styles.toolCard, { width: 110 }]}
@@ -598,7 +611,7 @@ export default function HomeScreen({ navigation }: any) {
                 <View style={[styles.toolIconWrapper, { backgroundColor: tool.bg }]}>
                   <tool.icon size={26} color={theme.colors.background} strokeWidth={2.5} />
                 </View>
-                <Typography variant="caption1" style={[styles.toolLabel, tool.isPrimary && { fontFamily: theme.typography.families.headingBold, color: theme.colors.primaryDark }]} numberOfLines={2}>{tool.label}</Typography>
+                <Typography variant="caption1" style={styles.toolLabel} numberOfLines={2}>{tool.label}</Typography>
               </TouchableOpacity>
             ))}
           </ScrollView>

@@ -108,6 +108,18 @@ export default {
       estWeight: 'MU DURUDURU (AKYERƐ)',
       todaysTip: 'ƐNNƐ AFOTUO',
       pregnancyTools: 'WO AWOƆ NNEƐMA',
+      pregnancyResources: 'AWOƆ NNEƐMA',
+      interactiveTools: 'NNEƐMA A ƐYƐ ADWUMA',
+      resources: {
+        audio: 'Nnwom/Nne',
+        video: 'Video',
+        book: 'Nwoma',
+        article: 'Nsɛm'
+      },
+      interactive: {
+        kickCounter: 'Abaayewa/Abarimaa Nsɔhwe',
+        breathing: 'Ahomegyeɛ'
+      },
       tools: {
         mealPlan: 'Aduan\nNhyehyɛe',
         stayActive: 'Tumi Yɛ\nAdwuma',

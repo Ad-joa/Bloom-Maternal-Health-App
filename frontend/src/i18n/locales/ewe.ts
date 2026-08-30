@@ -106,8 +106,20 @@ export default {
       fetalDev: 'VI LA ƑE TSITSI',
       estLength: 'DIDI (KAKAƉEDZI)',
       estWeight: 'KPEKPEME (KAKAƉEDZI)',
-      todaysTip: 'EGBE ƑE AÐAŊUƉOƉO',
-      pregnancyTools: 'WÒ FUFƆFƆ DƆWƆNUWO',
+      todaysTip: 'EGBE ƑE AÐAŊUÐOÐO',
+      pregnancyTools: 'FUMEMENƆNƆ ƑE DƆWƆNUWO',
+      pregnancyResources: 'FUMEMENƆNƆ ƑE NUNYAWO',
+      interactiveTools: 'DƆWƆNUWO',
+      resources: {
+        audio: 'Ha/Gbe',
+        video: 'Video',
+        book: 'Agbalẽ',
+        article: 'Nyatiwo'
+      },
+      interactive: {
+        kickCounter: 'Vidzĩ Ƒe Ʋuʋu',
+        breathing: 'Gbɔgbɔ'
+      },
       tools: {
         mealPlan: 'Nuɖuɖu\nƉoɖo',
         stayActive: 'Wɔ\nDɔ Sesĩe',

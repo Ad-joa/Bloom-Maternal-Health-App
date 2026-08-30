@@ -108,6 +108,18 @@ export default {
       estWeight: 'EST. WEIGHT',
       todaysTip: "TODAY'S TIP",
       pregnancyTools: 'YOUR PREGNANCY TOOLS',
+      pregnancyResources: 'PREGNANCY RESOURCES',
+      interactiveTools: 'INTERACTIVE TOOLS',
+      resources: {
+        audio: 'Audio',
+        video: 'Videos',
+        book: 'Books',
+        article: 'Articles'
+      },
+      interactive: {
+        kickCounter: 'Kick Counter',
+        breathing: 'Breathing'
+      },
       tools: {
         mealPlan: 'Meal\nPlan',
         stayActive: 'Stay\nActive',
