@@ -12,6 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { getAdvisory } from '../api/api';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 interface Message {
   id: string;
@@ -42,13 +43,14 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
   const styles = getStyles(theme, isDark);
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   const pulseAnim = useRef(new Animated.Value(0.5)).current;
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const [messages, setMessages] = useState<Message[]>([
-    { id: '1', text: `Hi ${user?.name ? user.name : 'there'}! I am Bloom AI. Do you have any questions about your pregnancy today? Describe what you are feeling.`, sender: 'ai' },
+    { id: '1', text: t('ai.welcomeMsg', `Hi ${user?.name ? user.name : 'there'}! I am Bloom AI. Do you have any questions about your pregnancy today? Describe what you are feeling.`), sender: 'ai' },
   ]);
 
   React.useEffect(() => {
@@ -91,7 +93,7 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setMessages(prev => [...prev, { 
         id: (Date.now() + 1).toString(), 
-        text: adviceStr || "I am having trouble processing that right now.", 
+        text: adviceStr || t('ai.processError', "I am having trouble processing that right now."), 
         sender: 'ai' 
       }]);
     } catch (error) {
@@ -99,7 +101,7 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setMessages(prev => [...prev, { 
         id: (Date.now() + 1).toString(), 
-        text: "I couldn't reach the server. Please try again later.", 
+        text: t('ai.error', "I couldn't reach the server. Please try again later."), 
         sender: 'ai' 
       }]);
     } finally {
@@ -128,10 +130,10 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
       {!isNested && (
         <View style={styles.header}>
           <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.headerTitle}>
-            Bloom AI
+            {t('ai.title', 'Bloom AI')}
           </Typography>
           <Typography variant="body" color={theme.colors.textMedium}>
-            Your 24/7 intelligent pregnancy guide
+            {t('ai.subtitle', 'Your 24/7 intelligent pregnancy guide')}
           </Typography>
         </View>
       )}
@@ -177,13 +179,13 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
                   <Flower2 size={18} color={theme.colors.background} />
                 </View>
                 <Animated.View style={[styles.bubble, styles.bubbleAI, styles.loadingBubble, { opacity: pulseAnim }]}>
-                  <Typography variant="caption1" color={theme.colors.textMedium} style={{ fontStyle: 'italic' }}>Bloom AI is typing...</Typography>
+                  <Typography variant="caption1" color={theme.colors.textMedium} style={{ fontStyle: 'italic' }}>{t('ai.typing', 'Bloom AI is typing...')}</Typography>
                 </Animated.View>
               </View>
             )}
           </ScrollView>
           
-          <BlurView intensity={isDark ? 30 : 60} tint={isDark ? "dark" : "light"} style={[styles.inputArea, { paddingBottom: keyboardVisible ? (Platform.OS === 'ios' ? 16 : 24) : Math.max(insets.bottom, 16) + 70 }]}>
+          <BlurView intensity={isDark ? 30 : 60} tint={isDark ? "dark" : "light"} style={[styles.inputArea, { paddingBottom: keyboardVisible ? (Platform.OS === 'ios' ? 16 : 24) : Math.max(insets.bottom, 16) + 110 }]}>
             {/* Suggested Prompts */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.promptsContainer}>
               {suggestedPrompts.map((prompt, index) => (
@@ -200,7 +202,7 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
             <View style={styles.inputContainer}>
               <View style={styles.inputWrapper}>
                 <RNTextInput
-                  placeholder="Ask anything..."
+                  placeholder={t('ai.placeholder', 'Ask anything...')}
                   placeholderTextColor={theme.colors.textMedium}
                   value={inputText}
                   onChangeText={setInputText}

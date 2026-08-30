@@ -16,6 +16,7 @@ import { ChevronLeft, Calendar, Activity, CheckCircle2, User, Salad, HeartPulse,
 import { TermLoader } from '../components/TermLoader';
 import { BlurView } from 'expo-blur';
 import { BackgroundMesh } from '../components/BackgroundMesh';
+import { useTranslation } from 'react-i18next';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -31,6 +32,7 @@ const TOTAL_STEPS = 8;
 export default function OnboardingScreen({ navigation }: Props) {
   const { theme } = useTheme();
   const { isDark } = useTheme();
+  const { t } = useTranslation();
   const styles = getStyles(theme, isDark);
   const { user, token, login, logout } = useAuth();
   const [step, setStep] = useState(1);
@@ -213,12 +215,12 @@ export default function OnboardingScreen({ navigation }: Props) {
               <Calendar size={32} color={theme.colors.primaryDark} strokeWidth={2} />
             </View>
             <Typography variant="title2" color={theme.colors.textHigh} style={styles.questionTitle}>
-              When was the first day of your last period?
+              {t('onboarding.step1.title', 'When was the first day of your last period?')}
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium} style={styles.questionSubtitle}>
-              We'll use this to safely calculate your expected due date.
+              {t('onboarding.step1.subtitle', 'We\'ll use this to safely calculate your expected due date.')}
             </Typography>
-            <TextInput label="Last Period Date" placeholder="MM/DD/YYYY" value={lastPeriodDate} onChangeText={setLastPeriodDate} />
+            <TextInput label={t('onboarding.step1.label', 'Last Period Date')} placeholder={t('onboarding.step1.placeholder', 'MM/DD/YYYY')} value={lastPeriodDate} onChangeText={setLastPeriodDate} />
           </View>
         );
       case 2:
@@ -228,22 +230,22 @@ export default function OnboardingScreen({ navigation }: Props) {
               <Activity size={32} color={theme.colors.primaryDark} strokeWidth={2} />
             </View>
             <Typography variant="title2" color={theme.colors.textHigh} style={styles.questionTitle}>
-              Which trimester are you in?
+              {t('onboarding.step2.title', 'Which trimester are you in?')}
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium} style={styles.questionSubtitle}>
-              We'll customize your daily tips based on this.
+              {t('onboarding.step2.subtitle', 'We\'ll customize your daily tips based on this.')}
             </Typography>
             <View style={styles.optionsContainer}>
-              {[1, 2, 3].map(t => (
+              {[1, 2, 3].map(tval => (
                 <BounceButton 
-                  key={t}
-                  onPress={() => setTrimester(String(t))}
+                  key={tval}
+                  onPress={() => setTrimester(String(tval))}
                 >
-                  <BlurView intensity={isDark ? 40 : 60} tint={isDark ? 'dark' : 'light'} style={[styles.optionCard, trimester === String(t) && styles.optionCardActive]}>
-                    <Typography variant="headline" color={trimester === String(t) ? theme.colors.primaryDark : theme.colors.textHigh}>
-                      Trimester {t}
+                  <BlurView intensity={isDark ? 40 : 60} tint={isDark ? 'dark' : 'light'} style={[styles.optionCard, trimester === String(tval) && styles.optionCardActive]}>
+                    <Typography variant="headline" color={trimester === String(tval) ? theme.colors.primaryDark : theme.colors.textHigh}>
+                      {t('onboarding.step2.trimester', 'Trimester')} {tval}
                     </Typography>
-                    {trimester === String(t) && <CheckCircle2 size={20} color={theme.colors.primaryDark} />}
+                    {trimester === String(tval) && <CheckCircle2 size={20} color={theme.colors.primaryDark} />}
                   </BlurView>
                 </BounceButton>
               ))}
@@ -257,21 +259,21 @@ export default function OnboardingScreen({ navigation }: Props) {
               <Baby size={32} color={theme.colors.primaryDark} strokeWidth={2} />
             </View>
             <Typography variant="title2" color={theme.colors.textHigh} style={styles.questionTitle}>
-              Is this your first pregnancy?
+              {t('onboarding.step3.title', 'Is this your first pregnancy?')}
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium} style={styles.questionSubtitle}>
-              We adapt our advice for first-time mothers.
+              {t('onboarding.step3.subtitle', 'We adapt our advice for first-time mothers.')}
             </Typography>
             <View style={styles.optionsContainer}>
               <BounceButton onPress={() => setIsFirstPregnancy(true)}>
                 <BlurView intensity={isDark ? 40 : 60} tint={isDark ? 'dark' : 'light'} style={[styles.optionCard, isFirstPregnancy === true && styles.optionCardActive]}>
-                  <Typography variant="headline" color={isFirstPregnancy === true ? theme.colors.primaryDark : theme.colors.textHigh}>Yes, it is</Typography>
+                  <Typography variant="headline" color={isFirstPregnancy === true ? theme.colors.primaryDark : theme.colors.textHigh}>{t('onboarding.step3.yes', 'Yes, it is')}</Typography>
                   {isFirstPregnancy === true && <CheckCircle2 size={20} color={theme.colors.primaryDark} />}
                 </BlurView>
               </BounceButton>
               <BounceButton onPress={() => setIsFirstPregnancy(false)}>
                 <BlurView intensity={isDark ? 40 : 60} tint={isDark ? 'dark' : 'light'} style={[styles.optionCard, isFirstPregnancy === false && styles.optionCardActive]}>
-                  <Typography variant="headline" color={isFirstPregnancy === false ? theme.colors.primaryDark : theme.colors.textHigh}>No, I've had a baby before</Typography>
+                  <Typography variant="headline" color={isFirstPregnancy === false ? theme.colors.primaryDark : theme.colors.textHigh}>{t('onboarding.step3.no', 'No, I\'ve had a baby before')}</Typography>
                   {isFirstPregnancy === false && <CheckCircle2 size={20} color={theme.colors.primaryDark} />}
                 </BlurView>
               </BounceButton>
@@ -285,14 +287,14 @@ export default function OnboardingScreen({ navigation }: Props) {
               <User size={32} color={theme.colors.primaryDark} strokeWidth={2} />
             </View>
             <Typography variant="title2" color={theme.colors.textHigh} style={styles.questionTitle}>
-              Age & Weight
+              {t('onboarding.step4.title', 'Age & Weight')}
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium} style={styles.questionSubtitle}>
-              For a healthy baseline tracking.
+              {t('onboarding.step4.subtitle', 'For a healthy baseline tracking.')}
             </Typography>
-            <TextInput label="Age" placeholder="e.g. 28" keyboardType="number-pad" value={age} onChangeText={setAge} />
+            <TextInput label={t('onboarding.step4.ageLabel', 'Age')} placeholder={t('onboarding.step4.agePlaceholder', 'e.g. 28')} keyboardType="number-pad" value={age} onChangeText={setAge} />
             <View style={{height: 16}} />
-            <TextInput label="Weight" placeholder="e.g. 65 kg" value={weight} onChangeText={setWeight} />
+            <TextInput label={t('onboarding.step4.weightLabel', 'Weight')} placeholder={t('onboarding.step4.weightPlaceholder', 'e.g. 65 kg')} value={weight} onChangeText={setWeight} />
           </View>
         );
       case 5:
@@ -302,20 +304,25 @@ export default function OnboardingScreen({ navigation }: Props) {
               <Target size={32} color={theme.colors.primaryDark} strokeWidth={2} />
             </View>
             <Typography variant="title2" color={theme.colors.textHigh} style={styles.questionTitle}>
-              Primary Goal
+              {t('onboarding.step5.title', 'Primary Goal')}
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium} style={styles.questionSubtitle}>
-              What is your main focus right now?
+              {t('onboarding.step5.subtitle', 'What is your main focus right now?')}
             </Typography>
             <View style={styles.optionsContainer}>
-              {["Healthy Diet", "Manage Stress", "Stay Active", "Prepare for Birth"].map(goal => (
+              {[
+                { key: 'Healthy Diet', text: t('onboarding.step5.goals.healthyDiet', 'Healthy Diet') }, 
+                { key: 'Manage Stress', text: t('onboarding.step5.goals.manageStress', 'Manage Stress') }, 
+                { key: 'Stay Active', text: t('onboarding.step5.goals.stayActive', 'Stay Active') }, 
+                { key: 'Prepare for Birth', text: t('onboarding.step5.goals.prepareBirth', 'Prepare for Birth') }
+              ].map(goal => (
                 <BounceButton 
-                  key={goal}
-                  onPress={() => setPrimaryGoal(goal)}
+                  key={goal.key}
+                  onPress={() => setPrimaryGoal(goal.key)}
                 >
-                  <BlurView intensity={isDark ? 40 : 60} tint={isDark ? 'dark' : 'light'} style={[styles.optionCard, primaryGoal === goal && styles.optionCardActive]}>
-                    <Typography variant="headline" color={primaryGoal === goal ? theme.colors.primaryDark : theme.colors.textHigh}>{goal}</Typography>
-                    {primaryGoal === goal && <CheckCircle2 size={20} color={theme.colors.primaryDark} />}
+                  <BlurView intensity={isDark ? 40 : 60} tint={isDark ? 'dark' : 'light'} style={[styles.optionCard, primaryGoal === goal.key && styles.optionCardActive]}>
+                    <Typography variant="headline" color={primaryGoal === goal.key ? theme.colors.primaryDark : theme.colors.textHigh}>{goal.text}</Typography>
+                    {primaryGoal === goal.key && <CheckCircle2 size={20} color={theme.colors.primaryDark} />}
                   </BlurView>
                 </BounceButton>
               ))}
@@ -329,12 +336,12 @@ export default function OnboardingScreen({ navigation }: Props) {
               <Salad size={32} color={theme.colors.primaryDark} strokeWidth={2} />
             </View>
             <Typography variant="title2" color={theme.colors.textHigh} style={styles.questionTitle}>
-              Dietary Preferences
+              {t('onboarding.step6.title', 'Dietary Preferences')}
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium} style={styles.questionSubtitle}>
-              Any restrictions we should know about? (Optional)
+              {t('onboarding.step6.subtitle', 'Any restrictions we should know about? (Optional)')}
             </Typography>
-            <TextInput label="Diet" placeholder="e.g. Vegetarian, Gluten-free, None" value={dietaryPreferences} onChangeText={setDietaryPreferences} />
+            <TextInput label={t('onboarding.step6.label', 'Diet')} placeholder={t('onboarding.step6.placeholder', 'e.g. Vegetarian, Gluten-free, None')} value={dietaryPreferences} onChangeText={setDietaryPreferences} />
           </View>
         );
       case 7:
@@ -344,12 +351,12 @@ export default function OnboardingScreen({ navigation }: Props) {
               <HeartPulse size={32} color={theme.colors.primaryDark} strokeWidth={2} />
             </View>
             <Typography variant="title2" color={theme.colors.textHigh} style={styles.questionTitle}>
-              Pre-existing Medical Conditions
+              {t('onboarding.step7.title', 'Pre-existing Medical Conditions')}
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium} style={styles.questionSubtitle}>
-              (Optional) E.g., Asthma, Gestational Diabetes. Helps our AI give safer answers.
+              {t('onboarding.step7.subtitle', '(Optional) E.g., Asthma, Gestational Diabetes. Helps our AI give safer answers.')}
             </Typography>
-            <TextInput label="Conditions" placeholder="None" value={medicalConditions} onChangeText={setMedicalConditions} multiline />
+            <TextInput label={t('onboarding.step7.label', 'Conditions')} placeholder={t('onboarding.step7.placeholder', 'None')} value={medicalConditions} onChangeText={setMedicalConditions} multiline />
           </View>
         );
       case 8:
@@ -359,14 +366,14 @@ export default function OnboardingScreen({ navigation }: Props) {
               <Phone size={32} color={theme.colors.primaryDark} strokeWidth={2} />
             </View>
             <Typography variant="title2" color={theme.colors.textHigh} style={styles.questionTitle}>
-              Emergency Contact
+              {t('onboarding.step8.title', 'Emergency Contact')}
             </Typography>
             <Typography variant="body" color={theme.colors.textMedium} style={styles.questionSubtitle}>
-              Who should we reach in case of an emergency? (Optional)
+              {t('onboarding.step8.subtitle', 'Who should we reach in case of an emergency? (Optional)')}
             </Typography>
-            <TextInput label="Name" placeholder="e.g. Mawuli Asare" value={emergencyName} onChangeText={setEmergencyName} />
+            <TextInput label={t('onboarding.step8.nameLabel', 'Name')} placeholder={t('onboarding.step8.namePlaceholder', 'e.g. Mawuli Asare')} value={emergencyName} onChangeText={setEmergencyName} />
             <View style={{height: 16}} />
-            <TextInput label="Phone Number" placeholder="+233..." keyboardType="phone-pad" value={emergencyPhone} onChangeText={setEmergencyPhone} />
+            <TextInput label={t('onboarding.step8.phoneLabel', 'Phone Number')} placeholder={t('onboarding.step8.phonePlaceholder', '+233...')} keyboardType="phone-pad" value={emergencyPhone} onChangeText={setEmergencyPhone} />
           </View>
         );
       default: return null;
@@ -417,10 +424,9 @@ export default function OnboardingScreen({ navigation }: Props) {
               </Animated.View>
             </ScrollView>
 
-            {/* Footer */}
             <View style={styles.footer}>
               <Button 
-                title={loading ? "Saving..." : (step === TOTAL_STEPS ? "Complete Profile" : "Continue")} 
+                title={loading ? t('onboarding.saving', "Saving...") : (step === TOTAL_STEPS ? t('onboarding.completeProfile', "Complete Profile") : t('onboarding.continue', "Continue"))} 
                 onPress={handleNext}
                 disabled={loading || isNextDisabled()}
               />

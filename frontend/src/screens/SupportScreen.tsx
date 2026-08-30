@@ -8,11 +8,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 // We will import the existing screens and modify them slightly to remove SafeAreaView
 import CommunityFeed from './CommunityScreen';
 import BloomAIChat from './BloomAIScreen';
+import { useTranslation } from 'react-i18next';
 
 export default function SupportScreen({ navigation }: any) {
   const { theme, isDark } = useTheme();
   const styles = getStyles(theme, isDark);
   const [activeTab, setActiveTab] = useState<'community' | 'ai'>('ai');
+  const { t } = useTranslation();
 
   return (
     <View style={styles.container}>
@@ -29,7 +31,7 @@ export default function SupportScreen({ navigation }: any) {
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         {/* Header & Segmented Control */}
         <View style={styles.header}>
-          <Typography variant="largeTitle" style={styles.headerTitle}>Support</Typography>
+          <Typography variant="largeTitle" style={styles.headerTitle}>{t('support.title', 'Support')}</Typography>
           
           <View style={styles.segmentedControl}>
             <TouchableOpacity 
@@ -38,7 +40,7 @@ export default function SupportScreen({ navigation }: any) {
               onPress={() => setActiveTab('ai')}
             >
               <Typography variant="subhead" style={[styles.segmentText, activeTab === 'ai' && styles.segmentTextActive]}>
-                Bloom AI
+                {t('support.aiTab', 'Bloom AI')}
               </Typography>
             </TouchableOpacity>
 
@@ -48,7 +50,7 @@ export default function SupportScreen({ navigation }: any) {
               onPress={() => setActiveTab('community')}
             >
               <Typography variant="subhead" style={[styles.segmentText, activeTab === 'community' && styles.segmentTextActive]}>
-                Community
+                {t('support.communityTab', 'Community')}
               </Typography>
             </TouchableOpacity>
           </View>

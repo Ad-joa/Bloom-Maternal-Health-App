@@ -7,10 +7,12 @@ import { useTheme } from '../theme/ThemeContext';
 import { ShieldCheck, CheckSquare, Square, ChevronLeft } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
+import { useTranslation } from 'react-i18next';
 
 export default function PrivacyConsentScreen({ navigation }: any) {
   const { theme } = useTheme();
   const { isDark } = useTheme();
+  const { t } = useTranslation();
   const styles = getStyles(theme, isDark);
   const insets = useSafeAreaInsets();
   const [agreed, setAgreed] = useState(false);
@@ -57,10 +59,10 @@ export default function PrivacyConsentScreen({ navigation }: any) {
           </LinearGradient>
           
           <Typography variant="largeTitle" style={styles.mainTitle}>
-            Privacy & Consent
+            {t('privacy.title', 'Privacy & Consent')}
           </Typography>
           <Typography variant="body" style={styles.subtitle}>
-            In compliance with the Ghana Data Protection Act (Act 843), we are committed to protecting your personal information.
+            {t('privacy.subtitle', 'In compliance with the Ghana Data Protection Act (Act 843), we are committed to protecting your personal information.')}
           </Typography>
         </View>
 
@@ -68,23 +70,23 @@ export default function PrivacyConsentScreen({ navigation }: any) {
         <View style={styles.glassWrapper}>
           <BlurView intensity={80} tint="light" style={styles.policyContainer}>
             <View style={styles.policyItem}>
-              <Typography variant="title2" style={styles.policyTitle}>1. Data Collection</Typography>
+              <Typography variant="title2" style={styles.policyTitle}>{t('privacy.policies.1.title', '1. Data Collection')}</Typography>
               <Typography variant="body" style={styles.policyText}>
-                We collect your health data (vitals, symptoms) solely for the purpose of providing personalized maternal health guidance and tracking.
+                {t('privacy.policies.1.text', 'We collect your health data (vitals, symptoms) solely for the purpose of providing personalized maternal health guidance and tracking.')}
               </Typography>
             </View>
 
             <View style={styles.policyItem}>
-              <Typography variant="title2" style={styles.policyTitle}>2. Data Encryption</Typography>
+              <Typography variant="title2" style={styles.policyTitle}>{t('privacy.policies.2.title', '2. Data Encryption')}</Typography>
               <Typography variant="body" style={styles.policyText}>
-                Your data is encrypted securely on your device and when transmitted to our cloud servers. Only you and authorized healthcare providers can access it.
+                {t('privacy.policies.2.text', 'Your data is encrypted securely on your device and when transmitted to our cloud servers. Only you and authorized healthcare providers can access it.')}
               </Typography>
             </View>
 
             <View style={styles.policyItem}>
-              <Typography variant="title2" style={styles.policyTitle}>3. Your Rights</Typography>
+              <Typography variant="title2" style={styles.policyTitle}>{t('privacy.policies.3.title', '3. Your Rights')}</Typography>
               <Typography variant="body" style={styles.policyText}>
-                You have the right to access, modify, or permanently delete your data at any time from the Profile settings.
+                {t('privacy.policies.3.text', 'You have the right to access, modify, or permanently delete your data at any time from the Profile settings.')}
               </Typography>
             </View>
           </BlurView>
@@ -103,13 +105,14 @@ export default function PrivacyConsentScreen({ navigation }: any) {
           ) : (
             <Square color={theme.colors.textMedium} size={28} strokeWidth={2} />
           )}
-          <Typography variant="subhead" style={styles.checkboxText}>
-            I have read, understood, and agree to the Data Privacy Terms.
+          <Typography variant="body" style={styles.checkboxText}>
+            {t('privacy.agree', 'I agree to the privacy policy and terms')}
           </Typography>
         </TouchableOpacity>
 
         <Button 
-          title="Accept & Continue" 
+          title={t('privacy.proceed', 'Proceed to Create Account')} 
+          variant="primary" 
           onPress={handleProceed} 
           disabled={!agreed} 
           style={styles.continueButton} 

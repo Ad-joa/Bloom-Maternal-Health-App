@@ -191,9 +191,7 @@ export default function ProfileScreen({ navigation }: any) {
 
   const languages = [
     { code: 'en', label: 'English' },
-    { code: 'es', label: 'Español' },
     { code: 'twi', label: 'Twi' },
-    { code: 'ga', label: 'Ga' },
     { code: 'ewe', label: 'Ewe' }
   ];
 
@@ -212,7 +210,7 @@ export default function ProfileScreen({ navigation }: any) {
 
         {/* Header */}
         <View style={styles.header}>
-          <Typography variant="largeTitle" style={styles.headerTitle}>Profile</Typography>
+          <Typography variant="largeTitle" style={styles.headerTitle}>{t('profile.title', 'Profile')}</Typography>
           <View style={{ flexDirection: 'row', gap: 12 }}>
             {isEditing ? (
               <>
@@ -274,7 +272,7 @@ export default function ProfileScreen({ navigation }: any) {
                   style={[styles.inputInline, { fontSize: 22, fontFamily: theme.typography.families.headingBold, textAlign: 'center', marginBottom: 4 }]}
                   value={editForm.name}
                   onChangeText={(val) => setEditForm({ ...editForm, name: val })}
-                  placeholder="Your Name"
+                  placeholder={t('profile.yourName', 'Your Name')}
                   placeholderTextColor={theme.colors.textMedium}
                 />
               ) : (
@@ -286,17 +284,17 @@ export default function ProfileScreen({ navigation }: any) {
 
           {/* Language */}
           <View style={styles.section}>
-            <Typography variant="caption1" style={styles.sectionLabel}>LANGUAGE</Typography>
+            <Typography variant="caption1" style={styles.sectionLabel}>{t('profile.languageTitle', 'LANGUAGE')}</Typography>
             <View style={[styles.menuCard, { borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)' }]}>
               <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
               <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
               <View style={styles.menuItem}>
                 <View style={styles.menuItemLeft}>
                   <Ionicons name="language" size={20} color={theme.colors.primaryDark} />
-                  <Typography variant="body" style={styles.menuItemText}>App Language</Typography>
+                  <Typography variant="body" style={styles.menuItemText}>{t('profile.appLanguage', 'App Language')}</Typography>
                 </View>
                 <View style={{ flexDirection: 'row', gap: 8 }}>
-                  {['en', 'twi', 'ga', 'ewe'].map(lang => (
+                  {['en', 'twi', 'ewe'].map(lang => (
                     <TouchableOpacity key={lang} onPress={() => changeLanguage(lang)} style={{ padding: 4 }}>
                       <Typography
                         variant="subhead"
@@ -313,16 +311,16 @@ export default function ProfileScreen({ navigation }: any) {
 
           {/* Pregnancy Details */}
           <View style={styles.section}>
-            <Typography variant="caption1" style={styles.sectionLabel}>PREGNANCY DETAILS</Typography>
+            <Typography variant="caption1" style={styles.sectionLabel}>{t('profile.pregnancyDetails', 'PREGNANCY DETAILS')}</Typography>
             <View style={[styles.menuCard, { borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)' }]}>
               <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
               <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
               {[
-                { icon: 'calendar', label: 'Due Date', value: user?.due_date ? new Date(user.due_date).toLocaleDateString() : 'Not set', field: 'due_date' },
-                { icon: 'time', label: 'Trimester', value: user?.trimester ? `Trimester ${user.trimester}` : 'Not set', field: 'trimester' },
-                { icon: 'water', label: 'Last Period', value: user?.last_period_date || 'Not set', field: 'last_period_date', danger: true },
-                { icon: 'medkit', label: 'Blood Group', value: user?.blood_group || 'Not set', field: 'blood_group' },
-                { icon: 'body', label: 'Height', value: user?.height || 'Not set', field: 'height' },
+                { icon: 'calendar', label: t('profile.dueDate', 'Due Date'), value: user?.due_date ? new Date(user.due_date).toLocaleDateString() : t('profile.notSet', 'Not set'), field: 'due_date' },
+                { icon: 'time', label: t('profile.trimesterTitle', 'Trimester'), value: user?.trimester ? `${t('home.trimester', 'Trimester')} ${user.trimester}` : t('profile.notSet', 'Not set'), field: 'trimester' },
+                { icon: 'water', label: t('profile.lastPeriod', 'Last Period'), value: user?.last_period_date || t('profile.notSet', 'Not set'), field: 'last_period_date', danger: true },
+                { icon: 'medkit', label: t('profile.bloodGroup', 'Blood Group'), value: user?.blood_group || t('profile.notSet', 'Not set'), field: 'blood_group' },
+                { icon: 'body', label: t('profile.height', 'Height'), value: user?.height || t('profile.notSet', 'Not set'), field: 'height' },
               ].map((row, i, arr) => (
                 <View key={row.label} style={[styles.menuItem, i < arr.length - 1 && styles.menuItemBorder]}>
                   <View style={styles.menuItemLeft}>
@@ -347,13 +345,13 @@ export default function ProfileScreen({ navigation }: any) {
 
           {/* Health & Lifestyle */}
           <View style={styles.section}>
-            <Typography variant="caption1" style={styles.sectionLabel}>HEALTH & LIFESTYLE</Typography>
+            <Typography variant="caption1" style={styles.sectionLabel}>{t('profile.healthLifestyle', 'HEALTH & LIFESTYLE')}</Typography>
             <View style={[styles.menuCard, { borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)' }]}>
               <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
               <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
               {[
-                { icon: 'nutrition', label: 'Dietary Prefs', value: user?.dietary_preferences || 'None', field: 'dietary_preferences' },
-                { icon: 'medical', label: 'Conditions', value: user?.medical_conditions || 'None', field: 'medical_conditions' },
+                { icon: 'nutrition', label: t('profile.dietaryPrefs', 'Dietary Prefs'), value: user?.dietary_preferences || t('profile.none', 'None'), field: 'dietary_preferences' },
+                { icon: 'medical', label: t('profile.conditions', 'Conditions'), value: user?.medical_conditions || t('profile.none', 'None'), field: 'medical_conditions' },
               ].map((row, i, arr) => (
                 <View key={row.label} style={[styles.menuItem, i < arr.length - 1 && styles.menuItemBorder]}>
                   <View style={styles.menuItemLeft}>
@@ -378,13 +376,13 @@ export default function ProfileScreen({ navigation }: any) {
 
           {/* Emergency Contact */}
           <View style={styles.section}>
-            <Typography variant="caption1" style={styles.sectionLabel}>EMERGENCY CONTACT</Typography>
+            <Typography variant="caption1" style={styles.sectionLabel}>{t('profile.emergencyContact', 'EMERGENCY CONTACT')}</Typography>
             <View style={[styles.menuCard, { borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)' }]}>
               <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
               <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
               {[
-                { icon: 'person', label: 'Name', value: user?.emergency_contact_name || 'Not set', field: 'emergency_contact_name' },
-                { icon: 'call', label: 'Phone', value: user?.emergency_contact_phone || 'Not set', field: 'emergency_contact_phone' },
+                { icon: 'person', label: t('profile.name', 'Name'), value: user?.emergency_contact_name || t('profile.notSet', 'Not set'), field: 'emergency_contact_name' },
+                { icon: 'call', label: t('profile.phone', 'Phone'), value: user?.emergency_contact_phone || t('profile.notSet', 'Not set'), field: 'emergency_contact_phone' },
               ].map((row, i, arr) => (
                 <View key={row.label} style={[styles.menuItem, i < arr.length - 1 && styles.menuItemBorder]}>
                   <View style={styles.menuItemLeft}>
@@ -409,7 +407,7 @@ export default function ProfileScreen({ navigation }: any) {
 
           {/* Account Settings */}
           <View style={styles.section}>
-            <Typography variant="caption1" style={styles.sectionLabel}>ACCOUNT</Typography>
+            <Typography variant="caption1" style={styles.sectionLabel}>{t('profile.account', 'ACCOUNT')}</Typography>
             <View style={[styles.menuCard, { borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)' }]}>
               <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
               <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
@@ -441,7 +439,7 @@ export default function ProfileScreen({ navigation }: any) {
 
           {/* Medical Export */}
           <View style={styles.section}>
-            <Typography variant="caption1" style={styles.sectionLabel}>MEDICAL</Typography>
+            <Typography variant="caption1" style={styles.sectionLabel}>{t('profile.medical', 'MEDICAL')}</Typography>
             <View style={styles.menuCard}>
               <TouchableOpacity style={styles.menuItem} onPress={handleExportPDF} activeOpacity={0.7}>
                 <View style={styles.menuItemLeft}>

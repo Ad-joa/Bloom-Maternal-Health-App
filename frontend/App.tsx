@@ -31,13 +31,14 @@ import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { Home, Activity, Users, MessageCircle, CalendarDays, User } from 'lucide-react-native';
-import { StyleSheet, TouchableOpacity, View, Platform, Text } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, Platform, Text, Keyboard } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Font from 'expo-font';
 import i18n from './src/i18n';
+import { useTranslation } from 'react-i18next';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { registerForPushNotificationsAsync } from './src/utils/notifications';
@@ -90,6 +91,20 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 function CustomTabBar({ state, navigation, theme, isDark }: any) {
+  const { t } = useTranslation();
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', () => setKeyboardVisible(true));
+    const hideSub = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => setKeyboardVisible(false));
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  if (keyboardVisible) return null;
+
   return (
     <View style={{
       position: 'absolute',
@@ -128,9 +143,9 @@ function CustomTabBar({ state, navigation, theme, isDark }: any) {
 
         let Icon = Home;
         let label = route.name;
-        if (route.name === 'Home') { Icon = Home; label = 'Today'; }
-        if (route.name === 'Tracker') { Icon = Activity; label = 'Tracker'; }
-        if (route.name === 'Support') { Icon = MessageCircle; label = 'Support'; }
+        if (route.name === 'Home') { Icon = Home; label = t('actions.checkin', 'Today'); }
+        if (route.name === 'Tracker') { Icon = Activity; label = t('actions.log', 'Tracker'); }
+        if (route.name === 'Support') { Icon = MessageCircle; label = t('profile.helpSupport', 'Support'); }
         if (route.name === 'Profile') { Icon = User; label = 'Profile'; }
 
         const activeColor = theme.colors.primaryDark;
@@ -148,6 +163,9 @@ function CustomTabBar({ state, navigation, theme, isDark }: any) {
               {isFocused && (
                 <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: activeColor, position: 'absolute', bottom: -10 }} />
               )}
+              {isFocused ? (
+                <Text style={{ fontSize: 10, color: activeColor, marginTop: 4, fontFamily: theme.typography.families.headingBold }}>{label}</Text>
+              ) : null}
             </View>
           </TouchableOpacity>
         );

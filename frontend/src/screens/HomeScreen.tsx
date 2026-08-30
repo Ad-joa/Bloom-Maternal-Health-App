@@ -17,6 +17,7 @@ import { getAncVisits, getEducationalContent } from '../api/api';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import Svg, { Circle } from 'react-native-svg';
+import { useTranslation } from 'react-i18next';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width - 48;
@@ -157,6 +158,7 @@ export default function HomeScreen({ navigation }: any) {
   const { theme, isDark } = useTheme();
   const styles = getStyles(theme, isDark);
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const dueDate = user?.due_date || '';
   const rawWeeks = dueDate ? getWeeksPregnant(dueDate) : 0;
@@ -220,7 +222,7 @@ export default function HomeScreen({ navigation }: any) {
   const isMorning = hour < 12;
   const isAfternoon = hour >= 12 && hour < 18;
   const isEvening = hour >= 18;
-  const greeting = isMorning ? 'Good Morning' : isAfternoon ? 'Good Afternoon' : 'Good Evening';
+  const greeting = isMorning ? t('home.greeting.morning', 'Good Morning') : isAfternoon ? t('home.greeting.afternoon', 'Good Afternoon') : t('home.greeting.evening', 'Good Evening');
   const greetingIconColor = isMorning ? '#F59E0B' : isAfternoon ? '#F97316' : '#818CF8';
 
   useEffect(() => {
@@ -256,13 +258,13 @@ export default function HomeScreen({ navigation }: any) {
   };
 
   const ALL_PREGNANCY_TOOLS: any[] = [
-    { id: 'Healthy Diet', label: 'Meal\nPlan', icon: Apple, bg: '#8CC152', route: 'MealPlan' },
-    { id: 'Stay Active', label: 'Stay\nActive', icon: Heart, bg: '#50E3C2', route: 'Fitness' },
-    { id: 'Manage Stress', label: 'Manage\nStress', icon: Calendar, bg: '#E06253', route: 'Relaxation' },
-    { id: 'Prepare for Birth', label: 'Hospital\nBag', icon: Luggage, bg: '#609B66', route: 'HospitalBag' },
-    { id: 'weight', label: 'Weight\nTracker', icon: Activity, bg: '#F5A623', route: 'GrowthVisualizer' },
-    { id: 'kick', label: 'Kick\nCounter', icon: Baby, bg: '#9013FE' },
-    { id: 'contraction', label: 'Contraction\nCounter', icon: Zap, bg: '#4A90E2' },
+    { id: 'Healthy Diet', label: t('home.tools.mealPlan', 'Meal\nPlan'), icon: Apple, bg: '#8CC152', route: 'MealPlan' },
+    { id: 'Stay Active', label: t('home.tools.stayActive', 'Stay\nActive'), icon: Heart, bg: '#50E3C2', route: 'Fitness' },
+    { id: 'Manage Stress', label: t('home.tools.manageStress', 'Manage\nStress'), icon: Calendar, bg: '#E06253', route: 'Relaxation' },
+    { id: 'Prepare for Birth', label: t('home.tools.hospitalBag', 'Hospital\nBag'), icon: Luggage, bg: '#609B66', route: 'HospitalBag' },
+    { id: 'weight', label: t('home.tools.weightTracker', 'Weight\nTracker'), icon: Activity, bg: '#F5A623', route: 'GrowthVisualizer' },
+    { id: 'kick', label: t('home.tools.kickCounter', 'Kick\nCounter'), icon: Baby, bg: '#9013FE' },
+    { id: 'contraction', label: t('home.tools.contractionCounter', 'Contraction\nCounter'), icon: Zap, bg: '#4A90E2' },
   ];
 
   const PREGNANCY_TOOLS = React.useMemo(() => {
@@ -322,7 +324,7 @@ export default function HomeScreen({ navigation }: any) {
                 <Typography variant="caption1" style={styles.greetingText}>{greeting}</Typography>
               </View>
               <Typography variant="title1" style={styles.nameText}>
-                {user?.name ? user.name : 'Mama'}
+                {user?.name ? user.name : t('home.mama', 'Mama')}
               </Typography>
             </View>
             <TouchableOpacity style={styles.bellBtn} onPress={() => {}}>
@@ -378,7 +380,7 @@ export default function HomeScreen({ navigation }: any) {
                 <CircularProgress percent={progressPercent} isDark={isDark} theme={theme} />
                 <View style={styles.ringCenter}>
                   <Typography variant="largeTitle" style={styles.ringWeek}>{weeksPregnant}</Typography>
-                  <Typography variant="caption1" style={styles.ringLabel}>weeks</Typography>
+                  <Typography variant="caption1" style={styles.ringLabel}>{t('home.week', 'weeks').toLowerCase()}</Typography>
                 </View>
               </View>
 
@@ -386,13 +388,13 @@ export default function HomeScreen({ navigation }: any) {
               <View style={styles.heroStats}>
                 <View style={styles.trimBadge}>
                   <Typography variant="caption2" style={styles.trimBadgeText}>
-                    {trimester === 0 ? 'NOT STARTED' : `TRIMESTER ${trimester}`}
+                    {trimester === 0 ? t('home.notStarted', 'NOT STARTED') : `${t('home.trimester', 'TRIMESTER')} ${trimester}`}
                   </Typography>
                 </View>
 
                 {dueDate ? (
                   <View style={{ marginBottom: 12 }}>
-                    <Typography variant="caption2" style={{ color: theme.colors.textMedium, fontSize: 9, letterSpacing: 0.5, marginBottom: 2, textTransform: 'uppercase' }}>Est. Due Date</Typography>
+                    <Typography variant="caption2" style={{ color: theme.colors.textMedium, fontSize: 9, letterSpacing: 0.5, marginBottom: 2, textTransform: 'uppercase' }}>{t('home.estDueDate', 'Est. Due Date')}</Typography>
                     <Typography variant="body" style={{ color: theme.colors.textHigh, fontFamily: theme.typography.families.headingBold, fontSize: 13 }}>
                       {formatDueDate(dueDate)}
                     </Typography>
@@ -401,21 +403,21 @@ export default function HomeScreen({ navigation }: any) {
 
                 <View style={styles.statBlock}>
                   <Typography variant="title2" style={styles.statNum}>{daysLeft}</Typography>
-                  <Typography variant="caption1" style={styles.statLbl}>days left</Typography>
+                  <Typography variant="caption1" style={styles.statLbl}>{t('home.daysLeft', 'days left')}</Typography>
                 </View>
 
                 <View style={styles.statDivider} />
 
                 <View style={styles.statBlock}>
                   <Typography variant="title2" style={styles.statNum}>{40 - weeksPregnant}</Typography>
-                  <Typography variant="caption1" style={styles.statLbl}>weeks to go</Typography>
+                  <Typography variant="caption1" style={styles.statLbl}>{t('home.weeksToGo', 'weeks to go')}</Typography>
                 </View>
 
                 <View style={styles.statDivider} />
 
                 <View style={styles.statBlock}>
                   <Typography variant="title2" style={styles.statNum}>{Math.round(progressPercent)}%</Typography>
-                  <Typography variant="caption1" style={styles.statLbl}>complete</Typography>
+                  <Typography variant="caption1" style={styles.statLbl}>{t('home.complete', 'complete')}</Typography>
                 </View>
               </View>
             </View>
@@ -434,7 +436,7 @@ export default function HomeScreen({ navigation }: any) {
             <View style={{ padding: 24 }}>
               <View style={[styles.milestoneBadge, { backgroundColor: isDark ? 'rgba(216,180,254,0.15)' : 'rgba(147,51,234,0.1)', alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, marginBottom: 16 }]}>
                 <Typography variant="caption2" style={{ fontSize: 10, color: isDark ? '#E9D5FF' : '#9333EA', letterSpacing: 1, fontWeight: 'bold' }}>
-                  INSPIRATION
+                  {t('home.inspiration', 'INSPIRATION')}
                 </Typography>
               </View>
               
@@ -459,7 +461,7 @@ export default function HomeScreen({ navigation }: any) {
             
             {/* Centered Image (Floating) */}
             <View style={{ padding: 24, alignItems: 'center' }}>
-              <Typography variant="caption2" style={[styles.halfCardLabel, { marginBottom: 20, letterSpacing: 1.5 }]}>FETAL DEVELOPMENT</Typography>
+              <Typography variant="caption2" style={[styles.halfCardLabel, { marginBottom: 20, letterSpacing: 1.5 }]}>{t('home.fetalDev', 'FETAL DEVELOPMENT')}</Typography>
               
               <View style={{ 
                 width: 140, 
@@ -486,11 +488,11 @@ export default function HomeScreen({ navigation }: any) {
               
               <View style={{ flexDirection: 'row', gap: 12, width: '100%' }}>
                 <View style={{ flex: 1, backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', padding: 16, borderRadius: 16 }}>
-                  <Typography variant="caption2" style={{ color: theme.colors.textMedium, marginBottom: 4 }}>EST. LENGTH</Typography>
+                  <Typography variant="caption2" style={{ color: theme.colors.textMedium, marginBottom: 4 }}>{t('home.estLength', 'EST. LENGTH')}</Typography>
                   <Typography variant="title3" style={{ color: theme.colors.textHigh, fontSize: 18 }}>{babySize.length}</Typography>
                 </View>
                 <View style={{ flex: 1, backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', padding: 16, borderRadius: 16 }}>
-                  <Typography variant="caption2" style={{ color: theme.colors.textMedium, marginBottom: 4 }}>EST. WEIGHT</Typography>
+                  <Typography variant="caption2" style={{ color: theme.colors.textMedium, marginBottom: 4 }}>{t('home.estWeight', 'EST. WEIGHT')}</Typography>
                   <Typography variant="title3" style={{ color: theme.colors.textHigh, fontSize: 18 }}>{babySize.weight}</Typography>
                 </View>
               </View>
@@ -506,7 +508,7 @@ export default function HomeScreen({ navigation }: any) {
             />
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
               <Info size={16} color={theme.colors.primaryDark} strokeWidth={2.5} style={{ marginRight: 6 }} />
-              <Typography variant="caption2" style={[styles.halfCardLabel, { letterSpacing: 1, color: theme.colors.primaryDark }]}>TODAY'S TIP</Typography>
+              <Typography variant="caption2" style={[styles.halfCardLabel, { letterSpacing: 1, color: theme.colors.primaryDark }]}>{t('home.todaysTip', "TODAY'S TIP")}</Typography>
             </View>
             <Typography variant="body" style={{ color: theme.colors.textHigh, lineHeight: 24, fontFamily: theme.typography.families.headingSemibold, fontSize: 16 }}>
               {todayTip.tip}
@@ -515,7 +517,7 @@ export default function HomeScreen({ navigation }: any) {
 
           {/* ── My Journey Hub ── */}
           <View style={[styles.sectionHeader, { marginTop: 16 }]}>
-            <Typography variant="title2" style={styles.sectionTitle}>My Journey</Typography>
+            <Typography variant="title2" style={styles.sectionTitle}>{t('home.myJourney', 'My Journey')}</Typography>
           </View>
 
           <View style={[styles.milestoneCard, { padding: 0, overflow: 'hidden' }]}>
@@ -524,7 +526,7 @@ export default function HomeScreen({ navigation }: any) {
               <View style={styles.milestoneBadge}>
                 <Lightbulb size={14} color={theme.colors.primaryDark} />
                 <Typography variant="caption2" style={styles.milestoneBadgeText}>
-                  {dynamicTip ? "DYNAMIC INSIGHT" : `WEEK ${weeksPregnant} MILESTONE`}
+                  {dynamicTip ? t('home.dynamicInsight', "DYNAMIC INSIGHT") : `${t('home.week', 'WEEK').toUpperCase()} ${weeksPregnant} ${t('home.milestone', 'MILESTONE')}`}
                 </Typography>
               </View>
               
@@ -535,12 +537,12 @@ export default function HomeScreen({ navigation }: any) {
                 </>
               ) : (
                 <View>
-                  <Typography variant="title3" style={styles.milestoneTitle}>Fetal Development</Typography>
+                  <Typography variant="title3" style={styles.milestoneTitle}>{t('home.fetalDevTitle', 'Fetal Development')}</Typography>
                   <Typography variant="body" style={styles.milestoneBody}>{weeklyData.fetal}</Typography>
                   
                   <View style={{ height: 1, backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : '#E5E7EB', marginVertical: 12 }} />
                   
-                  <Typography variant="title3" style={styles.milestoneTitle}>Maternal Changes</Typography>
+                  <Typography variant="title3" style={styles.milestoneTitle}>{t('home.maternalChanges', 'Maternal Changes')}</Typography>
                   <Typography variant="body" style={styles.milestoneBody}>{weeklyData.maternal}</Typography>
                 </View>
               )}
@@ -558,16 +560,16 @@ export default function HomeScreen({ navigation }: any) {
                     <Stethoscope size={18} color={theme.colors.primaryDark} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Typography variant="caption1" style={styles.apptLabel}>NEXT APPOINTMENT</Typography>
+                    <Typography variant="caption1" style={styles.apptLabel}>{t('home.nextAppt', 'NEXT APPOINTMENT')}</Typography>
                     <Typography variant="headline" style={styles.apptDate}>
-                      {nextVisit.scheduled_date || nextVisit.date || 'Upcoming Visit'}
+                      {nextVisit.scheduled_date || nextVisit.date || t('home.upcomingVisit', 'Upcoming Visit')}
                     </Typography>
                     <Typography variant="caption1" style={styles.apptFacility}>
-                      {nextVisit.facility || 'Clinic Visit'}
+                      {nextVisit.facility || t('home.clinicVisit', 'Clinic Visit')}
                     </Typography>
                     
                     <View style={{ marginTop: 8, padding: 8, backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#F3F4F6', borderRadius: 8 }}>
-                      <Typography variant="caption2" style={{ color: theme.colors.textMedium, marginBottom: 2 }}>What to expect:</Typography>
+                      <Typography variant="caption2" style={{ color: theme.colors.textMedium, marginBottom: 2 }}>{t('home.whatToExpect', 'What to expect:')}</Typography>
                       <Typography variant="caption1" style={{ color: theme.colors.textHigh }}>{weeklyData.ancPreview}</Typography>
                     </View>
                   </View>
@@ -579,7 +581,7 @@ export default function HomeScreen({ navigation }: any) {
 
           {/* ── Pregnancy Tools ── */}
           <View style={[styles.sectionHeader, { marginTop: 16 }]}>
-            <Typography variant="title2" style={styles.sectionTitle}>Pregnancy tools</Typography>
+            <Typography variant="title2" style={styles.sectionTitle}>{t('home.pregnancyTools', 'YOUR PREGNANCY TOOLS')}</Typography>
           </View>
           <ScrollView 
             horizontal 

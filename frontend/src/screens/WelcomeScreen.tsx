@@ -12,32 +12,25 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { BounceButton } from '../components/BounceButton';
 import LottieView from 'lottie-react-native';
+import { useTranslation } from 'react-i18next';
 
 const { width, height } = Dimensions.get('window');
 
 const SLIDES = [
   {
     id: '1',
-    title: 'Your Pregnancy, Guided.',
-    description: 'Bloom is your personal maternal health companion, designed specifically for your journey.',
     animation: require('../../assets/animations/baby.json'),
   },
   {
     id: '2',
-    title: 'Track Vitals & Baby Growth',
-    description: 'Log your symptoms, mood, and daily vitals. Keep a beautiful record as your baby grows.',
     animation: require('../../assets/animations/baby_hide.json'),
   },
   {
     id: '3',
-    title: 'Ghanaian Context',
-    description: 'Local nutrition advice, ANC reminders, and culturally relevant insights for Ghanaian mothers.',
     animation: require('../../assets/animations/Ghana flag Lottie JSON animation.json'),
   },
   {
     id: '4',
-    title: 'Always Available',
-    description: 'Works entirely offline. Your data syncs securely only when you are back on Wi-Fi.',
     animation: require('../../assets/animations/Check.json'),
   },
 ];
@@ -47,6 +40,7 @@ type Props = { navigation: WelcomeScreenNavigationProp };
 
 const SlideItem = ({ item }: { item: typeof SLIDES[0] }) => {
   const { theme, isDark } = useTheme();
+  const { t } = useTranslation();
   const styles = getStyles(theme, isDark);
   const lottieRef = React.useRef<LottieView>(null);
 
@@ -70,10 +64,10 @@ const SlideItem = ({ item }: { item: typeof SLIDES[0] }) => {
         </View>
         <View style={styles.textWrapper}>
           <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.slideTitle}>
-            {item.title}
+            {t(`welcome.slides.${item.id}.title`)}
           </Typography>
           <Typography variant="body" color={theme.colors.textMedium} style={styles.slideDescription}>
-            {item.description}
+            {t(`welcome.slides.${item.id}.description`)}
           </Typography>
         </View>
       </View>
@@ -83,6 +77,7 @@ const SlideItem = ({ item }: { item: typeof SLIDES[0] }) => {
 
 export default function WelcomeScreen({ navigation }: Props) {
   const { theme, isDark } = useTheme();
+  const { t } = useTranslation();
   const styles = getStyles(theme, isDark);
   const scrollX = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef<FlatList>(null);
@@ -158,7 +153,7 @@ export default function WelcomeScreen({ navigation }: Props) {
           <BounceButton onPress={scrollToNext} style={styles.ctaButton}>
             <View style={styles.ctaButtonInner}>
               <Typography variant="headline" style={styles.ctaText}>
-                {currentIndex === SLIDES.length - 1 ? "Get Started" : "Continue"}
+                {currentIndex === SLIDES.length - 1 ? t('welcome.getStarted', "Get Started") : t('welcome.continue', "Continue")}
               </Typography>
               {currentIndex === SLIDES.length - 1 && (
                 <View style={[styles.ctaIcon, { backgroundColor: isDark ? '#000000' : '#FFFFFF' }]}>
@@ -168,7 +163,7 @@ export default function WelcomeScreen({ navigation }: Props) {
             </View>
           </BounceButton>
           {currentIndex === SLIDES.length - 1 && (
-             <Button title="I already have an account" variant="secondary" onPress={() => navigation.navigate('Auth' as never)} style={{marginTop: 16, width: '100%'}} />
+             <Button title={t('welcome.alreadyHaveAccount', "I already have an account")} variant="secondary" onPress={() => navigation.navigate('Auth' as never)} style={{marginTop: 16, width: '100%'}} />
           )}
         </View>
       </SafeAreaView>

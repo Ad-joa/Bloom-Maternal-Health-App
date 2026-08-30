@@ -9,6 +9,7 @@ import { BackgroundMesh } from '../components/BackgroundMesh';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { io } from 'socket.io-client';
 import { getBaseUrl } from '../api/api';
+import { useTranslation } from 'react-i18next';
 
 const socket = io(getBaseUrl() || 'http://127.0.0.1:8000');
 
@@ -19,6 +20,7 @@ export default function CommunityScreen({ navigation, isNested }: any) {
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [newPostContent, setNewPostContent] = useState('');
+  const { t } = useTranslation();
 
   React.useEffect(() => {
     // Listen for initial data payload
@@ -80,10 +82,10 @@ export default function CommunityScreen({ navigation, isNested }: any) {
         <Ionicons name="chatbubbles-outline" size={48} color={theme.colors.primaryDark} />
       </View>
       <Typography variant="title2" style={{ marginTop: 16, marginBottom: 8, textAlign: 'center' }}>
-        It's quiet in here...
+        {t('support.emptyTitle', "It's quiet in here...")}
       </Typography>
       <Typography variant="body" color={theme.colors.textMedium} style={{ textAlign: 'center', paddingHorizontal: 32 }}>
-        No one has posted in this community yet. Be the first to start the conversation!
+        {t('support.emptyDesc', "No one has posted in this community yet. Be the first to start the conversation!")}
       </Typography>
     </View>
   );
@@ -97,7 +99,7 @@ export default function CommunityScreen({ navigation, isNested }: any) {
         </View>
         <View style={styles.postMeta}>
           <Typography variant="headline" color={theme.colors.textHigh}>{item.author}</Typography>
-          <Typography variant="caption1" color={theme.colors.textMedium}>Week {item.week}</Typography>
+          <Typography variant="caption1" color={theme.colors.textMedium}>{t('home.week', 'Week')} {item.week}</Typography>
         </View>
       </View>
       
@@ -128,10 +130,10 @@ export default function CommunityScreen({ navigation, isNested }: any) {
       {!isNested && (
         <View style={styles.header}>
           <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.headerTitle}>
-            Community
+            {t('support.communityTab', 'Community')}
           </Typography>
           <Typography variant="body" color={theme.colors.textMedium}>
-            Connect with mothers in Week 32
+            {t('support.communitySubtitle', 'Connect with other mothers.')}
           </Typography>
         </View>
       )}
@@ -171,14 +173,14 @@ export default function CommunityScreen({ navigation, isNested }: any) {
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: theme.colors.background }]}>
             <View style={styles.modalHeader}>
-              <Typography variant="title3">Start a Conversation</Typography>
+              <Typography variant="title3">{t('support.startConversation', 'Start a Conversation')}</Typography>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
                 <Ionicons name="close" size={24} color={theme.colors.textHigh} />
               </TouchableOpacity>
             </View>
             <RNTextInput
               style={[styles.modalInput, { color: theme.colors.textHigh, borderColor: theme.colors.border }]}
-              placeholder="What's on your mind?"
+              placeholder={t('support.whatsOnMind', "What's on your mind?")}
               placeholderTextColor={theme.colors.textMedium}
               multiline
               autoFocus
@@ -190,7 +192,7 @@ export default function CommunityScreen({ navigation, isNested }: any) {
               onPress={handleCreatePost}
               disabled={!newPostContent.trim()}
             >
-              <Typography variant="headline" color={theme.colors.background}>Post</Typography>
+              <Typography variant="headline" color={theme.colors.background}>{t('support.post', 'Post')}</Typography>
             </BounceButton>
           </View>
         </KeyboardAvoidingView>

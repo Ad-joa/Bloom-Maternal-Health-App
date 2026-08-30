@@ -11,6 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { KickCounter } from '../components/KickCounter';
 import { getWeeksPregnant } from '../utils/dateUtils';
+import { useTranslation } from 'react-i18next';
 
 const COMMON_SYMPTOMS = [
   { id: 'nausea', label: 'Nausea', icon: Droplet, color: '#3B82F6' },
@@ -31,6 +32,7 @@ export default function TrackerScreen({ navigation }: any) {
   const { theme, isDark } = useTheme();
   const styles = getStyles(theme, isDark);
   const { user } = useAuth();
+  const { t } = useTranslation();
   
   const dueDate = user?.due_date || '';
   const weeksPregnant = dueDate ? getWeeksPregnant(dueDate) : 0;
@@ -124,8 +126,8 @@ export default function TrackerScreen({ navigation }: any) {
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         {/* Header */}
         <View style={styles.header}>
-          <Typography variant="largeTitle" style={styles.headerTitle}>Tracker</Typography>
-          <Typography variant="body" style={styles.headerSubtitle}>Log your daily vitals and symptoms for a healthier pregnancy.</Typography>
+          <Typography variant="largeTitle" style={styles.headerTitle}>{t('tracker.title', 'Tracker')}</Typography>
+          <Typography variant="body" style={styles.headerSubtitle}>{t('tracker.subtitle', 'Log your daily vitals and symptoms for a healthier pregnancy.')}</Typography>
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -134,8 +136,8 @@ export default function TrackerScreen({ navigation }: any) {
             <View style={styles.nudgeCard}>
               <AlertCircle color="#F59E0B" size={24} />
               <View style={styles.nudgeTextWrap}>
-              <Typography variant="subhead" style={{color: isDark ? '#FCD34D' : '#92400E', fontFamily: theme.typography.families.headingBold}}>It's been a while!</Typography>
-                <Typography variant="caption1" style={{color: isDark ? '#FDE68A' : '#B45309'}}>Logging helps your care team monitor your health.</Typography>
+              <Typography variant="subhead" style={{color: isDark ? '#FCD34D' : '#92400E', fontFamily: theme.typography.families.headingBold}}>{t('tracker.nudgeTitle', "It's been a while!")}</Typography>
+                <Typography variant="caption1" style={{color: isDark ? '#FDE68A' : '#B45309'}}>{t('tracker.nudgeText', 'Logging helps your care team monitor your health.')}</Typography>
               </View>
             </View>
           )}
@@ -143,18 +145,18 @@ export default function TrackerScreen({ navigation }: any) {
           {/* Kick Counter (3rd Trimester Only) */}
           {isThirdTrimester && (
             <View style={styles.section}>
-              <Typography variant="title3" style={styles.sectionTitle}>Kick Counter</Typography>
+              <Typography variant="title3" style={styles.sectionTitle}>{t('tracker.kickCounter', 'Kick Counter')}</Typography>
               <KickCounter />
             </View>
           )}
 
           {/* Vitals Section */}
           <View style={styles.section}>
-            <Typography variant="title3" style={styles.sectionTitle}>Vitals</Typography>
+            <Typography variant="title3" style={styles.sectionTitle}>{t('tracker.vitalsTitle', 'Vitals')}</Typography>
             <View style={styles.glassCard}>
               <View style={styles.inputRow}>
                 <View style={styles.inputHalf}>
-                  <Typography variant="caption1" style={styles.inputLabel}>Weight (kg)</Typography>
+                  <Typography variant="caption1" style={styles.inputLabel}>{t('tracker.weightLabel', 'Weight (kg)')}</Typography>
                   <TextInput 
                     placeholder="e.g. 65.5"
                     value={weight}
@@ -165,7 +167,7 @@ export default function TrackerScreen({ navigation }: any) {
                 </View>
                 <View style={styles.divider} />
                 <View style={styles.inputHalf}>
-                  <Typography variant="caption1" style={styles.inputLabel}>Blood Pressure</Typography>
+                  <Typography variant="caption1" style={styles.inputLabel}>{t('tracker.bpLabel', 'Blood Pressure')}</Typography>
                   <TextInput 
                     placeholder="120/80"
                     value={bloodPressure}
@@ -180,7 +182,7 @@ export default function TrackerScreen({ navigation }: any) {
 
           {/* Severity Section (Moved up for better UX) */}
           <View style={styles.section}>
-            <Typography variant="title3" style={styles.sectionTitle}>Overall Severity</Typography>
+            <Typography variant="title3" style={styles.sectionTitle}>{t('tracker.severityTitle', 'Overall Severity')}</Typography>
             <View style={styles.segmentedControl}>
               {['mild', 'moderate', 'severe'].map(level => {
                 const isActive = severity === level;
@@ -191,7 +193,7 @@ export default function TrackerScreen({ navigation }: any) {
                     onPress={() => setSeverity(level)}
                   >
                     <Typography variant="subhead" style={[styles.segmentText, isActive && styles.segmentTextActive]}>
-                      {level.charAt(0).toUpperCase() + level.slice(1)}
+                      {t(`tracker.severity_${level}`, level.charAt(0).toUpperCase() + level.slice(1))}
                     </Typography>
                   </TouchableOpacity>
                 );
@@ -201,7 +203,7 @@ export default function TrackerScreen({ navigation }: any) {
 
           {/* Symptoms Section */}
           <View style={styles.section}>
-            <Typography variant="title3" style={styles.sectionTitle}>Common Symptoms</Typography>
+            <Typography variant="title3" style={styles.sectionTitle}>{t('tracker.commonSymptoms', 'Common Symptoms')}</Typography>
             <View style={styles.symptomsGrid}>
               {COMMON_SYMPTOMS.map(symptom => {
                 const isSelected = selectedSymptoms.includes(symptom.id);
@@ -219,7 +221,7 @@ export default function TrackerScreen({ navigation }: any) {
                       <symptom.icon size={20} color={isSelected ? '#FFF' : (isDark ? 'rgba(255,255,255,0.6)' : '#6B7280')} />
                     </View>
                     <Typography variant="subhead" style={[styles.symptomLabel, isSelected && { color: symptom.color, fontFamily: theme.typography.families.headingBold }]}>
-                      {symptom.label}
+                      {t(`tracker.symptom_${symptom.id}`, symptom.label)}
                     </Typography>
                     {isSelected && (
                       <View style={[styles.checkBadge, { backgroundColor: symptom.color }]}>
@@ -231,7 +233,7 @@ export default function TrackerScreen({ navigation }: any) {
               })}
             </View>
 
-            <Typography variant="title3" style={[styles.sectionTitle, { marginTop: 16, color: '#EF4444' }]}>Warning Signs</Typography>
+            <Typography variant="title3" style={[styles.sectionTitle, { marginTop: 16, color: '#EF4444' }]}>{t('tracker.warningSigns', 'Warning Signs')}</Typography>
             <View style={styles.symptomsGrid}>
               {WARNING_SIGNS.map(symptom => {
                 const isSelected = selectedSymptoms.includes(symptom.id);
