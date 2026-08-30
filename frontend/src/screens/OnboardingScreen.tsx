@@ -122,11 +122,11 @@ export default function OnboardingScreen({ navigation }: Props) {
       setLoading(true);
       try {
         const payload: any = {};
-        const formatToISO = (dateStr: string) => {
+        const enforceMMDDYYYY = (dateStr: string) => {
           if (!dateStr) return dateStr;
-          if (dateStr.includes('/')) {
-             const [m, d, y] = dateStr.split('/');
-             if (y && m && d) return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+          if (dateStr.includes('-')) {
+             const [y, m, d] = dateStr.split('-');
+             if (y && m && d) return `${m.padStart(2, '0')}/${d.padStart(2, '0')}/${y}`;
           }
           return dateStr;
         };
@@ -135,7 +135,7 @@ export default function OnboardingScreen({ navigation }: Props) {
           const t = parseInt(trimester, 10);
           if (!isNaN(t)) payload.trimester = t;
         }
-        if (dueDate) payload.due_date = formatToISO(dueDate);
+        if (dueDate) payload.due_date = enforceMMDDYYYY(dueDate);
         if (isFirstPregnancy !== null) payload.is_first_pregnancy = isFirstPregnancy;
         if (age) {
           const a = parseInt(age, 10);
@@ -159,11 +159,11 @@ export default function OnboardingScreen({ navigation }: Props) {
             const lmpDate = new Date(`${yearStr}-${monthStr}-${dayStr}T12:00:00Z`);
             if (!isNaN(lmpDate.getTime())) {
               const calculatedDueDate = new Date(lmpDate.getTime() + (280 * 24 * 60 * 60 * 1000));
-              // Format back to YYYY-MM-DD
+              // Format to MM/DD/YYYY
               const month = String(calculatedDueDate.getUTCMonth() + 1).padStart(2, '0');
               const day = String(calculatedDueDate.getUTCDate()).padStart(2, '0');
               const year = calculatedDueDate.getUTCFullYear();
-              payload.due_date = `${year}-${month}-${day}`;
+              payload.due_date = `${month}/${day}/${year}`;
             }
           }
         }
