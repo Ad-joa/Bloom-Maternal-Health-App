@@ -8,7 +8,8 @@ interface LogoScreenProps {
 
 export default function LogoScreen({ onFinish }: LogoScreenProps) {
   const scale = useRef(new Animated.Value(0.8)).current;
-  const opacity = useRef(new Animated.Value(0)).current;
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const screenOpacity = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     // Entrance animation
@@ -19,18 +20,18 @@ export default function LogoScreen({ onFinish }: LogoScreenProps) {
         friction: 4,
         useNativeDriver: true,
       }),
-      Animated.timing(opacity, {
+      Animated.timing(logoOpacity, {
         toValue: 1,
         duration: 800,
         useNativeDriver: true,
       }),
     ]).start();
 
-    // After 2.5 seconds, fade out and call onFinish
+    // After 2.5 seconds, fade out the ENTIRE SCREEN for a smooth cross-fade
     const timer = setTimeout(() => {
-      Animated.timing(opacity, {
+      Animated.timing(screenOpacity, {
         toValue: 0,
-        duration: 500,
+        duration: 600,
         useNativeDriver: true,
       }).start(() => {
         onFinish();
@@ -41,12 +42,12 @@ export default function LogoScreen({ onFinish }: LogoScreenProps) {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <Animated.View style={[styles.container, { opacity: screenOpacity }]}>
       <BackgroundMesh />
-      <Animated.View style={[styles.logoWrapper, { opacity, transform: [{ scale }] }]}>
+      <Animated.View style={[styles.logoWrapper, { opacity: logoOpacity, transform: [{ scale }] }]}>
         <Image source={require('../../assets/images/logo.jpg')} style={styles.logo} resizeMode="contain" />
       </Animated.View>
-    </View>
+    </Animated.View>
   );
 }
 

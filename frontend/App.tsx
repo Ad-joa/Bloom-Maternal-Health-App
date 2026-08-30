@@ -446,20 +446,23 @@ export default function App() {
     return null;
   }
 
-  if (showLogo) {
-    return <LogoScreen onFinish={() => setShowLogo(false)} />;
-  }
-
   return (
-    <SafeAreaProvider>
-      <ThemeProvider>
-        <AuthProvider>
-          <BiometricGate>
-            <Navigation />
-            <StatusBar style="auto" />
-          </BiometricGate>
-        </AuthProvider>
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <View style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <BiometricGate>
+              <Navigation />
+              <StatusBar style="auto" />
+            </BiometricGate>
+          </AuthProvider>
+        </ThemeProvider>
+      </SafeAreaProvider>
+      {showLogo && (
+        <View style={[StyleSheet.absoluteFill, { zIndex: 9999 }]}>
+          <LogoScreen onFinish={() => setShowLogo(false)} />
+        </View>
+      )}
+    </View>
   );
 }
