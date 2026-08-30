@@ -203,7 +203,8 @@ export default function ProfileScreen({ navigation }: any) {
                     name: user?.name || '', due_date: user?.due_date || '', trimester: user?.trimester?.toString() || '',
                     last_period_date: user?.last_period_date || '', blood_group: user?.blood_group || '', height: user?.height || '',
                     dietary_preferences: user?.dietary_preferences || '', medical_conditions: user?.medical_conditions || '',
-                    emergency_contact_name: user?.emergency_contact_name || '', emergency_contact_phone: user?.emergency_contact_phone || ''
+                    emergency_contact_name: user?.emergency_contact_name || '', emergency_contact_phone: user?.emergency_contact_phone || '',
+                    avatarBase64: ''
                   });
                   setIsEditing(false);
                 }}>

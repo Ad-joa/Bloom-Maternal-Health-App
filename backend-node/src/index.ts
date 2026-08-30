@@ -493,7 +493,7 @@ app.put('/users/:id', async (req, res) => {
       return res.status(404).json({ detail: "User not found" });
     }
 
-    let avatarUrl = user.avatar;
+    let avatarUrl = (user as any).avatar;
     if (data.avatarBase64) {
       const base64Data = data.avatarBase64.replace(/^data:image\/\w+;base64,/, "");
       const ext = data.avatarBase64.split(';')[0].split('/')[1] || 'jpeg';
@@ -503,9 +503,7 @@ app.put('/users/:id', async (req, res) => {
       avatarUrl = `/uploads/${filename}`;
     }
 
-    const updatedUser = await prisma.users.update({
-      where: { id: user_id },
-      data: {
+    const updateData: any = {
         name: data.name ?? user.name,
         avatar: avatarUrl,
         trimester: data.trimester ?? user.trimester,
@@ -521,7 +519,11 @@ app.put('/users/:id', async (req, res) => {
         last_period_date: data.last_period_date ?? user.last_period_date,
         blood_group: data.blood_group ?? user.blood_group,
         height: data.height ?? user.height,
-      }
+    };
+
+    const updatedUser = await prisma.users.update({
+      where: { id: user_id },
+      data: updateData
     });
 
     res.json(excludePassword(updatedUser));
