@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Image, Animated } from 'react-native';
+import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { useTheme } from '../theme/ThemeContext';
@@ -16,24 +16,6 @@ interface AuthLayoutProps {
 export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
   const { theme, isDark } = useTheme();
   const styles = getStyles(theme, isDark);
-  const logoTranslateY = React.useRef(new Animated.Value(5)).current;
-
-  React.useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(logoTranslateY, {
-          toValue: -5,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(logoTranslateY, {
-          toValue: 5,
-          duration: 2000,
-          useNativeDriver: true,
-        })
-      ])
-    ).start();
-  }, []);
 
   return (
     <View style={styles.container}>
@@ -56,9 +38,6 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
                 
                 {/* Header */}
                 <FadeSlideIn delay={100} duration={500} direction="down" style={styles.header}>
-                  <Animated.View style={[styles.logoContainer, { transform: [{ translateY: logoTranslateY }] }]}>
-                    <Image source={require('../../assets/images/logo_cropped.jpg')} style={styles.logo} resizeMode="contain" />
-                  </Animated.View>
                   <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.titleText}>
                     {title}
                   </Typography>
@@ -120,23 +99,6 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   header: {
     marginBottom: 40,
     alignItems: 'center',
-  },
-  logoContainer: {
-    marginBottom: 20,
-    alignItems: 'center',
-    shadowColor: '#D4AF37',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 10,
-  },
-  logo: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    borderWidth: 2,
-    borderColor: 'rgba(212,175,55, 0.6)',
-    backgroundColor: '#FFFFFF',
   },
   titleText: {
     fontSize: 34, // True iOS Large Title size

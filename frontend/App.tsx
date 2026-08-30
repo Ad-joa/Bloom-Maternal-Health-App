@@ -6,6 +6,7 @@ import TrimesterScreen from './src/screens/TrimesterScreen';
 import AdvisoryScreen from './src/screens/AdvisoryScreen';
 import DailyLogScreen from './src/screens/DailyLogScreen';
 import WelcomeScreen from './src/screens/WelcomeScreen';
+import LogoScreen from './src/screens/LogoScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import GrowthVisualizerScreen from './src/screens/GrowthVisualizerScreen';
 import DueDateRevealScreen from './src/screens/DueDateRevealScreen';
@@ -399,6 +400,7 @@ function Navigation() {
 
 export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
+  const [showLogo, setShowLogo] = useState(true);
 
   useEffect(() => {
     async function prepare() {
@@ -442,6 +444,10 @@ export default function App() {
 
   if (!appIsReady) {
     return null;
+  }
+
+  if (showLogo) {
+    return <LogoScreen onFinish={() => setShowLogo(false)} />;
   }
 
   return (
