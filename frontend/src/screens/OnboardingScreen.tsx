@@ -81,7 +81,10 @@ export default function OnboardingScreen({ navigation }: Props) {
         Alert.alert("Invalid Format", "Please enter date as MM/DD/YYYY");
         return;
       }
-      const lmpDate = new Date(`${lmpParts[2]}-${lmpParts[0]}-${lmpParts[1]}T12:00:00Z`);
+      const monthStr = lmpParts[0].padStart(2, '0');
+      const dayStr = lmpParts[1].padStart(2, '0');
+      const yearStr = lmpParts[2];
+      const lmpDate = new Date(`${yearStr}-${monthStr}-${dayStr}T12:00:00Z`);
       if (isNaN(lmpDate.getTime())) {
         Alert.alert("Invalid Date", "Please enter a valid date");
         return;
@@ -140,7 +143,10 @@ export default function OnboardingScreen({ navigation }: Props) {
           // Standard medical calculation (Naegele's rule): LMP + 280 days
           const lmpParts = lastPeriodDate.split('/');
           if (lmpParts.length === 3) {
-            const lmpDate = new Date(`${lmpParts[2]}-${lmpParts[0]}-${lmpParts[1]}T12:00:00Z`);
+            const monthStr = lmpParts[0].padStart(2, '0');
+            const dayStr = lmpParts[1].padStart(2, '0');
+            const yearStr = lmpParts[2];
+            const lmpDate = new Date(`${yearStr}-${monthStr}-${dayStr}T12:00:00Z`);
             if (!isNaN(lmpDate.getTime())) {
               const calculatedDueDate = new Date(lmpDate.getTime() + (280 * 24 * 60 * 60 * 1000));
               // Format back to YYYY-MM-DD
