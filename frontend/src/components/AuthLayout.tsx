@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { useTheme } from '../theme/ThemeContext';
@@ -37,6 +37,9 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
                 
                 {/* Header */}
                 <FadeSlideIn delay={100} duration={500} direction="down" style={styles.header}>
+                  <View style={styles.logoContainer}>
+                    <Image source={require('../../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
+                  </View>
                   <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.titleText}>
                     {title}
                   </Typography>
@@ -97,6 +100,15 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   },
   header: {
     marginBottom: 40,
+    alignItems: 'center',
+  },
+  logoContainer: {
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  logo: {
+    width: 240,
+    height: 100,
   },
   titleText: {
     fontSize: 34, // True iOS Large Title size

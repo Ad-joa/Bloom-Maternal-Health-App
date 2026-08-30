@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Button } from '../components/Button';
 import { theme } from '../theme/theme';
-import { View, StyleSheet, TouchableOpacity, FlatList, Dimensions, Animated } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, FlatList, Dimensions, Animated, Image } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { useTheme } from '../theme/ThemeContext';
@@ -107,6 +107,9 @@ export default function WelcomeScreen({ navigation }: Props) {
     <View style={styles.container}>
       <BackgroundMesh />
       <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+        <View style={styles.logoContainer}>
+          <Image source={require('../../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
+        </View>
         {/* Carousel */}
         <Animated.FlatList
           ref={flatListRef}
@@ -178,6 +181,16 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   },
   safeArea: {
     flex: 1,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: -10, // Bring carousel closer
+    zIndex: 10,
+  },
+  logo: {
+    width: 200,
+    height: 80,
   },
   slide: {
     width,
