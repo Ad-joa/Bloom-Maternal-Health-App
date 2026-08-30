@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView, Switch, StatusBar, Alert, TextInput, Image } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Switch, StatusBar, Alert, TextInput, Image, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
@@ -20,10 +20,11 @@ export default function ProfileScreen({ navigation }: any) {
   const { user, logout, updateUser } = useAuth();
   const { theme, isDark, toggleTheme } = useTheme();
   const styles = getStyles(theme, isDark);
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [biometricsEnabled, setBiometricsEnabled] = useState(false);
   const [selectedLang, setSelectedLang] = useState(i18n.language || 'en');
   const [isEditing, setIsEditing] = useState(false);
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [editForm, setEditForm] = useState({
     name: user?.name || '',
     due_date: user?.due_date || '',
@@ -85,10 +86,7 @@ export default function ProfileScreen({ navigation }: any) {
     await AsyncStorage.setItem('@app_biometrics_enabled', value ? 'true' : 'false');
   };
 
-  const changeLanguage = (lang: string) => {
-    i18n.changeLanguage(lang);
-    setSelectedLang(lang);
-  };
+
 
   const handleDeleteAccount = () => {
     Alert.alert(
@@ -173,18 +171,38 @@ export default function ProfileScreen({ navigation }: any) {
   };
 
   const menuItems = [
-    { title: 'ANC Visits', icon: 'calendar', route: 'ANCVisit' },
-    { title: 'Partner Mode', icon: 'people', route: 'PartnerMode' },
-    { title: 'Daily Reminders', icon: 'notifications', onPress: () => navigation.navigate('Reminders') },
+    { title: t('profile.ancVisits', 'ANC Visits'), icon: 'calendar', route: 'ANCVisit' },
+    { title: t('profile.partnerMode', 'Partner Mode'), icon: 'people', route: 'PartnerMode' },
+    { title: t('profile.reminders', 'Daily Reminders'), icon: 'notifications', onPress: () => navigation.navigate('Reminders') },
     {
-      title: 'App Lock (FaceID/TouchID)',
+      title: t('profile.appLanguage', 'App Language'),
+      icon: 'language',
+      onPress: () => setShowLanguageModal(true)
+    },
+    {
+      title: t('profile.appLock', 'App Lock (FaceID/TouchID)'),
       icon: 'lock-closed',
       isToggle: true,
       value: biometricsEnabled,
       onToggle: toggleBiometrics,
     },
-    { title: 'Help & Support', icon: 'help-circle', onPress: () => navigation.navigate('HelpSupport') },
+    { title: t('profile.helpSupport', 'Help & Support'), icon: 'help-circle', onPress: () => navigation.navigate('HelpSupport') },
   ];
+
+  const languages = [
+    { code: 'en', label: 'English' },
+    { code: 'es', label: 'Español' },
+    { code: 'twi', label: 'Twi' },
+    { code: 'ga', label: 'Ga' },
+    { code: 'ewe', label: 'Ewe' }
+  ];
+
+  const changeLanguage = async (code: string) => {
+    setSelectedLang(code);
+    await i18n.changeLanguage(code);
+    await AsyncStorage.setItem('@app_language', code);
+    setShowLanguageModal(false);
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: 'transparent' }]}>
@@ -429,7 +447,7 @@ export default function ProfileScreen({ navigation }: any) {
                 <View style={styles.menuItemLeft}>
                   <Ionicons name="document-text" size={20} color={theme.colors.primaryDark} />
                   <Typography variant="body" style={[styles.menuItemText, { color: theme.colors.primaryDark }]}>
-                    Export Medical Report (PDF)
+                    {t('profile.exportMedical', 'Export Medical Report (PDF)')}
                   </Typography>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={theme.colors.primaryDark} />
@@ -441,7 +459,7 @@ export default function ProfileScreen({ navigation }: any) {
           <TouchableOpacity onPress={logout} style={styles.logoutButton} activeOpacity={0.8}>
             <View style={styles.logoutCard}>
               <Ionicons name="log-out" size={20} color={theme.colors.danger} />
-              <Typography variant="body" style={styles.logoutText}>Log Out</Typography>
+              <Typography variant="body" style={styles.logoutText}>{t('profile.logout', 'Log Out')}</Typography>
             </View>
           </TouchableOpacity>
 
@@ -449,12 +467,51 @@ export default function ProfileScreen({ navigation }: any) {
           <TouchableOpacity onPress={handleDeleteAccount} style={[styles.logoutButton, { marginTop: 12 }]} activeOpacity={0.8}>
             <View style={[styles.logoutCard, { borderColor: '#FF3B30', backgroundColor: 'rgba(255, 59, 48, 0.05)' }]}>
               <Ionicons name="trash" size={20} color="#FF3B30" />
-              <Typography variant="body" style={[styles.logoutText, { color: '#FF3B30' }]}>Delete Account</Typography>
+              <Typography variant="body" style={[styles.logoutText, { color: '#FF3B30' }]}>{t('profile.deleteAccount', 'Delete Account')}</Typography>
             </View>
           </TouchableOpacity>
 
         </ScrollView>
       </SafeAreaView>
+
+      {/* Language Selection Modal */}
+      <Modal
+        visible={showLanguageModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowLanguageModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <BlurView intensity={20} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+          <View style={[styles.modalContent, { backgroundColor: theme.colors.surface }]}>
+            <Typography variant="title2" style={{ fontFamily: theme.typography.families.headingBold, marginBottom: 20 }}>
+              {t('profile.selectLanguage', 'Select Language')}
+            </Typography>
+            {languages.map((lng) => (
+              <TouchableOpacity
+                key={lng.code}
+                style={[
+                  styles.languageOption,
+                  selectedLang === lng.code && { backgroundColor: theme.colors.primaryLight }
+                ]}
+                onPress={() => changeLanguage(lng.code)}
+              >
+                <Typography variant="body" style={{ color: theme.colors.textHigh }}>{lng.label}</Typography>
+                {selectedLang === lng.code && (
+                  <Ionicons name="checkmark" size={20} color={theme.colors.primaryDark} />
+                )}
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity
+              style={{ marginTop: 20, padding: 12, alignItems: 'center' }}
+              onPress={() => setShowLanguageModal(false)}
+            >
+              <Typography variant="body" style={{ color: theme.colors.textMedium }}>{t('profile.cancel', 'Cancel')}</Typography>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
     </View>
   );
 }
@@ -601,6 +658,31 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   logoutText: {
     color: theme.colors.danger,
     fontFamily: theme.typography.families.headingBold,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  languageOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 8,
   },
   inputInline: {
     flex: 1,

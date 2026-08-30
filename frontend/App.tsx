@@ -35,9 +35,9 @@ import { StyleSheet, TouchableOpacity, View, Platform, Text } from 'react-native
 import { BlurView } from 'expo-blur';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
-// removed dupe theme
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Font from 'expo-font';
-import './src/i18n';
+import i18n from './src/i18n';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { registerForPushNotificationsAsync } from './src/utils/notifications';
@@ -361,6 +361,12 @@ export default function App() {
 
         // Initialize SQLite Offline Database
         await initDatabase();
+
+        // Load language preference
+        const savedLanguage = await AsyncStorage.getItem('@app_language');
+        if (savedLanguage) {
+          i18n.changeLanguage(savedLanguage);
+        }
 
         // Request notification permissions
         await registerForPushNotificationsAsync();

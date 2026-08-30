@@ -12,6 +12,7 @@ import {
   Mail, Lock, User, Eye, EyeOff, Shield, AlertTriangle, KeyRound, Phone, CheckCircle 
 } from 'lucide-react-native';
 import { FadeSlideIn } from '../components/FadeSlideIn';
+import { useTranslation } from 'react-i18next';
 
 // --- Types ---
 type AuthMode = 'login' | 'signup' | 'reset';
@@ -51,6 +52,7 @@ const calculatePasswordStrength = (password: string): PasswordStrength => {
 export default function AuthScreen({ navigation, route }: Props) {
   const { theme } = useTheme();
   const { isDark } = useTheme();
+  const { t } = useTranslation();
   const styles = getStyles(theme, isDark);
   // State
   const [authMode, setAuthMode] = useState<AuthMode>('login');
@@ -331,21 +333,26 @@ export default function AuthScreen({ navigation, route }: Props) {
 
   const renderAuth = () => (
     <FadeSlideIn delay={100} duration={400} direction="right" style={styles.formContainer}>
-      {/* Mode Toggle */}
-      <View style={styles.toggleContainer}>
-        <TouchableOpacity 
-          style={[styles.toggleBtn, authMode === 'login' && styles.toggleBtnActive]}
-          onPress={() => setAuthMode('login')}
-        >
-          <Typography variant="footnote" style={{ fontFamily: authMode === 'login' ? theme.typography.families.bodySemibold : theme.typography.families.bodyRegular }}>Login</Typography>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.toggleBtn, authMode === 'signup' && styles.toggleBtnActive]}
-          onPress={() => { setAuthMode('signup'); setRegistrationStep('details'); }}
-        >
-          <Typography variant="footnote" style={{ fontFamily: authMode === 'signup' ? theme.typography.families.bodySemibold : theme.typography.families.bodyRegular }}>Sign Up</Typography>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.toggleContainer}>
+          <TouchableOpacity 
+            style={[styles.toggleBtn, authMode === 'login' && styles.toggleBtnActive]}
+            onPress={() => setAuthMode('login')}
+            activeOpacity={0.7}
+          >
+            <Typography variant="subhead" style={{ fontFamily: authMode === 'login' ? theme.typography.families.headingBold : theme.typography.families.bodyRegular, color: authMode === 'login' ? theme.colors.textHigh : theme.colors.textMedium }}>
+              {t('auth.login', 'Log In')}
+            </Typography>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.toggleBtn, authMode === 'signup' && styles.toggleBtnActive]}
+            onPress={() => { setAuthMode('signup'); setRegistrationStep('details'); }}
+            activeOpacity={0.7}
+          >
+            <Typography variant="subhead" style={{ fontFamily: authMode === 'signup' ? theme.typography.families.headingBold : theme.typography.families.bodyRegular, color: authMode === 'signup' ? theme.colors.textHigh : theme.colors.textMedium }}>
+              {t('auth.signup', 'Sign Up')}
+            </Typography>
+          </TouchableOpacity>
+        </View>
 
       {errors.general && (
         <View style={styles.errorBox}>
@@ -465,18 +472,18 @@ export default function AuthScreen({ navigation, route }: Props) {
       </View>
 
       <TouchableOpacity style={styles.primaryButton} onPress={handleSubmit} disabled={isLoading}>
-        {isLoading ? <ActivityIndicator color={theme.colors.background} /> : <Typography variant="headline" color={theme.colors.background}>{authMode === 'login' ? 'Sign In' : 'Create Account'}</Typography>}
+        {isLoading ? <ActivityIndicator color={theme.colors.background} /> : <Typography variant="headline" color={theme.colors.background}>{authMode === 'login' ? t('auth.signInBtn', 'Sign In') : t('auth.createAccountBtn', 'Create Account')}</Typography>}
       </TouchableOpacity>
     </FadeSlideIn>
   );
 
-  let title = "Welcome Back";
+  let title = t('auth.login', "Welcome Back");
   let subtitle = "Sign in to your account";
   if (authMode === 'signup') {
-    title = "Create Account";
+    title = t('auth.signup', "Create Account");
     subtitle = "Create a new account";
   } else if (authMode === 'reset') {
-    title = "Reset Password";
+    title = t('auth.forgotPassword', "Reset Password");
     subtitle = "Recover your account access";
   }
 
