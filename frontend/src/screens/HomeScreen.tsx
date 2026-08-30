@@ -268,6 +268,7 @@ export default function HomeScreen({ navigation }: any) {
   const INTERACTIVE_TOOLS = [
     { id: 'kick', label: t('home.interactive.kickCounter', 'Kick Counter'), icon: Baby, bg: '#9013FE', route: 'KickCounter' },
     { id: 'breathe', label: t('home.interactive.breathing', 'Breathing'), icon: Zap, bg: '#4A90E2', route: 'BreathingExercise' },
+    { id: 'anc', label: t('home.interactive.anc', 'ANC Visits'), icon: Stethoscope, bg: '#E11D48', route: 'ANCVisit' },
   ];
   const calendarDates = React.useMemo(() => {
     const today = new Date();

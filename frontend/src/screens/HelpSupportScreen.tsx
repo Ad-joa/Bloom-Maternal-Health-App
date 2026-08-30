@@ -73,7 +73,15 @@ export default function HelpSupportScreen({ navigation }: any) {
   };
 
   const handleBloomAI = () => {
-    navigation.navigate('MainTabs', { screen: 'Support' });
+    navigation.navigate('BloomAI');
+  };
+
+  const handleCommunity = () => {
+    navigation.navigate('Community');
+  };
+
+  const handleEmergency = () => {
+    navigation.navigate('EmergencyLocator');
   };
 
   // Filter FAQs based on search
@@ -134,6 +142,34 @@ export default function HelpSupportScreen({ navigation }: any) {
                 </BlurView>
               </TouchableOpacity>
 
+              <TouchableOpacity style={styles.contactCardWrapper} onPress={handleCommunity} activeOpacity={0.8}>
+                <BlurView intensity={isDark ? 40 : 80} tint={isDark ? 'dark' : 'light'} style={styles.contactCard}>
+                  <LinearGradient colors={isDark ? ['rgba(255,255,255,0.08)', 'transparent'] : ['rgba(255,255,255,0.9)', 'rgba(255,255,255,0.3)']} style={StyleSheet.absoluteFillObject} />
+                  <View style={[styles.iconCircle, { backgroundColor: isDark ? 'rgba(139,92,246,0.2)' : '#EDE9FE' }]}>
+                    <MessageCircle color={isDark ? '#C084FC' : '#A855F7'} size={26} />
+                  </View>
+                  <Typography variant="title2" color={theme.colors.textHigh} style={styles.contactTitle}>Community</Typography>
+                  <Typography variant="caption1" color={theme.colors.textMedium} align="center" style={styles.contactSubtitle}>
+                    Connect with other mothers.
+                  </Typography>
+                </BlurView>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.contactRow}>
+              <TouchableOpacity style={styles.contactCardWrapper} onPress={handleEmergency} activeOpacity={0.8}>
+                <BlurView intensity={isDark ? 40 : 80} tint={isDark ? 'dark' : 'light'} style={styles.contactCard}>
+                  <LinearGradient colors={isDark ? ['rgba(255,255,255,0.08)', 'transparent'] : ['rgba(255,255,255,0.9)', 'rgba(255,255,255,0.3)']} style={StyleSheet.absoluteFillObject} />
+                  <View style={[styles.iconCircle, { backgroundColor: isDark ? 'rgba(225,29,72,0.2)' : '#FFE4E6' }]}>
+                    <PhoneCall color={isDark ? '#FB7185' : '#E11D48'} size={26} />
+                  </View>
+                  <Typography variant="title2" color={theme.colors.textHigh} style={styles.contactTitle}>Emergency</Typography>
+                  <Typography variant="caption1" color={theme.colors.textMedium} align="center" style={styles.contactSubtitle}>
+                    Find nearest hospitals instantly.
+                  </Typography>
+                </BlurView>
+              </TouchableOpacity>
+
               <TouchableOpacity style={styles.contactCardWrapper} onPress={handleEmailSupport} activeOpacity={0.8}>
                 <BlurView intensity={isDark ? 40 : 80} tint={isDark ? 'dark' : 'light'} style={styles.contactCard}>
                   <LinearGradient colors={isDark ? ['rgba(255,255,255,0.08)', 'transparent'] : ['rgba(255,255,255,0.9)', 'rgba(255,255,255,0.3)']} style={StyleSheet.absoluteFillObject} />
@@ -142,7 +178,7 @@ export default function HelpSupportScreen({ navigation }: any) {
                   </View>
                   <Typography variant="title2" color={theme.colors.textHigh} style={styles.contactTitle}>Email Support</Typography>
                   <Typography variant="caption1" color={theme.colors.textMedium} align="center" style={styles.contactSubtitle}>
-                    Reach out to our human support team directly.
+                    Reach out to our support team.
                   </Typography>
                 </BlurView>
               </TouchableOpacity>

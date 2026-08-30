@@ -131,10 +131,16 @@ export default function OnboardingScreen({ navigation }: Props) {
           return dateStr;
         };
 
-        if (trimester) payload.trimester = parseInt(trimester, 10);
+        if (trimester) {
+          const t = parseInt(trimester, 10);
+          if (!isNaN(t)) payload.trimester = t;
+        }
         if (dueDate) payload.due_date = formatToISO(dueDate);
         if (isFirstPregnancy !== null) payload.is_first_pregnancy = isFirstPregnancy;
-        if (age) payload.age = parseInt(age, 10);
+        if (age) {
+          const a = parseInt(age, 10);
+          if (!isNaN(a)) payload.age = a;
+        }
         if (weight) payload.weight = weight;
         if (primaryGoal) payload.primary_goal = primaryGoal;
         if (dietaryPreferences) payload.dietary_preferences = dietaryPreferences;
@@ -166,8 +172,9 @@ export default function OnboardingScreen({ navigation }: Props) {
 
         const updatedUser = await onboardUser(user.id, payload);
         login(updatedUser, token || '');
-      } catch (error) {
-        console.error(error);
+      } catch (error: any) {
+        console.error("Onboarding Error:", error);
+        Alert.alert("Onboarding Failed", error?.response?.data?.detail || "Please check your inputs and try again.");
         login(user, token || ''); // fallback
       } finally {
         setLoading(false);

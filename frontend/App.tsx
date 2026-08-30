@@ -13,7 +13,7 @@ import AuthScreen from './src/screens/AuthScreen';
 import AnalysisScreen from './src/screens/AnalysisScreen';
 import BloomAIScreen from './src/screens/BloomAIScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
-import SupportScreen from './src/screens/SupportScreen';
+import CommunityScreen from './src/screens/CommunityScreen';
 import ArticleScreen from './src/screens/ArticleScreen';
 import PrivacyConsentScreen from './src/screens/PrivacyConsentScreen';
 import RemindersScreen from './src/screens/RemindersScreen';
@@ -81,6 +81,8 @@ export type RootStackParamList = {
   Fitness: undefined;
   HospitalBag: undefined;
   HelpSupport: undefined;
+  BloomAI: undefined;
+  Community: undefined;
   ResourceList: { category: string; title: string };
   KickCounter: undefined;
   BreathingExercise: undefined;
@@ -222,7 +224,7 @@ function MainTabs() {
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Today', headerShown: false }} />
       <Tab.Screen name="Tracker" component={DailyLogScreen} options={{ title: 'Tracker', headerShown: false }} />
-      <Tab.Screen name="Support" component={SupportScreen} options={{ title: 'Support', headerShown: false }} />
+      <Tab.Screen name="Support" component={HelpSupportScreen} options={{ title: 'Support', headerShown: false }} />
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile', headerShown: false }} />
     </Tab.Navigator>
   );
@@ -327,6 +329,16 @@ function Navigation() {
               name="HelpSupport"
               component={HelpSupportScreen}
               options={{ title: 'Help & Support' }}
+            />
+            <Stack.Screen
+              name="BloomAI"
+              component={BloomAIScreen}
+              options={{ title: 'Bloom AI Assistant' }}
+            />
+            <Stack.Screen
+              name="Community"
+              component={CommunityScreen}
+              options={{ title: 'Community Forum' }}
             />
             <Stack.Screen
               name="PartnerMode"
