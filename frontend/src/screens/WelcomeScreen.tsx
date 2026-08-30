@@ -136,7 +136,7 @@ export default function WelcomeScreen({ navigation }: Props) {
       <BackgroundMesh />
       <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
         <Animated.View style={[styles.logoContainer, { transform: [{ scale: logoScale }, { translateY: logoTranslateY }] }]}>
-          <Image source={require('../../assets/images/logo.jpg')} style={styles.logo} resizeMode="contain" />
+          <Image source={require('../../assets/images/logo_cropped.jpg')} style={styles.logo} resizeMode="contain" />
         </Animated.View>
         {/* Carousel */}
         <Animated.FlatList

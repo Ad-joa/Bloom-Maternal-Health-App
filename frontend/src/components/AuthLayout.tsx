@@ -57,7 +57,7 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
                 {/* Header */}
                 <FadeSlideIn delay={100} duration={500} direction="down" style={styles.header}>
                   <Animated.View style={[styles.logoContainer, { transform: [{ translateY: logoTranslateY }] }]}>
-                    <Image source={require('../../assets/images/logo.jpg')} style={styles.logo} resizeMode="contain" />
+                    <Image source={require('../../assets/images/logo_cropped.jpg')} style={styles.logo} resizeMode="contain" />
                   </Animated.View>
                   <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.titleText}>
                     {title}
