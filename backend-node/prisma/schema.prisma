@@ -25,6 +25,9 @@ model users {
   blood_group             String?
   height                  String?
   last_period_date        String?
+  avatar                  String?
+  reset_code              String?
+  reset_expires           DateTime?
   role                    String         @default("mother") // "mother", "nurse", "admin"
   partner_code            String?        @unique
   linked_user_id          Int?

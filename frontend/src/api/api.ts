@@ -98,6 +98,24 @@ export const loginUser = async (credentials: any) => {
     }
 };
 
+export const forgotPassword = async (email: string) => {
+    try {
+        const response = await apiClient.post('/auth/forgot-password', { email });
+        return response.data;
+    } catch (error: any) {
+        throw error.response?.data || error;
+    }
+};
+
+export const resetPassword = async (data: any) => {
+    try {
+        const response = await apiClient.post('/auth/reset-password', data);
+        return response.data;
+    } catch (error: any) {
+        throw error.response?.data || error;
+    }
+};
+
 export const saveSymptomLog = async (userId: number, logData: any) => {
     try {
         const response = await apiClient.post(`/logs`, logData);

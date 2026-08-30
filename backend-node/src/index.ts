@@ -6,6 +6,8 @@ import { evaluateSymptoms } from './engine/rules';
 import { getTrimesterData } from './data/trimester';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
+import fs from 'fs';
+import path from 'path';
 import { Server } from 'socket.io';
 import { GoogleGenAI } from '@google/genai';
 import authRoutes, { excludePassword } from './routes/auth';
@@ -31,7 +33,8 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || 'MISSING_KEY'
 import prisma from './lib/prisma';
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 // Global Rate Limiting: 100 requests per 15 minutes
 const apiLimiter = rateLimit({
@@ -490,10 +493,21 @@ app.put('/users/:id', async (req, res) => {
       return res.status(404).json({ detail: "User not found" });
     }
 
+    let avatarUrl = user.avatar;
+    if (data.avatarBase64) {
+      const base64Data = data.avatarBase64.replace(/^data:image\/\w+;base64,/, "");
+      const ext = data.avatarBase64.split(';')[0].split('/')[1] || 'jpeg';
+      const filename = `avatar_${user_id}_${Date.now()}.${ext}`;
+      const filepath = path.join(__dirname, '../public/uploads', filename);
+      fs.writeFileSync(filepath, base64Data, 'base64');
+      avatarUrl = `/uploads/${filename}`;
+    }
+
     const updatedUser = await prisma.users.update({
       where: { id: user_id },
       data: {
         name: data.name ?? user.name,
+        avatar: avatarUrl,
         trimester: data.trimester ?? user.trimester,
         due_date: data.due_date ?? user.due_date,
         is_first_pregnancy: data.is_first_pregnancy ?? user.is_first_pregnancy,

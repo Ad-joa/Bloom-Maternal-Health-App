@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { useTheme } from '../theme/ThemeContext';
@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { TextInput } from '../components/TextInput';
 import { Typography } from '../components/Typography';
 import { AuthLayout } from '../components/AuthLayout';
-import { loginUser, registerUser } from '../api/api';
+import { loginUser, registerUser, forgotPassword, resetPassword } from '../api/api';
 import { 
   Mail, Lock, User, Eye, EyeOff, Shield, AlertTriangle, KeyRound, Phone, CheckCircle 
 } from 'lucide-react-native';
@@ -16,6 +16,7 @@ import { FadeSlideIn } from '../components/FadeSlideIn';
 // --- Types ---
 type AuthMode = 'login' | 'signup' | 'reset';
 type RegistrationStep = 'details' | 'verification' | 'complete';
+type ResetStep = 'request' | 'verify';
 
 type AuthScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Auth' | 'Welcome'>;
 type Props = { navigation: AuthScreenNavigationProp; route?: any };
@@ -54,6 +55,7 @@ export default function AuthScreen({ navigation, route }: Props) {
   // State
   const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [registrationStep, setRegistrationStep] = useState<RegistrationStep>('details');
+  const [resetStep, setResetStep] = useState<ResetStep>('request');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -95,6 +97,9 @@ export default function AuthScreen({ navigation, route }: Props) {
       if (!formData.password) newErrors.password = 'Password is required';
     } else if (authMode === 'signup' && registrationStep === 'verification') {
       if (formData.verificationCode.length !== 6) newErrors.verificationCode = 'Code must be 6 digits';
+    } else if (authMode === 'reset' && resetStep === 'verify') {
+      if (formData.verificationCode.length !== 6) newErrors.verificationCode = 'Code must be 6 digits';
+      if (!formData.password) newErrors.password = 'New password is required';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -123,9 +128,19 @@ export default function AuthScreen({ navigation, route }: Props) {
           setRegistrationStep('complete');
         }
       } else if (authMode === 'reset') {
-        // Simulate password reset
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setAuthMode('login');
+        if (resetStep === 'request') {
+          await forgotPassword(formData.email);
+          setResetStep('verify');
+        } else {
+          await resetPassword({
+            email: formData.email,
+            code: formData.verificationCode,
+            newPassword: formData.password
+          });
+          setAuthMode('login');
+          setResetStep('request'); // reset for next time
+          Alert.alert("Success", "Your password has been successfully reset. You can now login.");
+        }
       }
     } catch (error: any) {
       console.error(error);
@@ -173,40 +188,96 @@ export default function AuthScreen({ navigation, route }: Props) {
     );
   };
 
-  const renderReset = () => (
-    <FadeSlideIn delay={100} duration={400} direction="right" style={styles.formContainer}>
-      <View style={styles.iconHeader}>
-        <KeyRound size={48} color={theme.colors.textHigh} strokeWidth={1.5} />
-        <Typography variant="title3" style={{ marginTop: 12, fontFamily: theme.typography.families.headingBold }}>Password Recovery</Typography>
-        <Typography variant="footnote" color="#636366" style={{ textAlign: 'center', marginTop: 4 }}>
-          Enter your email address and we'll send you a link to reset your password.
-        </Typography>
-      </View>
+  const renderReset = () => {
+    if (resetStep === 'verify') {
+      return (
+        <FadeSlideIn delay={100} duration={400} direction="right" style={styles.formContainer}>
+          <View style={styles.iconHeader}>
+            <KeyRound size={48} color={theme.colors.textHigh} strokeWidth={1.5} />
+            <Typography variant="title3" style={{ marginTop: 12, fontFamily: theme.typography.families.headingBold }}>Create New Password</Typography>
+            <Typography variant="footnote" color="#636366" style={{ textAlign: 'center', marginTop: 4 }}>
+              Enter the 6-digit code sent to your email and a new secure password.
+            </Typography>
+          </View>
 
-      <View style={styles.inputGroup}>
-        <View style={[styles.inputRow, errors.email && styles.inputError]}>
-          <Mail size={18} color="#8E8E93" />
-          <TextInput
-            placeholder="Email Address"
-            value={formData.email}
-            onChangeText={(val) => handleInputChange('email', val)}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            containerStyle={styles.inputContainerOverride}
-          />
+          <View style={styles.inputGroup}>
+            <View style={[styles.inputRow, errors.verificationCode && styles.inputError]}>
+              <Mail size={18} color="#8E8E93" />
+              <TextInput
+                placeholder="6-Digit Reset Code"
+                value={formData.verificationCode}
+                onChangeText={(val) => handleInputChange('verificationCode', val.replace(/[^0-9]/g, '').slice(0, 6))}
+                keyboardType="number-pad"
+                containerStyle={styles.inputContainerOverride}
+              />
+            </View>
+            {errors.verificationCode && <Typography variant="caption2" color="#FF3B30">{errors.verificationCode}</Typography>}
+          </View>
+
+          <View style={styles.inputGroup}>
+            <View style={[styles.inputRow, errors.password && styles.inputError]}>
+              <Lock size={18} color="#8E8E93" />
+              <TextInput
+                placeholder="New Password"
+                value={formData.password}
+                onChangeText={(val) => handleInputChange('password', val)}
+                secureTextEntry={!showPassword}
+                containerStyle={styles.inputContainerOverride}
+              />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                {showPassword ? <EyeOff size={18} color="#8E8E93" /> : <Eye size={18} color="#8E8E93" />}
+              </TouchableOpacity>
+            </View>
+            {errors.password && <Typography variant="caption2" color="#FF3B30">{errors.password}</Typography>}
+            {renderPasswordStrength()}
+          </View>
+
+          <TouchableOpacity style={styles.primaryButton} onPress={handleSubmit} disabled={isLoading || formData.verificationCode.length !== 6}>
+            {isLoading ? <ActivityIndicator color={theme.colors.background} /> : <Typography variant="headline" color={theme.colors.background}>Reset Password</Typography>}
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.backButton} onPress={() => setResetStep('request')}>
+            <Typography variant="footnote" color={theme.colors.textHigh} style={{ fontFamily: theme.typography.families.bodySemibold }}>Back</Typography>
+          </TouchableOpacity>
+        </FadeSlideIn>
+      );
+    }
+
+    return (
+      <FadeSlideIn delay={100} duration={400} direction="right" style={styles.formContainer}>
+        <View style={styles.iconHeader}>
+          <KeyRound size={48} color={theme.colors.textHigh} strokeWidth={1.5} />
+          <Typography variant="title3" style={{ marginTop: 12, fontFamily: theme.typography.families.headingBold }}>Password Recovery</Typography>
+          <Typography variant="footnote" color="#636366" style={{ textAlign: 'center', marginTop: 4 }}>
+            Enter your email address and we'll send you a link to reset your password.
+          </Typography>
         </View>
-        {errors.email && <Typography variant="caption2" color="#FF3B30">{errors.email}</Typography>}
-      </View>
 
-      <TouchableOpacity style={styles.primaryButton} onPress={handleSubmit} disabled={isLoading}>
-        {isLoading ? <ActivityIndicator color={theme.colors.background} /> : <Typography variant="headline" color={theme.colors.background}>Send Reset Link</Typography>}
-      </TouchableOpacity>
+        <View style={styles.inputGroup}>
+          <View style={[styles.inputRow, errors.email && styles.inputError]}>
+            <Mail size={18} color="#8E8E93" />
+            <TextInput
+              placeholder="Email Address"
+              value={formData.email}
+              onChangeText={(val) => handleInputChange('email', val)}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              containerStyle={styles.inputContainerOverride}
+            />
+          </View>
+          {errors.email && <Typography variant="caption2" color="#FF3B30">{errors.email}</Typography>}
+        </View>
 
-      <TouchableOpacity style={styles.backButton} onPress={() => setAuthMode('login')}>
-        <Typography variant="footnote" color={theme.colors.textHigh} style={{ fontFamily: theme.typography.families.bodySemibold }}>Back to Login</Typography>
-      </TouchableOpacity>
-    </FadeSlideIn>
-  );
+        <TouchableOpacity style={styles.primaryButton} onPress={handleSubmit} disabled={isLoading}>
+          {isLoading ? <ActivityIndicator color={theme.colors.background} /> : <Typography variant="headline" color={theme.colors.background}>Send Reset Link</Typography>}
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.backButton} onPress={() => setAuthMode('login')}>
+          <Typography variant="footnote" color={theme.colors.textHigh} style={{ fontFamily: theme.typography.families.bodySemibold }}>Back to Login</Typography>
+        </TouchableOpacity>
+      </FadeSlideIn>
+    );
+  };
 
   const renderVerification = () => (
     <FadeSlideIn delay={100} duration={400} direction="right" style={styles.formContainer}>

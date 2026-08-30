@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView, Switch, StatusBar, Alert, TextInput } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Switch, StatusBar, Alert, TextInput, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
@@ -11,7 +11,8 @@ import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import { getSymptomLogs, deleteAccount, updateUserProfile } from '../api/api';
+import * as ImagePicker from 'expo-image-picker';
+import { getSymptomLogs, deleteAccount, updateUserProfile, getBaseUrl } from '../api/api';
 import { BackgroundMesh } from '../components/BackgroundMesh';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -33,7 +34,8 @@ export default function ProfileScreen({ navigation }: any) {
     dietary_preferences: user?.dietary_preferences || '',
     medical_conditions: user?.medical_conditions || '',
     emergency_contact_name: user?.emergency_contact_name || '',
-    emergency_contact_phone: user?.emergency_contact_phone || ''
+    emergency_contact_phone: user?.emergency_contact_phone || '',
+    avatarBase64: ''
   });
 
   const handleSave = async () => {
@@ -49,6 +51,24 @@ export default function ProfileScreen({ navigation }: any) {
     } catch (e) {
       console.error(e);
       Alert.alert("Error", "Failed to update profile.");
+    }
+  };
+
+  const handleImagePick = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+        base64: true,
+      });
+
+      if (!result.canceled && result.assets[0].base64) {
+        setEditForm({ ...editForm, avatarBase64: `data:image/jpeg;base64,${result.assets[0].base64}` });
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to pick image");
     }
   };
 
@@ -213,11 +233,23 @@ export default function ProfileScreen({ navigation }: any) {
             <View style={[styles.menuCard, { alignItems: 'center', paddingVertical: 24, borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)' }]}>
               <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
               <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
-              <View style={styles.avatarLarge}>
-                <Typography variant="largeTitle" style={{ color: theme.colors.background, fontFamily: theme.typography.families.headingBold }}>
-                  {user?.name ? user.name[0].toUpperCase() : 'B'}
-                </Typography>
-              </View>
+              <TouchableOpacity style={styles.avatarLarge} onPress={isEditing ? handleImagePick : undefined} activeOpacity={isEditing ? 0.7 : 1}>
+                {editForm.avatarBase64 || user?.avatar ? (
+                  <Image 
+                    source={{ uri: editForm.avatarBase64 || (user?.avatar ? `${getBaseUrl()}${user.avatar}` : '') }} 
+                    style={{ width: '100%', height: '100%', borderRadius: 48 }} 
+                  />
+                ) : (
+                  <Typography variant="largeTitle" style={{ color: theme.colors.background, fontFamily: theme.typography.families.headingBold }}>
+                    {user?.name ? user.name[0].toUpperCase() : 'B'}
+                  </Typography>
+                )}
+                {isEditing && (
+                  <View style={styles.editAvatarBadge}>
+                    <Ionicons name="camera" size={14} color={theme.colors.background} />
+                  </View>
+                )}
+              </TouchableOpacity>
               {isEditing ? (
                 <TextInput
                   style={[styles.inputInline, { fontSize: 22, fontFamily: theme.typography.families.headingBold, textAlign: 'center', marginBottom: 4 }]}
@@ -478,6 +510,19 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 16,
     elevation: 6,
+  },
+  editAvatarBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: theme.colors.textHigh,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: theme.colors.background,
   },
   name: {
     color: theme.colors.textHigh,

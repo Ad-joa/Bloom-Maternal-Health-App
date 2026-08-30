@@ -233,7 +233,14 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   safeArea: { flex: 1 },
   scrollContent: { padding: 20, paddingTop: 40 },
   header: { marginBottom: 28, paddingHorizontal: 4 },
-  headerTitle: { fontFamily: theme.typography.families.headingBold, letterSpacing: -0.5, marginBottom: 8 },
+  headerTitle: { 
+    fontFamily: theme.typography.families.headingBold, 
+    letterSpacing: -0.5, 
+    marginBottom: 8,
+    fontSize: 34,
+    lineHeight: 42,
+    paddingTop: 8
+  },
   headerSubtitle: { fontFamily: theme.typography.families.bodyMedium, opacity: 0.8 },
   
   searchWrapper: {
@@ -287,7 +294,6 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.6)',
-    height: '100%',
   },
   iconCircle: {
     width: 60,

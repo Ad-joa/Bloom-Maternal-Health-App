@@ -18,6 +18,20 @@ const loginSchema = z.object({
   })
 });
 
+const forgotPasswordSchema = z.object({
+  body: z.object({
+    email: z.string().email('Invalid email format')
+  })
+});
+
+const resetPasswordSchema = z.object({
+  body: z.object({
+    email: z.string().email('Invalid email format'),
+    code: z.string().length(6, 'Reset code must be 6 digits'),
+    newPassword: z.string().min(6, 'Password must be at least 6 characters')
+  })
+});
+
 // Helper to exclude password
 export const excludePassword = (user: any) => {
   const { hashed_password, ...userWithoutPassword } = user;
@@ -99,6 +113,70 @@ router.post('/login', validate(loginSchema), async (req, res, next) => {
       token,
       user: excludePassword(user)
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/forgot-password', validate(forgotPasswordSchema), async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const user = await (prisma as any).users.findUnique({ where: { email } });
+    
+    if (!user) {
+      // Don't leak if email exists
+      return res.json({ message: "If that email is registered, we have sent a reset code." });
+    }
+
+    // Generate a 6 digit code
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+
+    await (prisma as any).users.update({
+      where: { id: user.id },
+      data: {
+        reset_code: resetCode,
+        reset_expires: expires
+      }
+    });
+
+    // Simulate sending email
+    console.log(`\n=========================================`);
+    console.log(`PASSWORD RESET CODE FOR ${email}: ${resetCode}`);
+    console.log(`=========================================\n`);
+
+    res.json({ message: "If that email is registered, we have sent a reset code." });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/reset-password', validate(resetPasswordSchema), async (req, res, next) => {
+  try {
+    const { email, code, newPassword } = req.body;
+    
+    const user = await (prisma as any).users.findUnique({ where: { email } });
+    
+    if (!user || user.reset_code !== code) {
+      return next(new AppError('Invalid or expired reset code', 400));
+    }
+
+    if (!user.reset_expires || new Date() > user.reset_expires) {
+      return next(new AppError('Reset code has expired', 400));
+    }
+
+    const hashed_password = await bcrypt.hash(newPassword, 10);
+    
+    await (prisma as any).users.update({
+      where: { id: user.id },
+      data: {
+        hashed_password,
+        reset_code: null,
+        reset_expires: null
+      }
+    });
+
+    res.json({ message: "Password has been successfully reset" });
   } catch (error) {
     next(error);
   }
