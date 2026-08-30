@@ -14,7 +14,7 @@ export default function BreathingExerciseScreen({ navigation }: any) {
   const [isActive, setIsActive] = useState(false);
   const [phase, setPhase] = useState<'Ready' | 'Breathe In' | 'Hold' | 'Breathe Out'>('Ready');
   const [timer, setTimer] = useState(0);
-  
+
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const opacityAnim = useRef(new Animated.Value(0.5)).current;
 
@@ -81,7 +81,7 @@ export default function BreathingExerciseScreen({ navigation }: any) {
         colors={isDark ? ['#1A1A2E', '#16213E'] : ['#E0F2FE', '#F0F9FF']}
         style={StyleSheet.absoluteFillObject}
       />
-      
+
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         {/* Header */}
         <View style={styles.header}>
@@ -103,18 +103,18 @@ export default function BreathingExerciseScreen({ navigation }: any) {
             {/* Animated Breathing Circle */}
             <Animated.View style={[
               styles.breathingCircle,
-              { 
+              {
                 transform: [{ scale: scaleAnim }],
                 opacity: opacityAnim
               }
             ]}>
-              <LinearGradient 
+              <LinearGradient
                 colors={isDark ? ['#3B82F6', '#8B5CF6'] : ['#60A5FA', '#A78BFA']}
                 style={StyleSheet.absoluteFillObject}
-                start={{x: 0, y: 0}} end={{x: 1, y: 1}}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
               />
             </Animated.View>
-            
+
             {/* Center Text */}
             <View style={styles.centerInfo}>
               <Typography variant="title1" style={{ color: theme.colors.textHigh }}>{phase}</Typography>
@@ -128,14 +128,14 @@ export default function BreathingExerciseScreen({ navigation }: any) {
 
           {/* Controls */}
           <View style={styles.controls}>
-            <TouchableOpacity 
-              style={styles.controlButton} 
+            <TouchableOpacity
+              style={styles.controlButton}
               activeOpacity={0.8}
               onPress={toggleSession}
             >
               <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
               <LinearGradient colors={isDark ? ['rgba(255,255,255,0.1)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.3)']} style={StyleSheet.absoluteFillObject} />
-              
+
               {isActive ? (
                 <>
                   <Square size={24} color={theme.colors.textHigh} fill={theme.colors.textHigh} />
