@@ -332,6 +332,11 @@ function Navigation() {
               options={{ title: 'Help & Support' }}
             />
             <Stack.Screen
+              name="PrivacyConsent"
+              component={PrivacyConsentScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
               name="BloomAI"
               component={BloomAIScreen}
               options={{ title: 'Bloom AI Assistant' }}

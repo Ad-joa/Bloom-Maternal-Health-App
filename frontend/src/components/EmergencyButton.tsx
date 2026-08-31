@@ -15,8 +15,8 @@ type Props = {
 };
 
 export function EmergencyButton({ style }: Props) {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
+  const { theme, isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
   const [modalVisible, setModalVisible] = useState(false);
   const [pulseAnim] = useState(new Animated.Value(1));
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -39,15 +39,15 @@ export function EmergencyButton({ style }: Props) {
   }, []);
 
   const handleCallHospital = () => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
+  const { theme, isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
     setModalVisible(false);
     navigation.navigate('EmergencyLocator');
   };
 
   const handleAlertPartner = () => {
-  const { theme } = useTheme();
-  const styles = getStyles(theme);
+  const { theme, isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
     // Would trigger backend SMS to trusted partner
     alert("Emergency alert SMS sent to your trusted partner.");
   };
@@ -65,9 +65,10 @@ export function EmergencyButton({ style }: Props) {
         </View>
       </TouchableOpacity>
 
-      <Modal visible={modalVisible} transparent animationType="fade">
-        <BlurView intensity={90} tint="dark" style={styles.modalOverlay}>
+      <Modal visible={modalVisible} transparent animationType="slide">
+        <BlurView intensity={isDark ? 50 : 90} tint={isDark ? "dark" : "light"} style={styles.modalOverlay}>
           <View style={styles.modalContent}>
+            <View style={styles.dragHandle} />
             <View style={styles.modalHeader}>
               <View style={styles.alertIconWrap}>
                 <AlertCircle color={theme.colors.danger} size={32} />
@@ -108,7 +109,7 @@ export function EmergencyButton({ style }: Props) {
   );
 }
 
-const getStyles = (theme: any) => StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   buttonContainer: {
     width: 48,
     height: 48,
@@ -137,49 +138,69 @@ const getStyles = (theme: any) => StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    justifyContent: 'center',
-    padding: 24,
+    justifyContent: 'flex-end',
+    backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.2)',
   },
   modalContent: {
-    backgroundColor: '#FFF',
-    borderRadius: 24,
+    backgroundColor: isDark ? theme.colors.surface : '#FFF',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
     padding: 24,
+    paddingTop: 16,
+    paddingBottom: 48,
     alignItems: 'center',
     position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 20,
+  },
+  dragHandle: {
+    width: 48,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
+    alignSelf: 'center',
+    marginBottom: 24,
   },
   modalHeader: {
     alignItems: 'center',
     marginBottom: 32,
   },
   alertIconWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: theme.colors.danger + '20',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: theme.colors.danger + '15',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   modalTitle: {
-    color: '#000',
-    marginBottom: 8,
+    color: theme.colors.textHigh,
+    marginBottom: 12,
+    fontFamily: theme.typography.families.headingBold,
   },
   modalDesc: {
-    lineHeight: 22,
+    lineHeight: 24,
+    color: theme.colors.textMedium,
   },
   actionCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.surfaceVariant,
-    padding: 16,
-    borderRadius: 16,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#F9FAFB',
+    padding: 20,
+    borderRadius: 24,
     width: '100%',
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
   },
   actionIconWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
@@ -189,8 +210,13 @@ const getStyles = (theme: any) => StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: 16,
-    right: 16,
-    padding: 8,
+    top: 24,
+    right: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
   }
 });

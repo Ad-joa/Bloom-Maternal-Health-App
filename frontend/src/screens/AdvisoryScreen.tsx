@@ -16,7 +16,7 @@ import { getAdvisory } from '../api/api';
 import { useTheme } from '../theme/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { Typography } from '../components/Typography';
-import { Send, Flower2, AlertTriangle, User, Volume2 } from 'lucide-react-native';
+import { Send, Flower2, AlertTriangle, User, Volume2, ArrowLeft, ArrowUp, Mic } from 'lucide-react-native';
 import * as Speech from 'expo-speech';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -35,7 +35,7 @@ const QUICK_REPLIES = [
   "How much water should I drink?"
 ];
 
-export default function AdvisoryScreen() {
+export default function AdvisoryScreen({ navigation }: any) {
   const { theme } = useTheme();
   const { isDark } = useTheme();
   const styles = getStyles(theme, isDark);
@@ -56,7 +56,7 @@ export default function AdvisoryScreen() {
       {
         id: 'welcome',
         role: 'ai',
-        text: `Hi ${user?.name || 'Mama'}! I'm Bloom AI.${conditionText} How can I support your pregnancy journey today?`,
+        text: `Hi I'm Bloom, your pregnancy companion`,
       }
     ]);
   }, [user]);
@@ -152,12 +152,9 @@ export default function AdvisoryScreen() {
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.headerTitleWrap}>
-            <Flower2 color={theme.colors.primaryDark} size={20} style={{ marginRight: 6 }} />
-            <Typography variant="title3" color={theme.colors.primaryDark} style={styles.headerTitle}>
-              Bloom AI
-            </Typography>
-          </View>
+          <TouchableOpacity onPress={() => navigation?.goBack()} style={{ padding: 8 }}>
+            <ArrowLeft color={theme.colors.textHigh} size={24} />
+          </TouchableOpacity>
         </View>
 
         <KeyboardAvoidingView 
@@ -165,16 +162,27 @@ export default function AdvisoryScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
         >
-          {/* Chat List */}
-          <FlatList
-            ref={flatListRef}
-            data={messages}
-            keyExtractor={item => item.id}
-            renderItem={renderMessage}
-            contentContainerStyle={styles.chatListContent}
-            onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
-            onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
-          />
+          {/* Chat List or Empty State */}
+          {messages.length === 1 && !loading ? (
+            <View style={styles.emptyStateContainer}>
+              <View style={styles.glowingRingOuter}>
+                <View style={styles.glowingRingInner} />
+              </View>
+              <Typography variant="title2" style={styles.emptyStateText}>
+                {messages[0].text}
+              </Typography>
+            </View>
+          ) : (
+            <FlatList
+              ref={flatListRef}
+              data={messages}
+              keyExtractor={item => item.id}
+              renderItem={renderMessage}
+              contentContainerStyle={styles.chatListContent}
+              onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+              onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
+            />
+          )}
 
           {/* Typing Indicator */}
           {loading && (
@@ -205,20 +213,23 @@ export default function AdvisoryScreen() {
           {/* Clean Input Area */}
           <View style={styles.inputContainer}>
             <TextInput
-              style={[styles.textInput, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }]}
-              placeholder="Message..."
+              style={[styles.textInput, { color: theme.colors.textHigh }]}
+              placeholder="Ask about your pregnancy..."
               placeholderTextColor={theme.colors.textMedium}
               value={inputText}
               onChangeText={setInputText}
               multiline
               maxLength={500}
             />
+            <TouchableOpacity style={styles.micButton}>
+              <Mic color={theme.colors.textMedium} size={20} />
+            </TouchableOpacity>
             <TouchableOpacity 
               style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]} 
               onPress={() => handleSend(inputText)}
               disabled={!inputText.trim() || loading}
             >
-              <Send color={theme.colors.background} size={18} style={{marginLeft: -2, marginTop: 2}}/>
+              <ArrowUp color={theme.colors.background} size={20} />
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
@@ -236,12 +247,10 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingHorizontal: theme.spacing[5],
-    paddingVertical: theme.spacing[4],
-    borderBottomWidth: 1,
-    borderBottomColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+    paddingHorizontal: theme.spacing[4],
+    paddingVertical: theme.spacing[2],
     backgroundColor: 'transparent',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     zIndex: 10,
   },
   headerTitleWrap: {
@@ -307,35 +316,36 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     paddingHorizontal: theme.spacing[4],
   },
   quickReplyPill: {
-    backgroundColor: theme.colors.primaryLight + '30',
+    backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
     paddingHorizontal: theme.spacing[4],
-    paddingVertical: theme.spacing[2],
-    borderRadius: 20,
+    paddingVertical: 12,
+    borderRadius: 24,
     marginRight: theme.spacing[3],
-    borderWidth: 1,
-    borderColor: theme.colors.primaryLight + '50',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: theme.colors.background,
-    borderTopWidth: 1,
-    borderTopColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+    paddingHorizontal: 6,
+    paddingVertical: 6,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
+    borderRadius: 30,
   },
   textInput: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 20,
-    paddingHorizontal: theme.spacing[4],
+    paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 12,
     minHeight: 44,
     maxHeight: 120,
     fontFamily: theme.typography.families.bodyRegular,
     fontSize: 16,
-    color: theme.colors.textHigh,
+  },
+  micButton: {
+    padding: 10,
+    marginRight: 4,
+    marginBottom: 2,
   },
   sendButton: {
     width: 44,
@@ -348,5 +358,32 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   },
   sendButtonDisabled: {
     backgroundColor: theme.colors.textMedium,
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 60,
+  },
+  glowingRingOuter: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: theme.colors.primary + '20',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  glowingRingInner: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 8,
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.background,
+  },
+  emptyStateText: {
+    fontFamily: theme.typography.families.headingBold,
+    color: theme.colors.textHigh,
   }
 });

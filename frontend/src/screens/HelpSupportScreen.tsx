@@ -256,7 +256,7 @@ export default function HelpSupportScreen({ navigation }: any) {
               </BlurView>
             </TouchableOpacity>
 
-            <View style={{ height: 60 }} />
+            <View style={{ height: 120 }} />
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>

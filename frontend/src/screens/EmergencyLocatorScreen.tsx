@@ -4,6 +4,7 @@ import MapView, { Marker, Callout } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, PhoneCall, MapPin } from 'lucide-react-native';
+import { BlurView } from 'expo-blur';
 import { Typography } from '../components/Typography';
 import { useTheme } from '../theme/ThemeContext';
 import { Card } from '../components/Card';
@@ -112,21 +113,32 @@ export default function EmergencyLocatorScreen({ navigation }: any) {
       <SafeAreaView style={styles.headerArea} edges={['top']}>
         <View style={styles.headerRow}>
           <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-            <ChevronLeft color={theme.colors.textHigh} size={24} />
+            <BlurView intensity={isDark ? 30 : 60} tint={isDark ? "dark" : "light"} style={styles.blurIconWrap}>
+              <ChevronLeft color={theme.colors.textHigh} size={24} />
+            </BlurView>
           </TouchableOpacity>
           <View style={styles.headerTitleWrap}>
-            <Typography variant="headline">Emergency Locator</Typography>
-            <Typography variant="caption1" color={theme.colors.danger}>Nearest Facilities</Typography>
+            <BlurView intensity={isDark ? 30 : 60} tint={isDark ? "dark" : "light"} style={styles.blurTitleWrap}>
+              <Typography variant="headline">Emergency Locator</Typography>
+              <Typography variant="caption1" color={theme.colors.danger} style={{ marginTop: 2 }}>Nearest Facilities</Typography>
+            </BlurView>
           </View>
-          <View style={{ width: 40 }} />
+          <View style={{ width: 44 }} />
         </View>
       </SafeAreaView>
       
       <View style={styles.footerPanel}>
-        <Card variant="glass" style={styles.infoCard}>
-          <Typography variant="headline" color={theme.colors.danger}>SOS Activated</Typography>
-          <Typography variant="subhead" style={{ marginTop: 4 }}>Tap on a red or green marker on the map to view the facility and call them directly.</Typography>
-        </Card>
+        <BlurView intensity={isDark ? 40 : 80} tint={isDark ? "dark" : "light"} style={styles.infoCard}>
+          <View style={styles.infoContent}>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <View style={styles.pulseDot} />
+              <Typography variant="title3" color={theme.colors.danger} style={{fontFamily: theme.typography.families.headingBold}}>SOS Activated</Typography>
+            </View>
+            <Typography variant="subhead" style={{ marginTop: 6 }} color={theme.colors.textMedium}>
+              Tap on a map marker to view the facility and call them directly.
+            </Typography>
+          </View>
+        </BlurView>
       </View>
     </View>
   );
@@ -161,29 +173,36 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     paddingTop: 16,
   },
   backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 8,
     elevation: 3,
   },
-  headerTitleWrap: {
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+  blurIconWrap: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.5)',
+  },
+  headerTitleWrap: {
+    borderRadius: 20,
+    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 8,
     elevation: 3,
+  },
+  blurTitleWrap: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    alignItems: 'center',
+    backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.5)',
   },
   footerPanel: {
     position: 'absolute',
@@ -192,8 +211,21 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     right: 16,
   },
   infoCard: {
-    borderLeftWidth: 4,
-    borderLeftColor: theme.colors.danger,
+    borderRadius: 24,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)',
+  },
+  infoContent: {
+    padding: 20,
+    backgroundColor: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.4)',
+  },
+  pulseDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: theme.colors.danger,
+    marginRight: 8,
   },
   calloutCard: {
     backgroundColor: isDark ? theme.colors.background : theme.colors.surface,

@@ -8,11 +8,13 @@ import { ShieldCheck, CheckSquare, Square, ChevronLeft } from 'lucide-react-nati
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../context/AuthContext';
 
 export default function PrivacyConsentScreen({ navigation }: any) {
   const { theme } = useTheme();
   const { isDark } = useTheme();
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
   const styles = getStyles(theme, isDark);
   const insets = useSafeAreaInsets();
   const [agreed, setAgreed] = useState(false);
@@ -95,31 +97,33 @@ export default function PrivacyConsentScreen({ navigation }: any) {
         </View>
       </ScrollView>
 
-      {/* Sticky Bottom Area */}
-      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 24) }]}>
-        <TouchableOpacity 
-          style={styles.checkboxContainer} 
-          onPress={() => setAgreed(!agreed)} 
-          activeOpacity={0.7}
-        >
-          {agreed ? (
-            <CheckSquare color={theme.colors.primary} size={28} strokeWidth={2.5} />
-          ) : (
-            <Square color={theme.colors.textMedium} size={28} strokeWidth={2} />
-          )}
-          <Typography variant="body" style={styles.checkboxText}>
-            {t('privacy.agree', 'I agree to the privacy policy and terms')}
-          </Typography>
-        </TouchableOpacity>
+      {/* Sticky Bottom Area (Only for non-authenticated users) */}
+      {!isAuthenticated && (
+        <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 24) }]}>
+          <TouchableOpacity 
+            style={styles.checkboxContainer} 
+            onPress={() => setAgreed(!agreed)} 
+            activeOpacity={0.7}
+          >
+            {agreed ? (
+              <CheckSquare color={theme.colors.primary} size={28} strokeWidth={2.5} />
+            ) : (
+              <Square color={theme.colors.textMedium} size={28} strokeWidth={2} />
+            )}
+            <Typography variant="body" style={styles.checkboxText}>
+              {t('privacy.agree', 'I agree to the privacy policy and terms')}
+            </Typography>
+          </TouchableOpacity>
 
-        <Button 
-          title={t('privacy.proceed', 'Proceed to Create Account')} 
-          variant="primary" 
-          onPress={handleProceed} 
-          disabled={!agreed} 
-          style={styles.continueButton} 
-        />
-      </View>
+          <Button 
+            title={t('privacy.proceed', 'Proceed to Create Account')} 
+            variant="primary" 
+            onPress={handleProceed} 
+            disabled={!agreed} 
+            style={styles.continueButton} 
+          />
+        </View>
+      )}
     </View>
   );
 }

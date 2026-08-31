@@ -7,7 +7,7 @@ import { BounceButton } from '../components/BounceButton';
 import { BackgroundMesh } from '../components/BackgroundMesh';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import { Send, Flower2, ArrowUp, Sparkles } from 'lucide-react-native';
+import { Send, ArrowUp, ArrowLeft, Mic } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { getAdvisory } from '../api/api';
@@ -50,7 +50,7 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const [messages, setMessages] = useState<Message[]>([
-    { id: '1', text: t('ai.welcomeMsg', `Hi ${user?.name ? user.name : 'there'}! I am Bloom AI. Do you have any questions about your pregnancy today? Describe what you are feeling.`), sender: 'ai' },
+    { id: '1', text: t('ai.welcomeMsg', `Hi I'm Bloom, Your Maternal Health  companion`), sender: 'ai' },
   ]);
 
   React.useEffect(() => {
@@ -74,35 +74,35 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
 
   const handleSend = async () => {
     if (!inputText.trim()) return;
-    
+
     // Smooth layout animation for new bubbles
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    
+
     // Add user message
     const userText = inputText.trim();
     const newMsg: Message = { id: Date.now().toString(), text: userText, sender: 'user' };
     setMessages(prev => [...prev, newMsg]);
     setInputText('');
     setLoading(true);
-    
+
     try {
       // Call our rule-based backend engine!
       const response = await getAdvisory([userText]);
       const adviceStr = typeof response.advice === 'string' ? response.advice : response.advice.text;
-      
+
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-      setMessages(prev => [...prev, { 
-        id: (Date.now() + 1).toString(), 
-        text: adviceStr || t('ai.processError', "I am having trouble processing that right now."), 
-        sender: 'ai' 
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        text: adviceStr || t('ai.processError', "I am having trouble processing that right now."),
+        sender: 'ai'
       }]);
     } catch (error) {
       console.error(error);
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-      setMessages(prev => [...prev, { 
-        id: (Date.now() + 1).toString(), 
-        text: t('ai.error', "I couldn't reach the server. Please try again later."), 
-        sender: 'ai' 
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        text: t('ai.error', "I couldn't reach the server. Please try again later."),
+        sender: 'ai'
       }]);
     } finally {
       setLoading(false);
@@ -122,115 +122,103 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
   }, []);
 
   const renderContent = () => (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined} 
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
       keyboardVerticalOffset={Platform.OS === 'ios' ? (isNested ? 180 : 90) : 0}
     >
-      {!isNested && (
-        <View style={styles.header}>
-          <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.headerTitle}>
-            {t('ai.title', 'Bloom AI')}
-          </Typography>
-          <Typography variant="body" color={theme.colors.textMedium}>
-            {t('ai.subtitle', 'Your 24/7 intelligent pregnancy guide')}
+      {/* Header handled by React Navigation */}
+
+      {messages.length === 1 && !loading ? (
+        <View style={styles.emptyStateContainer}>
+          <View style={styles.glowingRingOuter}>
+            <View style={styles.glowingRingInner} />
+          </View>
+          <Typography variant="title2" style={styles.emptyStateText}>
+            {messages[0].text}
           </Typography>
         </View>
-      )}
-
-      <ScrollView 
-            ref={scrollViewRef}
-            style={styles.scrollView}
-            contentContainerStyle={styles.chatContainer}
-            onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
-            showsVerticalScrollIndicator={false}
-          >
-            {messages.map((msg) => (
-              <View 
-                key={msg.id} 
-                style={[
-                  styles.messageRow, 
-                  msg.sender === 'user' ? styles.messageRowUser : styles.messageRowAI
-                ]}
-              >
-                {msg.sender === 'ai' && (
-                  <View style={styles.aiAvatar}>
-                    <Flower2 size={18} color={theme.colors.background} />
+      ) : (
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.scrollView}
+          contentContainerStyle={styles.chatContainer}
+          onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+          showsVerticalScrollIndicator={false}
+        >
+          {messages.map((msg) => (
+            <View
+              key={msg.id}
+              style={[
+                styles.messageRow,
+                msg.sender === 'user' ? styles.messageRowUser : styles.messageRowAI
+              ]}
+            >
+              {msg.sender === 'user' ? (
+                <View style={[styles.bubble, styles.bubbleUser]}>
+                  <Typography variant="body" color="#fff">{msg.text}</Typography>
+                </View>
+              ) : (
+                <>
+                  <View style={styles.aiAvatarSmallOuter}>
+                    <View style={styles.aiAvatarSmallInner} />
                   </View>
-                )}
-                {msg.sender === 'user' ? (
-                  <LinearGradient
-                    colors={['#818CF8', '#6366F1']}
-                    start={{x: 0, y: 0}} end={{x: 1, y: 1}}
-                    style={[styles.bubble, styles.bubbleUser]}
-                  >
-                    <Typography variant="body" color="#fff">{msg.text}</Typography>
-                  </LinearGradient>
-                ) : (
                   <View style={[styles.bubble, styles.bubbleAI]}>
                     <Typography variant="body" color={theme.colors.textHigh}>{msg.text}</Typography>
                   </View>
-                )}
-              </View>
-            ))}
-            {loading && (
-              <View style={[styles.messageRow, styles.messageRowAI]}>
-                <View style={styles.aiAvatar}>
-                  <Flower2 size={18} color={theme.colors.background} />
-                </View>
-                <Animated.View style={[styles.bubble, styles.bubbleAI, styles.loadingBubble, { opacity: pulseAnim }]}>
-                  <Typography variant="caption1" color={theme.colors.textMedium} style={{ fontStyle: 'italic' }}>{t('ai.typing', 'Bloom AI is typing...')}</Typography>
-                </Animated.View>
-              </View>
-            )}
-          </ScrollView>
-          
-          <BlurView intensity={isDark ? 30 : 60} tint={isDark ? "dark" : "light"} style={[styles.inputArea, { paddingBottom: keyboardVisible ? (Platform.OS === 'ios' ? 16 : 24) : Math.max(insets.bottom, 16) + 110 }]}>
-            {/* Suggested Prompts */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.promptsContainer}>
-              {suggestedPrompts.map((prompt, index) => (
-                <BounceButton 
-                  key={index} 
-                  style={styles.promptChip} 
-                  onPress={() => handlePromptPress(prompt)}
-                >
-                  <Typography variant="subhead" color={isDark ? '#E0E7FF' : theme.colors.primaryDark} style={{fontFamily: theme.typography.families.headingSemibold}}>{prompt}</Typography>
-                </BounceButton>
-              ))}
-            </ScrollView>
-
-            <View style={styles.inputContainer}>
-              <View style={styles.inputWrapper}>
-                <RNTextInput
-                  placeholder={t('ai.placeholder', 'Ask anything...')}
-                  placeholderTextColor={theme.colors.textMedium}
-                  value={inputText}
-                  onChangeText={setInputText}
-                  style={styles.input}
-                  multiline
-                  maxLength={500}
-                />
-              </View>
-              <BounceButton 
-                onPress={handleSend}
-                disabled={!inputText.trim()}
-              >
-                {inputText.trim() ? (
-                  <LinearGradient
-                    colors={['#818CF8', '#6366F1']}
-                    start={{x: 0, y: 0}} end={{x: 1, y: 1}}
-                    style={styles.sendButtonActive}
-                  >
-                    <ArrowUp color={theme.colors.background} size={22} strokeWidth={3} />
-                  </LinearGradient>
-                ) : (
-                  <View style={styles.sendButtonDisabled}>
-                    <ArrowUp color={theme.colors.textMedium} size={22} strokeWidth={3} />
-                  </View>
-                )}
-              </BounceButton>
+                </>
+              )}
             </View>
-          </BlurView>
+          ))}
+          {loading && (
+            <View style={[styles.messageRow, styles.messageRowAI]}>
+              <View style={styles.aiAvatarSmallOuter}>
+                <View style={styles.aiAvatarSmallInner} />
+              </View>
+              <Animated.View style={[styles.bubble, styles.bubbleAI, styles.loadingBubble, { opacity: pulseAnim }]}>
+                <Typography variant="caption1" color={theme.colors.textMedium} style={{ fontStyle: 'italic' }}>{t('ai.typing', 'Bloom AI is typing...')}</Typography>
+              </Animated.View>
+            </View>
+          )}
+        </ScrollView>
+      )}
+
+      <View style={[styles.inputArea, { paddingBottom: keyboardVisible ? (Platform.OS === 'ios' ? 16 : 24) : Math.max(insets.bottom, 16) + 20 }]}>
+        {/* Suggested Prompts */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.promptsContainer}>
+          {suggestedPrompts.map((prompt, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.promptChip}
+              onPress={() => handlePromptPress(prompt)}
+            >
+              <Typography variant="subhead" color={theme.colors.textHigh} style={{ fontFamily: theme.typography.families.headingSemibold }}>{prompt}</Typography>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        <View style={styles.inputContainer}>
+          <RNTextInput
+            placeholder={t('ai.placeholder', 'Ask about your pregnancy...')}
+            placeholderTextColor={theme.colors.textMedium}
+            value={inputText}
+            onChangeText={setInputText}
+            style={styles.input}
+            multiline
+            maxLength={500}
+          />
+          <TouchableOpacity style={styles.micButton}>
+            <Mic color={theme.colors.textMedium} size={20} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleSend}
+            disabled={!inputText.trim()}
+            style={[styles.sendButtonActive, !inputText.trim() && styles.sendButtonDisabled]}
+          >
+            <ArrowUp color={theme.colors.background} size={22} strokeWidth={3} />
+          </TouchableOpacity>
+        </View>
+      </View>
     </KeyboardAvoidingView>
   );
 
@@ -259,11 +247,9 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     paddingHorizontal: theme.spacing[4],
     paddingTop: theme.spacing[2],
     paddingBottom: theme.spacing[2],
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-  },
-  headerTitle: {
-    fontFamily: theme.typography.families.headingBold,
+    backgroundColor: 'transparent',
+    alignItems: 'flex-start',
+    zIndex: 10,
   },
   scrollView: {
     flex: 1,
@@ -284,20 +270,22 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   messageRowAI: {
     justifyContent: 'flex-start',
   },
-  aiAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: theme.colors.primaryDark,
-    borderWidth: 0,
-    alignItems: 'center',
+  aiAvatarSmallOuter: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: theme.colors.primary + '20',
     justifyContent: 'center',
-    marginRight: theme.spacing[2],
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  aiAvatarSmallInner: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 2.5,
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.background,
   },
   bubble: {
     maxWidth: '80%',
@@ -312,13 +300,13 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   },
   bubbleUser: {
     backgroundColor: theme.colors.primary,
-    borderBottomRightRadius: 4,
+    borderBottomRightRadius: 6,
+    borderRadius: 24,
   },
   bubbleAI: {
-    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.9)',
-    borderWidth: 1,
-    borderColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.06)',
-    borderBottomLeftRadius: 4,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+    borderBottomLeftRadius: 6,
+    borderRadius: 24,
   },
   loadingBubble: {
     paddingHorizontal: theme.spacing[6],
@@ -327,58 +315,42 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   inputArea: {
     paddingTop: theme.spacing[2],
     backgroundColor: 'transparent',
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    gap: theme.spacing[2],
-    paddingHorizontal: theme.spacing[4],
-  },
-  inputWrapper: {
-    flex: 1,
-    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.92)',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: 24,
-    minHeight: 48,
-    maxHeight: 120,
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    paddingHorizontal: 6,
+    paddingVertical: 6,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
+    borderRadius: 30,
   },
   input: {
     flex: 1,
-    paddingHorizontal: theme.spacing[4],
-    paddingTop: Platform.OS === 'ios' ? 14 : 10,
-    paddingBottom: Platform.OS === 'ios' ? 14 : 10,
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'ios' ? 14 : 12,
+    paddingBottom: Platform.OS === 'ios' ? 14 : 12,
     fontSize: 16,
     color: theme.colors.textHigh,
     fontFamily: theme.typography.families.bodyRegular,
+    minHeight: 44,
+  },
+  micButton: {
+    padding: 10,
+    marginRight: 4,
+    marginBottom: 2,
   },
   sendButtonActive: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#6366F1',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 6,
+    backgroundColor: theme.colors.primary,
   },
   sendButtonDisabled: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: theme.colors.textMedium,
   },
   promptsContainer: {
     paddingHorizontal: theme.spacing[4],
@@ -388,17 +360,39 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   promptChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.7)',
-    borderWidth: 1,
-    borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+    backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
     paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
+    paddingVertical: 12,
+    borderRadius: 24,
     marginRight: theme.spacing[3],
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 4,
-    elevation: 1,
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 60,
+  },
+  glowingRingOuter: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: theme.colors.primary + '20',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  glowingRingInner: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 8,
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.background,
+  },
+  emptyStateText: {
+    fontFamily: theme.typography.families.headingBold,
+    color: theme.colors.textHigh,
+    textAlign: 'center',
+    paddingHorizontal: theme.spacing[6],
   }
 });
