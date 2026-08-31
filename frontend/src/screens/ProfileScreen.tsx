@@ -16,6 +16,7 @@ import { getSymptomLogs, deleteAccount, updateUserProfile, getBaseUrl } from '..
 import { parseDateSafely } from '../utils/dateUtils';
 import { BackgroundMesh } from '../components/BackgroundMesh';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Trophy, Droplets, Flame, Award } from 'lucide-react-native';
 
 export default function ProfileScreen({ navigation }: any) {
   const { user, logout, updateUser } = useAuth();
@@ -302,6 +303,42 @@ export default function ProfileScreen({ navigation }: any) {
               )}
               <Typography variant="body" style={styles.email}>{user?.email || 'user@example.com'}</Typography>
             </View>
+          </View>
+
+          {/* Milestones & Badges (Gamification) */}
+          <View style={styles.section}>
+            <Typography variant="caption1" style={styles.sectionLabel}>MILESTONES & BADGES</Typography>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }}>
+              {/* Badge 1 */}
+              <View style={[styles.badgeCard, { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)' }]}>
+                <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+                <View style={[styles.badgeIconWrap, { backgroundColor: '#F5A62320' }]}>
+                  <Flame color="#F5A623" size={28} />
+                </View>
+                <Typography variant="subhead" style={{ marginTop: 12, fontFamily: theme.typography.families.headingBold }}>7-Day Streak</Typography>
+                <Typography variant="caption1" color={theme.colors.textMedium} style={{ textAlign: 'center', marginTop: 4 }}>Logged vitals for a week straight.</Typography>
+              </View>
+
+              {/* Badge 2 */}
+              <View style={[styles.badgeCard, { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)', marginLeft: 16 }]}>
+                <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+                <View style={[styles.badgeIconWrap, { backgroundColor: '#4A90E220' }]}>
+                  <Droplets color="#4A90E2" size={28} />
+                </View>
+                <Typography variant="subhead" style={{ marginTop: 12, fontFamily: theme.typography.families.headingBold }}>Hydration Hero</Typography>
+                <Typography variant="caption1" color={theme.colors.textMedium} style={{ textAlign: 'center', marginTop: 4 }}>Met daily water goal 5 times.</Typography>
+              </View>
+
+              {/* Badge 3 (Locked) */}
+              <View style={[styles.badgeCard, { borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', marginLeft: 16, opacity: 0.6 }]}>
+                <BlurView intensity={isDark ? 20 : 40} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+                <View style={[styles.badgeIconWrap, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }]}>
+                  <Trophy color={theme.colors.textMedium} size={28} />
+                </View>
+                <Typography variant="subhead" style={{ marginTop: 12, fontFamily: theme.typography.families.headingBold }}>Third Trimester</Typography>
+                <Typography variant="caption1" color={theme.colors.textMedium} style={{ textAlign: 'center', marginTop: 4 }}>Reach week 28. (Locked)</Typography>
+              </View>
+            </ScrollView>
           </View>
 
           {/* Language */}
@@ -609,6 +646,26 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   },
   email: {
     color: theme.colors.textMedium,
+  },
+  badgeCard: {
+    width: 140,
+    borderRadius: 20,
+    padding: 16,
+    alignItems: 'center',
+    overflow: 'hidden',
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  badgeIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   section: {
     marginBottom: 24,

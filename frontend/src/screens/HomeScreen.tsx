@@ -11,7 +11,7 @@ import {
   Activity, Droplets, Stethoscope, Heart, Sun,
   Moon, Sparkles, Bell, ChevronRight, Zap,
   Baby, Apple, Lightbulb, Calendar, Luggage, Info, Target,
-  Headphones, PlayCircle, BookOpen, FileText, Wind
+  Headphones, PlayCircle, BookOpen, FileText, Wind, Timer, Camera
 } from 'lucide-react-native';
 import { getWeeksPregnant, getDaysUntilDue, parseDateSafely } from '../utils/dateUtils';
 import { getAncVisits, getEducationalContent } from '../api/api';
@@ -276,7 +276,9 @@ export default function HomeScreen({ navigation }: any) {
 
   const INTERACTIVE_TOOLS = [
     { id: 'kick', label: t('home.interactive.kickCounter', 'Kick Counter'), icon: Baby, bg: '#9013FE', route: 'KickCounter' },
+    { id: 'timer', label: t('home.interactive.timer', 'Contraction Timer'), icon: Timer, bg: '#F5A623', route: 'ContractionTimer' },
     { id: 'breathe', label: t('home.interactive.breathing', 'Breathing'), icon: Zap, bg: '#4A90E2', route: 'BreathingExercise' },
+    { id: 'gallery', label: t('home.interactive.gallery', 'Bump Gallery'), icon: Camera, bg: '#E06253', route: 'BumpGallery' },
     { id: 'anc', label: t('home.interactive.anc', 'ANC Visits'), icon: Stethoscope, bg: '#E11D48', route: 'ANCVisit' },
   ];
   const calendarDates = React.useMemo(() => {

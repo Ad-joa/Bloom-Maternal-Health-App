@@ -6,7 +6,7 @@ import { saveSymptomLog, getInsights } from '../api/api';
 import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
 import { TextInput } from '../components/TextInput';
-import { Activity, Droplet, Thermometer, Wind, AlertCircle, Save, Check, Flame, Eye, Baby, AlertTriangle } from 'lucide-react-native';
+import { Activity, Droplet, Thermometer, Wind, AlertCircle, Save, Check, Flame, Eye, Baby, AlertTriangle, Smile, Meh, Frown, Brain, HeartPulse } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { KickCounter } from '../components/KickCounter';
@@ -44,6 +44,7 @@ export default function TrackerScreen({ navigation }: any) {
   const [weight, setWeight] = useState('');
   const [notes, setNotes] = useState('');
   const [severity, setSeverity] = useState('mild');
+  const [anxietyLevel, setAnxietyLevel] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [daysSinceLastLog, setDaysSinceLastLog] = useState(0);
 
@@ -262,6 +263,66 @@ export default function TrackerScreen({ navigation }: any) {
                 );
               })}
             </View>
+          </View>
+
+          {/* Mental Health / Mood Section */}
+          <View style={styles.section}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+              <Brain color={theme.colors.primaryDark} size={24} style={{ marginRight: 8 }} />
+              <Typography variant="title3" style={[styles.sectionTitle, { marginBottom: 0 }]}>Emotional Well-being</Typography>
+            </View>
+            <Typography variant="subhead" color={theme.colors.textMedium} style={{ marginBottom: 16 }}>
+              How are you feeling emotionally today?
+            </Typography>
+            
+            <View style={styles.segmentedControl}>
+              <TouchableOpacity 
+                style={[styles.segmentBtn, anxietyLevel === 'low' && { backgroundColor: '#34D399' }]} 
+                onPress={() => setAnxietyLevel('low')}
+              >
+                <Smile color={anxietyLevel === 'low' ? '#FFF' : theme.colors.textMedium} size={24} />
+                <Typography variant="subhead" style={[{ marginTop: 4 }, anxietyLevel === 'low' && { color: '#FFF' }]}>Good</Typography>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.segmentBtn, anxietyLevel === 'medium' && { backgroundColor: '#FBBF24' }]} 
+                onPress={() => setAnxietyLevel('medium')}
+              >
+                <Meh color={anxietyLevel === 'medium' ? '#FFF' : theme.colors.textMedium} size={24} />
+                <Typography variant="subhead" style={[{ marginTop: 4 }, anxietyLevel === 'medium' && { color: '#FFF' }]}>Anxious</Typography>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.segmentBtn, anxietyLevel === 'high' && { backgroundColor: '#EF4444' }]} 
+                onPress={() => setAnxietyLevel('high')}
+              >
+                <Frown color={anxietyLevel === 'high' ? '#FFF' : theme.colors.textMedium} size={24} />
+                <Typography variant="subhead" style={[{ marginTop: 4 }, anxietyLevel === 'high' && { color: '#FFF' }]}>Overwhelmed</Typography>
+              </TouchableOpacity>
+            </View>
+
+            {/* CBT / Grounding Exercise (Only visible if high anxiety) */}
+            {anxietyLevel === 'high' && (
+              <BlurView intensity={isDark ? 30 : 60} tint={isDark ? "dark" : "light"} style={styles.cbtCard}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                   <HeartPulse color={theme.colors.danger} size={24} style={{ marginRight: 8 }} />
+                   <Typography variant="subhead" style={{ fontFamily: theme.typography.families.headingBold }}>Let's take a breath</Typography>
+                </View>
+                <Typography variant="body" color={theme.colors.textMedium} style={{ marginBottom: 16, lineHeight: 24 }}>
+                  It's completely normal to feel overwhelmed during pregnancy. Try the 5-4-3-2-1 grounding technique right now:
+                </Typography>
+                <View style={{ paddingLeft: 8 }}>
+                  <Typography variant="subhead" style={{ marginBottom: 4 }}><Typography style={{ fontFamily: theme.typography.families.headingBold }}>5</Typography> things you can see</Typography>
+                  <Typography variant="subhead" style={{ marginBottom: 4 }}><Typography style={{ fontFamily: theme.typography.families.headingBold }}>4</Typography> things you can touch</Typography>
+                  <Typography variant="subhead" style={{ marginBottom: 4 }}><Typography style={{ fontFamily: theme.typography.families.headingBold }}>3</Typography> things you can hear</Typography>
+                  <Typography variant="subhead" style={{ marginBottom: 4 }}><Typography style={{ fontFamily: theme.typography.families.headingBold }}>2</Typography> things you can smell</Typography>
+                  <Typography variant="subhead"><Typography style={{ fontFamily: theme.typography.families.headingBold }}>1</Typography> thing you can taste</Typography>
+                </View>
+                <TouchableOpacity style={styles.breatheBtn} onPress={() => navigation.navigate('BreathingExercise')}>
+                  <Typography variant="subhead" style={{ color: '#FFF', fontFamily: theme.typography.families.headingBold }}>Start Guided Breathing</Typography>
+                </TouchableOpacity>
+              </BlurView>
+            )}
           </View>
 
           {/* Notes Section */}
@@ -491,5 +552,20 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     color: theme.colors.background,
     marginLeft: 8,
     fontFamily: theme.typography.families.headingBold,
+  },
+  cbtCard: {
+    marginTop: 20,
+    padding: 20,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
+    overflow: 'hidden',
+  },
+  breatheBtn: {
+    backgroundColor: theme.colors.danger,
+    padding: 14,
+    borderRadius: 16,
+    alignItems: 'center',
+    marginTop: 20,
   }
 });

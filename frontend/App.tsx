@@ -30,6 +30,8 @@ import HelpSupportScreen from './src/screens/HelpSupportScreen';
 import ResourceListScreen from './src/screens/ResourceListScreen';
 import KickCounterScreen from './src/screens/KickCounterScreen';
 import BreathingExerciseScreen from './src/screens/BreathingExerciseScreen';
+import ContractionTimerScreen from './src/screens/ContractionTimerScreen';
+import BumpGalleryScreen from './src/screens/BumpGalleryScreen';
 import { BiometricGate } from './src/components/BiometricGate';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -87,6 +89,8 @@ export type RootStackParamList = {
   ResourceList: { category: string; title: string };
   KickCounter: undefined;
   BreathingExercise: undefined;
+  ContractionTimer: undefined;
+  BumpGallery: undefined;
 };
 
 export type MainTabParamList = {
@@ -394,6 +398,16 @@ function Navigation() {
             <Stack.Screen
               name="BreathingExercise"
               component={BreathingExerciseScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="ContractionTimer"
+              component={ContractionTimerScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="BumpGallery"
+              component={BumpGalleryScreen}
               options={{ headerShown: false }}
             />
           </>
