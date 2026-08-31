@@ -45,7 +45,7 @@ export default function DueDateRevealScreen({ navigation, route }: Props) {
       <SafeAreaView style={styles.safeArea}>
 
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <TouchableOpacity onPress={() => navigation.canGoBack() ? navigation.goBack() : null} style={styles.backButton}>
             <Ionicons name="chevron-back" size={24} color={theme.colors.textHigh} />
           </TouchableOpacity>
         </View>
@@ -71,7 +71,7 @@ export default function DueDateRevealScreen({ navigation, route }: Props) {
         <View style={styles.footer}>
           <TouchableOpacity
             style={styles.nextButton}
-            onPress={() => navigation.goBack()}
+            onPress={() => navigation.canGoBack() ? navigation.goBack() : null}
             activeOpacity={0.8}
           >
             <Typography style={styles.nextButtonText}>Next</Typography>

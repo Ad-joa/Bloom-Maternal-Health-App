@@ -43,7 +43,7 @@ export default function PrivacyConsentScreen({ navigation }: any) {
       <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <TouchableOpacity 
           style={styles.backButton} 
-          onPress={() => navigation.goBack()}
+          onPress={() => navigation.canGoBack() ? navigation.goBack() : null}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           <ChevronLeft size={28} color={theme.colors.primaryDark} />

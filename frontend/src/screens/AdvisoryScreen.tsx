@@ -152,7 +152,7 @@ export default function AdvisoryScreen({ navigation }: any) {
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation?.goBack()} style={{ padding: 8 }}>
+          <TouchableOpacity onPress={() => navigation?.canGoBack() ? navigation.goBack() : null} style={{ padding: 8 }}>
             <ArrowLeft color={theme.colors.textHigh} size={24} />
           </TouchableOpacity>
         </View>

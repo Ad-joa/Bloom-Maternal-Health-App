@@ -305,41 +305,110 @@ export default function ProfileScreen({ navigation }: any) {
             </View>
           </View>
 
-          {/* Milestones & Badges (Gamification) */}
-          <View style={styles.section}>
-            <Typography variant="caption1" style={styles.sectionLabel}>MILESTONES & BADGES</Typography>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }}>
-              {/* Badge 1 */}
-              <View style={[styles.badgeCard, { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)' }]}>
-                <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
-                <View style={[styles.badgeIconWrap, { backgroundColor: '#F5A62320' }]}>
-                  <Flame color="#F5A623" size={28} />
-                </View>
-                <Typography variant="subhead" style={{ marginTop: 12, fontFamily: theme.typography.families.headingBold }}>7-Day Streak</Typography>
-                <Typography variant="caption1" color={theme.colors.textMedium} style={{ textAlign: 'center', marginTop: 4 }}>Logged vitals for a week straight.</Typography>
-              </View>
+          {/* Milestones & Badges (Gamification) - Earned dynamically */}
+          {(() => {
+            // Compute earned badges from real user data
+            const earnedBadges: Array<{id: string, icon: any, iconColor: string, bgColor: string, title: string, description: string}> = [];
 
-              {/* Badge 2 */}
-              <View style={[styles.badgeCard, { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)', marginLeft: 16 }]}>
-                <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
-                <View style={[styles.badgeIconWrap, { backgroundColor: '#4A90E220' }]}>
-                  <Droplets color="#4A90E2" size={28} />
-                </View>
-                <Typography variant="subhead" style={{ marginTop: 12, fontFamily: theme.typography.families.headingBold }}>Hydration Hero</Typography>
-                <Typography variant="caption1" color={theme.colors.textMedium} style={{ textAlign: 'center', marginTop: 4 }}>Met daily water goal 5 times.</Typography>
-              </View>
+            // 1. Profile Completeness badge
+            const profileFields = [user?.name, user?.email, user?.due_date, user?.blood_group, user?.height, user?.emergency_contact_name, user?.emergency_contact_phone, user?.medical_conditions];
+            const filledFields = profileFields.filter(f => f && String(f).trim() !== '').length;
+            if (filledFields >= 6) {
+              earnedBadges.push({
+                id: 'profile_complete',
+                icon: Award,
+                iconColor: '#9B59B6',
+                bgColor: '#9B59B620',
+                title: 'Profile Pro',
+                description: 'Completed your health profile.',
+              });
+            }
 
-              {/* Badge 3 (Locked) */}
-              <View style={[styles.badgeCard, { borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', marginLeft: 16, opacity: 0.6 }]}>
-                <BlurView intensity={isDark ? 20 : 40} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
-                <View style={[styles.badgeIconWrap, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }]}>
-                  <Trophy color={theme.colors.textMedium} size={28} />
-                </View>
-                <Typography variant="subhead" style={{ marginTop: 12, fontFamily: theme.typography.families.headingBold }}>Third Trimester</Typography>
-                <Typography variant="caption1" color={theme.colors.textMedium} style={{ textAlign: 'center', marginTop: 4 }}>Reach week 28. (Locked)</Typography>
+            // 2. Trimester milestones based on real due_date
+            if (user?.due_date) {
+              const dueDate = parseDateSafely(user.due_date);
+              if (dueDate) {
+                const now = new Date();
+                const gestationalMs = (40 * 7 * 24 * 60 * 60 * 1000) - (dueDate.getTime() - now.getTime());
+                const weeksPregnant = Math.max(0, Math.floor(gestationalMs / (7 * 24 * 60 * 60 * 1000)));
+                
+                if (weeksPregnant >= 13) {
+                  earnedBadges.push({
+                    id: 'second_trimester',
+                    icon: Trophy,
+                    iconColor: '#F5A623',
+                    bgColor: '#F5A62320',
+                    title: 'Second Trimester',
+                    description: 'Reached week 13!',
+                  });
+                }
+                if (weeksPregnant >= 28) {
+                  earnedBadges.push({
+                    id: 'third_trimester',
+                    icon: Trophy,
+                    iconColor: '#E74C3C',
+                    bgColor: '#E74C3C20',
+                    title: 'Third Trimester',
+                    description: 'Reached week 28!',
+                  });
+                }
+                if (weeksPregnant >= 37) {
+                  earnedBadges.push({
+                    id: 'full_term',
+                    icon: Trophy,
+                    iconColor: '#2ECC71',
+                    bgColor: '#2ECC7120',
+                    title: 'Full Term',
+                    description: 'Your baby is full term!',
+                  });
+                }
+              }
+            }
+
+            // 3. First log badge — user has medical_conditions filled (they've engaged with tracking)
+            if (user?.medical_conditions && user.medical_conditions.trim() !== '') {
+              earnedBadges.push({
+                id: 'health_aware',
+                icon: Flame,
+                iconColor: '#3498DB',
+                bgColor: '#3498DB20',
+                title: 'Health Aware',
+                description: 'Added your health conditions.',
+              });
+            }
+
+            // 4. Due date set badge
+            if (user?.due_date) {
+              earnedBadges.push({
+                id: 'journey_started',
+                icon: Droplets,
+                iconColor: '#1ABC9C',
+                bgColor: '#1ABC9C20',
+                title: 'Journey Started',
+                description: 'Set your due date.',
+              });
+            }
+
+            if (earnedBadges.length === 0) return null;
+
+            return (
+              <View style={styles.section}>
+                <Typography variant="caption1" style={styles.sectionLabel}>MILESTONES & BADGES</Typography>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }}>
+                  {earnedBadges.map((badge, index) => (
+                    <View key={badge.id} style={[styles.badgeCard, { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)', marginLeft: index > 0 ? 16 : 0 }]}>
+                      <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+                      <View style={[styles.badgeIconWrap, { backgroundColor: badge.bgColor }]}>
+                        <badge.icon color={badge.iconColor} size={28} />
+                      </View>
+                      <Typography variant="subhead" style={{ marginTop: 12, fontFamily: theme.typography.families.headingBold }}>{badge.title}</Typography>
+                      <Typography variant="caption1" color={theme.colors.textMedium} style={{ textAlign: 'center', marginTop: 4 }}>{badge.description}</Typography>
+                    </View>
+                  ))}
+                </ScrollView>
               </View>
-            </ScrollView>
-          </View>
+            );
+          })()}
 
           {/* Language */}
           <View style={styles.section}>

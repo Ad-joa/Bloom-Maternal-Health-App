@@ -45,7 +45,7 @@ export default function LogoScreen({ onFinish }: LogoScreenProps) {
     <Animated.View style={[styles.container, { opacity: screenOpacity }]}>
       <BackgroundMesh />
       <Animated.View style={[styles.logoWrapper, { opacity: logoOpacity, transform: [{ scale }] }]}>
-        <Image source={require('../../assets/images/logo.jpg')} style={styles.logo} resizeMode="contain" />
+        <Image source={require('../../assets/images/app_icon.jpg')} style={styles.logo} resizeMode="contain" />
       </Animated.View>
     </Animated.View>
   );

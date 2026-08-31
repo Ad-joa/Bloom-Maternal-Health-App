@@ -25,7 +25,7 @@ export default function CheckInScreen({ navigation }: any) {
 
   const handleFinish = () => {
     // Save to DB and calculate trend
-    navigation.goBack();
+    if (navigation.canGoBack()) navigation.goBack();
   };
 
   return (

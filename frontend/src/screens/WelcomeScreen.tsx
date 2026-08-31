@@ -95,7 +95,7 @@ export default function WelcomeScreen({ navigation }: Props) {
     if (currentIndex < SLIDES.length - 1) {
       flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
     } else {
-      navigation.navigate('PrivacyConsent' as never);
+      navigation.navigate('Auth' as never);
     }
   };
 
