@@ -14,6 +14,7 @@ import authRoutes, { excludePassword } from './routes/auth';
 import logsRoutes from './routes/logs';
 import ancRoutes from './routes/anc';
 import educationalRoutes from './routes/educational';
+import hospitalsRoutes from './routes/hospitals';
 import { authenticateToken } from './middleware/authMiddleware';
 import rateLimit from 'express-rate-limit';
 import { globalErrorHandler } from './middleware/errorHandler';
@@ -119,6 +120,7 @@ app.use('/auth', authRoutes);
 app.use('/logs', logsRoutes);
 app.use('/anc', ancRoutes);
 app.use('/educational', educationalRoutes);
+app.use('/hospitals', hospitalsRoutes);
 
 app.get('/users/:id', async (req, res) => {
   try {

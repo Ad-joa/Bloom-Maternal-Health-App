@@ -9,6 +9,7 @@ import { ChevronLeft, PlayCircle, PauseCircle, Headphones, BookOpen, FileText, C
 import { useTranslation } from 'react-i18next';
 import { Audio } from 'expo-av';
 import { useAuth } from '../context/AuthContext';
+import { getEducationalContent } from '../api/api';
 import { Star } from 'lucide-react-native';
 
 export default function ResourceListScreen({ route, navigation }: any) {
@@ -22,6 +23,9 @@ export default function ResourceListScreen({ route, navigation }: any) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
 
+  const [rawResources, setRawResources] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     return () => {
       if (sound) {
@@ -30,80 +34,21 @@ export default function ResourceListScreen({ route, navigation }: any) {
     };
   }, [sound]);
 
-  const MOCK_RESOURCES = {
-    audio: [
-      { id: '1', title: 'Weeks 22-24: The Move', duration: '28 mins', author: 'Becca Bristow', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=400&q=80', audioFile: { uri: 'https://media.blubrry.com/bristows_made_a_baby/content.blubrry.com/bristows_made_a_baby/Weeks_22-24.mp3' } },
-      { id: '2', title: 'Caring for Twins', duration: '35 mins', author: 'Dad\'s Guide to Twins', image: 'https://images.unsplash.com/photo-1512438248247-f0f2a5a8b7f0?auto=format&fit=crop&w=400&q=80', audioFile: { uri: 'https://traffic.libsyn.com/twindad/dads-guide-to-twins-episode-17.mp3' } },
-      { id: '3', title: 'Pregnancy Health & Nutrition', duration: '50 mins', author: 'Becca Bristow', image: 'https://images.unsplash.com/photo-1531353826977-0941b4779a1c?auto=format&fit=crop&w=400&q=80', audioFile: { uri: 'https://media.blubrry.com/bristows_made_a_baby/content.blubrry.com/bristows_made_a_baby/Weeks_22-24.mp3' } },
-      { id: '4', title: 'Navigating Hospital Births', duration: '40 mins', author: 'Dad\'s Guide to Twins', image: 'https://images.unsplash.com/photo-1507838153414-b4b713384a76?auto=format&fit=crop&w=400&q=80', audioFile: { uri: 'https://traffic.libsyn.com/twindad/dads-guide-to-twins-episode-17.mp3' } },
-      { id: '5', title: 'Postpartum Support', duration: '60 mins', author: 'Becca Bristow', image: 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=400&q=80', audioFile: { uri: 'https://media.blubrry.com/bristows_made_a_baby/content.blubrry.com/bristows_made_a_baby/Weeks_22-24.mp3' } },
-      { id: '6', title: 'The First Trimester Changes', duration: '45 mins', author: 'Vanessa Merten', image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=400&q=80', audioFile: { uri: 'https://traffic.libsyn.com/twindad/dads-guide-to-twins-episode-17.mp3' } },
-      { id: '7', title: 'Managing Pregnancy Fatigue', duration: '30 mins', author: 'Jessie Ware', image: 'https://images.unsplash.com/photo-1531983412531-1f49a365ffed?auto=format&fit=crop&w=400&q=80', audioFile: { uri: 'https://media.blubrry.com/bristows_made_a_baby/content.blubrry.com/bristows_made_a_baby/Weeks_22-24.mp3' } },
-      { id: '8', title: 'The Importance of Pelvic Floor', duration: '25 mins', author: 'Dr. Sarah', image: 'https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=400&q=80', audioFile: { uri: 'https://traffic.libsyn.com/twindad/dads-guide-to-twins-episode-17.mp3' } },
-      { id: '9', title: 'Mindful Hypnobirthing', duration: '55 mins', author: 'Hollie de Cruz', image: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=400&q=80', audioFile: { uri: 'https://media.blubrry.com/bristows_made_a_baby/content.blubrry.com/bristows_made_a_baby/Weeks_22-24.mp3' } },
-      { id: '10', title: 'Nutrition for Two', duration: '42 mins', author: 'Lily Nichols', image: 'https://images.unsplash.com/photo-1490818387583-1b5ba4596956?auto=format&fit=crop&w=400&q=80', audioFile: { uri: 'https://traffic.libsyn.com/twindad/dads-guide-to-twins-episode-17.mp3' } },
-      { id: '11', title: 'Preparing Your Birth Partner', duration: '38 mins', author: 'Penny Simkin', image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=400&q=80', audioFile: { uri: 'https://media.blubrry.com/bristows_made_a_baby/content.blubrry.com/bristows_made_a_baby/Weeks_22-24.mp3' } },
-      { id: '12', title: 'Dealing with Morning Sickness', duration: '20 mins', author: 'Vanessa Merten', image: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=400&q=80', audioFile: { uri: 'https://traffic.libsyn.com/twindad/dads-guide-to-twins-episode-17.mp3' } },
-      { id: '13', title: 'Natural Labor Techniques', duration: '48 mins', author: 'Ina May Gaskin', image: 'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&w=400&q=80', audioFile: { uri: 'https://media.blubrry.com/bristows_made_a_baby/content.blubrry.com/bristows_made_a_baby/Weeks_22-24.mp3' } },
-      { id: '14', title: 'Gestational Diabetes Info', duration: '33 mins', author: 'Dr. Jane Smith', image: 'https://images.unsplash.com/photo-1524909623862-2bd3fb895e6f?auto=format&fit=crop&w=400&q=80', audioFile: { uri: 'https://traffic.libsyn.com/twindad/dads-guide-to-twins-episode-17.mp3' } },
-      { id: '15', title: 'Choosing a Pediatrician', duration: '29 mins', author: 'Becca Bristow', image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=400&q=80', audioFile: { uri: 'https://media.blubrry.com/bristows_made_a_baby/content.blubrry.com/bristows_made_a_baby/Weeks_22-24.mp3' } },
-    ],
-    video: [
-      { id: '1', title: 'Prenatal Yoga - First Trimester', duration: '20 mins', author: 'Yoga with Anna', image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=600&q=80' },
-      { id: '2', title: 'Preparing Your Hospital Bag', duration: '12 mins', author: 'Mama Tips', image: 'https://images.unsplash.com/photo-1555243896-771a8239ac20?auto=format&fit=crop&w=600&q=80' },
-      { id: '3', title: 'Pelvic Floor Exercises', duration: '15 mins', author: 'Dr. Sarah', image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=600&q=80' },
-      { id: '4', title: 'Signs of Labor Approaching', duration: '8 mins', author: 'Mama Tips', image: 'https://images.unsplash.com/photo-1516726817505-f5ed825624d8?auto=format&fit=crop&w=600&q=80' },
-      { id: '5', title: 'How to Breastfeed: A Beginner\'s Guide', duration: '18 mins', author: 'Lactation Consultant', image: 'https://images.unsplash.com/photo-1531983412531-1f49a365ffed?auto=format&fit=crop&w=600&q=80' },
-      { id: '6', title: 'Postpartum Core Recovery', duration: '25 mins', author: 'FitMom', image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=600&q=80' },
-      { id: '7', title: 'Newborn Bathing Tutorial', duration: '10 mins', author: 'Nurse Emma', image: 'https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=600&q=80' },
-      { id: '8', title: 'Second Trimester Workouts', duration: '22 mins', author: 'Yoga with Anna', image: 'https://images.unsplash.com/photo-1512438248247-f0f2a5a8b7f0?auto=format&fit=crop&w=600&q=80' },
-      { id: '9', title: 'Third Trimester Stretches', duration: '15 mins', author: 'Dr. Sarah', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=600&q=80' },
-      { id: '10', title: 'Swaddling Techniques', duration: '6 mins', author: 'Mama Tips', image: 'https://images.unsplash.com/photo-1531353826977-0941b4779a1c?auto=format&fit=crop&w=600&q=80' },
-      { id: '11', title: 'Setting Up the Nursery', duration: '14 mins', author: 'Nursery Designs', image: 'https://images.unsplash.com/photo-1507838153414-b4b713384a76?auto=format&fit=crop&w=600&q=80' },
-      { id: '12', title: 'Car Seat Installation Basics', duration: '9 mins', author: 'Safe Kids', image: 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=600&q=80' },
-      { id: '13', title: 'Managing Sciatica Pain', duration: '11 mins', author: 'FitMom', image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=600&q=80' },
-      { id: '14', title: 'Partner Massage for Labor', duration: '16 mins', author: 'Yoga with Anna', image: 'https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=600&q=80' },
-      { id: '15', title: 'What to Expect at Appointments', duration: '20 mins', author: 'Dr. Jane Smith', image: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80' },
-    ],
-    book: [
-      { id: '1', title: 'Expecting Better', author: 'Emily Oster', pages: '320 pages', image: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=400&q=80' },
-      { id: '2', title: 'The Mama Natural', author: 'Genevieve Howland', pages: '450 pages', image: 'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&w=400&q=80' },
-      { id: '3', title: 'Ina May\'s Guide to Childbirth', author: 'Ina May Gaskin', pages: '348 pages', image: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=400&q=80' },
-      { id: '4', title: 'The Fourth Trimester', author: 'Kimberly Ann Johnson', pages: '288 pages', image: 'https://images.unsplash.com/photo-1524909623862-2bd3fb895e6f?auto=format&fit=crop&w=400&q=80' },
-      { id: '5', title: 'Real Food for Pregnancy', author: 'Lily Nichols', pages: '354 pages', image: 'https://images.unsplash.com/photo-1490818387583-1b5ba4596956?auto=format&fit=crop&w=400&q=80' },
-      { id: '6', title: 'The Birth Partner', author: 'Penny Simkin', pages: '416 pages', image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=400&q=80' },
-      { id: '7', title: 'What to Expect When You\'re Expecting', author: 'Heidi Murkoff', pages: '656 pages', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=400&q=80' },
-      { id: '8', title: 'Nurture', author: 'Erica Chidi', pages: '272 pages', image: 'https://images.unsplash.com/photo-1512438248247-f0f2a5a8b7f0?auto=format&fit=crop&w=400&q=80' },
-      { id: '9', title: 'Cribsheet', author: 'Emily Oster', pages: '352 pages', image: 'https://images.unsplash.com/photo-1531353826977-0941b4779a1c?auto=format&fit=crop&w=400&q=80' },
-      { id: '10', title: 'Mindful Hypnobirthing', author: 'Hollie de Cruz', pages: '240 pages', image: 'https://images.unsplash.com/photo-1507838153414-b4b713384a76?auto=format&fit=crop&w=400&q=80' },
-      { id: '11', title: 'Bringing Up Bébé', author: 'Pamela Druckerman', pages: '320 pages', image: 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=400&q=80' },
-      { id: '12', title: 'The Happiest Baby on the Block', author: 'Harvey Karp', pages: '384 pages', image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=400&q=80' },
-      { id: '13', title: 'Bumpin\'', author: 'Leslie Schrock', pages: '304 pages', image: 'https://images.unsplash.com/photo-1531983412531-1f49a365ffed?auto=format&fit=crop&w=400&q=80' },
-      { id: '14', title: 'Pregnancy, Childbirth, and the Newborn', author: 'Penny Simkin', pages: '528 pages', image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=400&q=80' },
-      { id: '15', title: 'Transformed by Birth', author: 'Britta Bushnell', pages: '272 pages', image: 'https://images.unsplash.com/photo-1516726817505-f5ed825624d8?auto=format&fit=crop&w=400&q=80' },
-    ],
-    article: [
-      { id: '1', title: 'Foods to Avoid During Pregnancy', snippet: 'A comprehensive list of what to eat and what to avoid.', readTime: '5 min read' },
-      { id: '2', title: 'Understanding Braxton Hicks', snippet: 'How to tell the difference between practice and real contractions.', readTime: '3 min read' },
-      { id: '3', title: 'Managing Blood Pressure Naturally', snippet: 'Tips for those dealing with hypertension or preeclampsia symptoms.', readTime: '5 min read' },
-      { id: '4', title: 'Asthma Management in Pregnancy', snippet: 'How to ensure you and your baby get enough oxygen.', readTime: '4 min read' },
-      { id: '5', title: 'The Importance of Hydration', snippet: 'Why drinking enough water is crucial for you and your baby.', readTime: '4 min read' },
-      { id: '4', title: 'Sleeping Positions for 3rd Trimester', snippet: 'Tips and tricks to get comfortable when your belly is growing.', readTime: '6 min read' },
-      { id: '5', title: 'Postpartum Mental Health', snippet: 'What to expect in the weeks following delivery.', readTime: '8 min read' },
-      { id: '6', title: 'Creating a Birth Plan', snippet: 'Essential items to include when communicating your delivery preferences.', readTime: '7 min read' },
-      { id: '7', title: 'Navigating Morning Sickness', snippet: 'Remedies and tips to help you get through the first trimester nausea.', readTime: '5 min read' },
-      { id: '8', title: 'Exercise Guidelines for Pregnancy', snippet: 'Safe ways to stay active and healthy while expecting.', readTime: '6 min read' },
-      { id: '9', title: 'Hospital Bag Checklist', snippet: 'Everything you need to pack for the big day.', readTime: '4 min read' },
-      { id: '10', title: 'Signs of Labor', snippet: 'How to know when it is time to head to the hospital.', readTime: '5 min read' },
-      { id: '11', title: 'Managing Heartburn', snippet: 'Common causes of pregnancy heartburn and how to soothe it.', readTime: '3 min read' },
-      { id: '12', title: 'Fetal Development: Month by Month', snippet: 'A detailed look at how your baby grows.', readTime: '10 min read' },
-      { id: '13', title: 'Tips for Better Sleep', snippet: 'Struggling with insomnia? Try these relaxation techniques.', readTime: '4 min read' },
-      { id: '14', title: 'Preparing for Breastfeeding', snippet: 'Steps you can take now to make nursing easier later.', readTime: '6 min read' },
-      { id: '15', title: 'What to Expect in the Fourth Trimester', snippet: 'The physical and emotional changes after birth.', readTime: '7 min read' },
-    ]
-  };
+  useEffect(() => {
+    fetchResources();
+  }, [category]);
 
-  const rawResources = (MOCK_RESOURCES as any)[category] || MOCK_RESOURCES.article;
+  const fetchResources = async () => {
+    try {
+      setLoading(true);
+      const data = await getEducationalContent(undefined, category);
+      setRawResources(data);
+    } catch (e) {
+      console.error("Failed to load resources:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Personalization Logic
   const userConditions = user?.medical_conditions?.toLowerCase() || '';
@@ -112,7 +57,7 @@ export default function ResourceListScreen({ route, navigation }: any) {
   
   const recommendedResources = hasPersonalization 
     ? rawResources.filter((r: any) => {
-        const textToSearch = (r.title + ' ' + (r.snippet || '') + ' ' + (r.author || '')).toLowerCase();
+        const textToSearch = (r.title + ' ' + (r.content || '') + ' ' + (r.author || '')).toLowerCase();
         return conditionWords.some((word: string) => textToSearch.includes(word));
       })
     : [];
@@ -143,7 +88,7 @@ export default function ResourceListScreen({ route, navigation }: any) {
       
       try {
         const { sound: newSound } = await Audio.Sound.createAsync(
-          item.audioFile,
+          { uri: item.media_url },
           { shouldPlay: true }
         );
         setSound(newSound);
@@ -179,7 +124,7 @@ export default function ResourceListScreen({ route, navigation }: any) {
     navigation.navigate('Article', { 
       articleId: item.id, 
       title: item.title, 
-      content: item.snippet + '\n\nThis is a mock article content. In a full production app, this would fetch the full HTML or markdown from the backend. The purpose is to provide educational maternal health content to the user.' 
+      content: item.content 
     });
   };
 
@@ -190,7 +135,7 @@ export default function ResourceListScreen({ route, navigation }: any) {
         <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
         <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.3)']} style={StyleSheet.absoluteFillObject} />
         
-        <Image source={{ uri: item.image }} style={styles.audioImage} />
+        <Image source={{ uri: item.image_url }} style={styles.audioImage} />
         <View style={styles.audioInfo}>
           <Typography variant="headline" style={{ color: theme.colors.textHigh, marginBottom: 4 }}>{item.title}</Typography>
           <Typography variant="caption1" style={{ color: theme.colors.textMedium }}>{item.author}</Typography>
@@ -212,7 +157,7 @@ export default function ResourceListScreen({ route, navigation }: any) {
 
   const renderVideo = (item: any) => (
     <TouchableOpacity key={item.id} style={styles.videoCard} activeOpacity={0.85} onPress={() => handleVideoPress(item)}>
-      <Image source={{ uri: item.image }} style={styles.videoImage} />
+      <Image source={{ uri: item.image_url }} style={styles.videoImage} />
       <View style={styles.videoOverlay}>
         <LinearGradient 
           colors={['transparent', 'rgba(0,0,0,0.85)']} 
@@ -232,14 +177,14 @@ export default function ResourceListScreen({ route, navigation }: any) {
       <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
       <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.3)']} style={StyleSheet.absoluteFillObject} />
       
-      <Image source={{ uri: item.image }} style={styles.bookImage} />
+      <Image source={{ uri: item.image_url }} style={styles.bookImage} />
       <View style={styles.bookInfo}>
         <Typography variant="headline" style={{ color: theme.colors.textHigh, marginBottom: 4 }}>{item.title}</Typography>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
           <User size={12} color={theme.colors.textMedium} style={{ marginRight: 4 }} />
           <Typography variant="caption1" style={{ color: theme.colors.textMedium }}>{item.author}</Typography>
         </View>
-        <Typography variant="caption2" style={{ color: theme.colors.primaryDark }}>{item.pages}</Typography>
+        <Typography variant="caption2" style={{ color: theme.colors.primaryDark }}>{item.duration}</Typography>
       </View>
       <ChevronRight size={20} color={theme.colors.textMedium} />
     </TouchableOpacity>
@@ -252,10 +197,12 @@ export default function ResourceListScreen({ route, navigation }: any) {
       
       <View style={styles.articleInfo}>
         <Typography variant="headline" style={{ color: theme.colors.textHigh, marginBottom: 6 }}>{item.title}</Typography>
-        <Typography variant="caption1" style={{ color: theme.colors.textMedium, lineHeight: 18 }} numberOfLines={2}>{item.snippet}</Typography>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
-          <BookOpen size={12} color={theme.colors.primaryDark} style={{ marginRight: 4 }} />
-          <Typography variant="caption2" style={{ color: theme.colors.primaryDark, fontFamily: theme.typography.families.headingSemibold }}>{item.readTime}</Typography>
+        <Typography variant="subhead" style={{ color: theme.colors.textMedium, marginBottom: 12, lineHeight: 20 }} numberOfLines={2}>
+          {item.content}
+        </Typography>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <FileText size={14} color={theme.colors.primary} style={{ marginRight: 6 }} />
+          <Typography variant="caption1" style={{ color: theme.colors.textMedium }}>{item.readTime}</Typography>
         </View>
       </View>
     </TouchableOpacity>
@@ -303,16 +250,24 @@ export default function ResourceListScreen({ route, navigation }: any) {
             <Typography variant="caption1" style={{ color: theme.colors.textMedium, marginBottom: 16 }}>
               Based on your health profile ({user?.medical_conditions})
             </Typography>
-            {recommendedResources.map((item: any) => renderItem(item))}
+            {recommendedResources.map(renderItem)}
             <View style={styles.divider} />
           </View>
         )}
 
-        <Typography variant="title3" style={{ color: theme.colors.textHigh, marginBottom: 16 }}>
-          {recommendedResources.length > 0 ? 'All Resources' : 'Latest Content'}
-        </Typography>
-
-        {regularResources.map((item: any) => renderItem(item))}
+        {loading ? (
+          <View style={{ padding: 40, alignItems: 'center' }}>
+            <Typography variant="body" style={{ color: theme.colors.textMedium }}>Loading resources...</Typography>
+          </View>
+        ) : (
+          <>
+            <Typography variant="title3" style={{ color: theme.colors.textHigh, marginBottom: 16 }}>
+              {recommendedResources.length > 0 ? 'All Resources' : 'Latest Content'}
+            </Typography>
+            {regularResources.map(renderItem)}
+          </>
+        )}
+        
         <View style={{ height: 120 }} />
       </ScrollView>
       </SafeAreaView>

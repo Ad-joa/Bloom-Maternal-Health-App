@@ -100,12 +100,28 @@ model educational_content {
   title       String
   content     String
   category    String   // e.g., "nutrition", "danger_sign", "general"
+  type        String   @default("article") // "article", "video", "audio", "book"
+  author      String?
+  duration    String?  // e.g. "10 mins"
+  image_url   String?
+  media_url   String?  // link to podcast or video
   trimester   Int?     // 1, 2, 3, or null if applicable to all
   week_start  Int?     // specific week applicability
   week_end    Int?
   created_at  DateTime @default(now())
 
   @@index([trimester, category])
+}
+
+model hospitals {
+  id          Int      @id @default(autoincrement())
+  name        String
+  address     String
+  distance    String
+  phone       String?
+  rating      Float?
+  wait_time   String?
+  created_at  DateTime @default(now())
 }
 
 model advisory_rules {

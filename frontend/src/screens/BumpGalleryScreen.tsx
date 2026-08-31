@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, TextInput, Alert, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Typography } from '../components/Typography';
 import { useTheme } from '../theme/ThemeContext';
-import { ChevronLeft, Plus, Camera, Scale } from 'lucide-react-native';
+import { ChevronLeft, Plus, Camera, Scale, X, Save } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
+import { useAuth } from '../context/AuthContext';
+import { getWeeksPregnant } from '../utils/dateUtils';
 
 const { width } = Dimensions.get('window');
 const COLUMN_COUNT = 2;
@@ -14,37 +18,112 @@ const IMAGE_SIZE = (width - (SPACING * (COLUMN_COUNT + 1))) / COLUMN_COUNT;
 
 type BumpEntry = {
   id: string;
-  date: Date;
+  date: number; // timestamp
   week: number;
   weight: string;
   imageUri: string;
 };
 
-// Initial Mock Data
-const MOCK_ENTRIES: BumpEntry[] = [
-  { id: '1', date: new Date(2026, 4, 15), week: 12, weight: '65 kg', imageUri: 'https://images.unsplash.com/photo-1510154221590-f2aa60882352?w=500&q=80' },
-  { id: '2', date: new Date(2026, 5, 12), week: 16, weight: '66 kg', imageUri: 'https://images.unsplash.com/photo-1516086745814-7f1540d4a984?w=500&q=80' },
-  { id: '3', date: new Date(2026, 6, 10), week: 20, weight: '68 kg', imageUri: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=500&q=80' },
-];
-
 export default function BumpGalleryScreen({ navigation }: any) {
   const { theme, isDark } = useTheme();
   const styles = getStyles(theme, isDark);
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
   
-  const [entries, setEntries] = useState<BumpEntry[]>(MOCK_ENTRIES);
+  const [entries, setEntries] = useState<BumpEntry[]>([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [currentImageUri, setCurrentImageUri] = useState<string | null>(null);
+  const [currentWeight, setCurrentWeight] = useState('');
+
+  const STORAGE_KEY = `@bump_gallery_${user?.id || 'guest'}`;
+
+  useEffect(() => {
+    loadEntries();
+  }, []);
+
+  const loadEntries = async () => {
+    try {
+      const stored = await AsyncStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        setEntries(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.error("Failed to load bump entries", e);
+    }
+  };
 
   const handleAddPhoto = () => {
-    // In a real app, this would open expo-image-picker
-    // Here we just mock adding a new entry
+    Alert.alert(
+      "Add Bump Photo",
+      "Choose a source",
+      [
+        { text: "Camera", onPress: () => pickImage(true) },
+        { text: "Gallery", onPress: () => pickImage(false) },
+        { text: "Cancel", style: "cancel" }
+      ]
+    );
+  };
+
+  const pickImage = async (useCamera: boolean) => {
+    try {
+      let result;
+      const options: ImagePicker.ImagePickerOptions = {
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [3, 4],
+        quality: 0.8,
+      };
+
+      if (useCamera) {
+        const permission = await ImagePicker.requestCameraPermissionsAsync();
+        if (permission.status !== 'granted') {
+          Alert.alert("Permission needed", "Camera permission is required to take photos.");
+          return;
+        }
+        result = await ImagePicker.launchCameraAsync(options);
+      } else {
+        const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (permission.status !== 'granted') {
+          Alert.alert("Permission needed", "Gallery permission is required to select photos.");
+          return;
+        }
+        result = await ImagePicker.launchImageLibraryAsync(options);
+      }
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setCurrentImageUri(result.assets[0].uri);
+        setCurrentWeight('');
+        setIsModalVisible(true);
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to process image.");
+    }
+  };
+
+  const handleSavePhoto = async () => {
+    if (!currentImageUri) return;
+    
+    const dueDate = user?.due_date;
+    const currentWeek = dueDate ? getWeeksPregnant(dueDate) : 0;
+
     const newEntry: BumpEntry = {
       id: Math.random().toString(),
-      date: new Date(),
-      week: 24, // mocked next week
-      weight: '70 kg',
-      imageUri: 'https://images.unsplash.com/photo-1544078693-db199bb652b3?w=500&q=80',
+      date: Date.now(),
+      week: currentWeek,
+      weight: currentWeight ? `${currentWeight} kg` : 'Not recorded',
+      imageUri: currentImageUri,
     };
-    setEntries([newEntry, ...entries]);
+    
+    const updated = [newEntry, ...entries];
+    setEntries(updated);
+    setIsModalVisible(false);
+    setCurrentImageUri(null);
+
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    } catch (e) {
+      Alert.alert("Error", "Failed to save entry locally.");
+    }
   };
 
   return (
@@ -101,7 +180,7 @@ export default function BumpGalleryScreen({ navigation }: any) {
                   </Typography>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography variant="caption1" style={{ color: 'rgba(255,255,255,0.8)' }}>
-                      {entry.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      {new Date(entry.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </Typography>
                     <Typography variant="caption1" style={{ color: '#FFF', fontFamily: theme.typography.families.headingBold }}>
                       {entry.weight}
@@ -128,6 +207,49 @@ export default function BumpGalleryScreen({ navigation }: any) {
           <Plus color="#FFF" size={32} />
         </LinearGradient>
       </TouchableOpacity>
+
+      {/* Weight Modal */}
+      <Modal visible={isModalVisible} animationType="slide" transparent>
+        <KeyboardAvoidingView 
+          style={{ flex: 1, justifyContent: 'flex-end' }} 
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <BlurView intensity={isDark ? 50 : 80} tint={isDark ? "dark" : "light"} style={StyleSheet.absoluteFillObject} />
+          
+          <View style={[styles.modalContainer, { backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF' }]}>
+            <View style={styles.modalHeader}>
+              <Typography variant="title3" style={{ fontFamily: theme.typography.families.headingBold }}>Add Details</Typography>
+              <TouchableOpacity onPress={() => setIsModalVisible(false)} style={styles.closeButton}>
+                <X color={theme.colors.textMedium} size={24} />
+              </TouchableOpacity>
+            </View>
+            
+            {currentImageUri && (
+              <Image source={{ uri: currentImageUri }} style={styles.modalImagePreview} />
+            )}
+            
+            <Typography variant="subhead" color={theme.colors.textMedium} style={{ marginBottom: 8, marginTop: 16 }}>
+              Weight (Optional)
+            </Typography>
+            <TextInput
+              style={[styles.modalInput, { 
+                backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#F5F5F5',
+                color: theme.colors.textHigh 
+              }]}
+              placeholder="e.g. 68"
+              placeholderTextColor={theme.colors.textMedium}
+              keyboardType="decimal-pad"
+              value={currentWeight}
+              onChangeText={setCurrentWeight}
+            />
+
+            <TouchableOpacity style={[styles.saveBtn, { backgroundColor: theme.colors.primaryDark }]} onPress={handleSavePhoto}>
+              <Save color="#FFF" size={20} style={{ marginRight: 8 }} />
+              <Typography variant="headline" style={{ color: '#FFF' }}>Save Photo</Typography>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }
@@ -221,6 +343,51 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   fabGradient: {
     flex: 1,
     borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalContainer: {
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    padding: 24,
+    paddingBottom: 48,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 20,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  closeButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(150,150,150,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalImagePreview: {
+    width: '100%',
+    height: 200,
+    borderRadius: 16,
+    resizeMode: 'cover',
+  },
+  modalInput: {
+    height: 56,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    marginBottom: 24,
+  },
+  saveBtn: {
+    flexDirection: 'row',
+    height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
   }

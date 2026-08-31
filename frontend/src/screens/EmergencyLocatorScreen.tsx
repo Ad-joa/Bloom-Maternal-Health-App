@@ -9,12 +9,7 @@ import { Typography } from '../components/Typography';
 import { useTheme } from '../theme/ThemeContext';
 import { Card } from '../components/Card';
 
-// Simulated Ghanaian hospitals/clinics for demonstration
-const MOCK_HOSPITALS = [
-  { id: '1', name: 'Korle-Bu Teaching Hospital', type: 'Hospital', phone: '+233 30 266 2063', offset: { lat: 0.01, lng: -0.015 } },
-  { id: '2', name: 'Ridge Regional Hospital', type: 'Hospital', phone: '+233 30 222 8315', offset: { lat: -0.02, lng: 0.005 } },
-  { id: '3', name: 'Community CHPS Compound', type: 'Clinic', phone: '+233 55 123 4567', offset: { lat: 0.005, lng: 0.01 } },
-];
+import { getHospitals } from '../api/api';
 
 export default function EmergencyLocatorScreen({ navigation }: any) {
   const { theme } = useTheme();
@@ -23,26 +18,33 @@ export default function EmergencyLocatorScreen({ navigation }: any) {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hospitals, setHospitals] = useState<any[]>([]);
 
   useEffect(() => {
-    (async () => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      // 1. Get location
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         setErrorMsg('Permission to access location was denied.');
         setLoading(false);
         return;
       }
+      let loc = await Location.getCurrentPositionAsync({});
+      setLocation(loc);
 
-      try {
-        let loc = await Location.getCurrentPositionAsync({});
-        setLocation(loc);
-      } catch (e) {
-        setErrorMsg('Could not fetch GPS location.');
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+      // 2. Fetch hospitals from backend
+      const data = await getHospitals();
+      setHospitals(data);
+    } catch (e) {
+      setErrorMsg('Failed to load emergency data.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCall = (phone: string) => {
     Linking.openURL(`tel:${phone.replace(/\s/g, '')}`);
@@ -82,32 +84,45 @@ export default function EmergencyLocatorScreen({ navigation }: any) {
         showsUserLocation
         showsMyLocationButton
       >
-        {MOCK_HOSPITALS.map((hosp) => (
-          <Marker
-            key={hosp.id}
-            coordinate={{
-              latitude: location.coords.latitude + hosp.offset.lat,
-              longitude: location.coords.longitude + hosp.offset.lng,
-            }}
-            title={hosp.name}
-            description={hosp.type}
-            pinColor={hosp.type === 'Hospital' ? theme.colors.danger : theme.colors.primary}
-          >
-            <Callout tooltip onPress={() => handleCall(hosp.phone)}>
-              <View style={styles.calloutCard}>
-                <View style={styles.calloutHeader}>
-                  <MapPin color={theme.colors.primaryDark} size={16} />
-                  <Typography variant="headline" style={{ marginLeft: 4 }}>{hosp.name}</Typography>
+        {hospitals.map((hosp, index) => {
+          // Generate deterministic offset based on index so they fan out around user
+          const offsets = [
+            { lat: 0.01, lng: -0.015 },
+            { lat: -0.02, lng: 0.005 },
+            { lat: 0.005, lng: 0.01 },
+            { lat: -0.01, lng: -0.01 }
+          ];
+          const offset = offsets[index % offsets.length];
+
+          return (
+            <Marker
+              key={hosp.id}
+              coordinate={{
+                latitude: location.coords.latitude + offset.lat,
+                longitude: location.coords.longitude + offset.lng,
+              }}
+              title={hosp.name}
+              description={`${hosp.distance} away`}
+              pinColor={theme.colors.danger}
+            >
+              <Callout tooltip onPress={() => hosp.phone ? handleCall(hosp.phone) : null}>
+                <View style={styles.calloutCard}>
+                  <View style={styles.calloutHeader}>
+                    <MapPin color={theme.colors.primaryDark} size={16} />
+                    <Typography variant="headline" style={{ marginLeft: 4 }}>{hosp.name}</Typography>
+                  </View>
+                  <Typography variant="caption1" color="#666" style={{ marginVertical: 4 }}>{hosp.distance} • Wait: {hosp.wait_time}</Typography>
+                  {hosp.phone && (
+                    <View style={styles.callBtn}>
+                      <PhoneCall color={theme.colors.background} size={14} />
+                      <Typography variant="caption1" color={theme.colors.background} style={{ marginLeft: 4 }}>Call {hosp.phone}</Typography>
+                    </View>
+                  )}
                 </View>
-                <Typography variant="caption1" color="#666" style={{ marginVertical: 4 }}>{hosp.type}</Typography>
-                <View style={styles.callBtn}>
-                  <PhoneCall color={theme.colors.background} size={14} />
-                  <Typography variant="caption1" color={theme.colors.background} style={{ marginLeft: 4 }}>Call {hosp.phone}</Typography>
-                </View>
-              </View>
-            </Callout>
-          </Marker>
-        ))}
+              </Callout>
+            </Marker>
+          );
+        })}
       </MapView>
 
       <SafeAreaView style={styles.headerArea} edges={['top']}>

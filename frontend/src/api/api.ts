@@ -78,6 +78,16 @@ export const getEducationalContent = async (trimester?: number, category?: strin
     }
 };
 
+export const getHospitals = async () => {
+    try {
+        const response = await apiClient.get(`/hospitals`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching hospitals:", error);
+        throw error;
+    }
+};
+
 export const getAdvisory = async (symptoms: string[]) => {
     try {
         const response = await apiClient.post('/advisory', { symptoms });
