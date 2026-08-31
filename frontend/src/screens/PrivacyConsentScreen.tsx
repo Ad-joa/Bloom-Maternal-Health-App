@@ -29,7 +29,9 @@ export default function PrivacyConsentScreen({ navigation }: any) {
       
       {/* Rich Gradient Background */}
       <LinearGradient 
-        colors={['#FFF5F5', theme.colors.primaryLight + '30', '#FFFFFF']} 
+        colors={isDark 
+          ? [theme.colors.background, theme.colors.surface, theme.colors.background] 
+          : ['#FFF5F5', theme.colors.primaryLight + '30', '#FFFFFF']} 
         style={StyleSheet.absoluteFillObject}
         start={{x: 0, y: 0}}
         end={{x: 1, y: 1}}
@@ -186,7 +188,7 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     borderRadius: 32,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.6)',
+    borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.6)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.05,
@@ -195,7 +197,7 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   },
   policyContainer: {
     padding: 32,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)', 
+    backgroundColor: isDark ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.5)', 
   },
   policyItem: {
     marginBottom: 32,
@@ -213,9 +215,9 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   footer: {
     paddingHorizontal: 24,
     paddingTop: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: isDark ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.9)',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.03)',
+    borderTopColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.03)',
   },
   checkboxContainer: {
     flexDirection: 'row',
@@ -230,7 +232,7 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     shadowRadius: 12,
     elevation: 2,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.8)',
+    borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.8)',
   },
   checkboxText: {
     marginLeft: 16,

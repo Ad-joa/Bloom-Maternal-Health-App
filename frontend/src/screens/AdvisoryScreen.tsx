@@ -16,7 +16,7 @@ import { getAdvisory } from '../api/api';
 import { useTheme } from '../theme/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { Typography } from '../components/Typography';
-import { Send, Sparkles, AlertTriangle, User, Volume2 } from 'lucide-react-native';
+import { Send, Flower2, AlertTriangle, User, Volume2 } from 'lucide-react-native';
 import * as Speech from 'expo-speech';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -51,11 +51,12 @@ export default function AdvisoryScreen() {
 
   useEffect(() => {
     // Initial Welcome Message
+    const conditionText = user?.medical_conditions ? ` I've noted your condition (${user.medical_conditions}) and I'll keep it in mind.` : '';
     setMessages([
       {
         id: 'welcome',
         role: 'ai',
-        text: `Hi ${user?.name || 'Mama'}! I'm Bloom AI. I'm here to answer any questions about your symptoms, diet, or pregnancy journey. How are you feeling today?`,
+        text: `Hi ${user?.name || 'Mama'}! I'm Bloom AI.${conditionText} How can I support your pregnancy journey today?`,
       }
     ]);
   }, [user]);
@@ -125,26 +126,15 @@ export default function AdvisoryScreen() {
     if (isUser) {
       return (
         <View style={[styles.messageRow, styles.messageRowUser]}>
-          <LinearGradient 
-            colors={[theme.colors.primary, theme.colors.primaryDark]} 
-            style={styles.userBubble}
-            start={{x: 0, y: 0}} end={{x: 1, y: 1}}
-          >
+          <View style={styles.userBubble}>
             <Typography variant="body" color={theme.colors.background}>{item.text}</Typography>
-          </LinearGradient>
+          </View>
         </View>
       );
     }
 
     return (
       <View style={[styles.messageRow, styles.messageRowAI]}>
-        <View style={styles.aiAvatar}>
-          {item.isDanger ? (
-             <AlertTriangle color={theme.colors.background} size={16} />
-          ) : (
-             <Sparkles color={theme.colors.background} size={16} />
-          )}
-        </View>
         <View style={[styles.aiBubble, item.isDanger && styles.aiBubbleDanger]}>
           <Typography variant="body" color={theme.colors.textHigh} style={{lineHeight: 22}}>
             {item.text}
@@ -163,14 +153,11 @@ export default function AdvisoryScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerTitleWrap}>
-            <Sparkles color={theme.colors.primaryDark} size={24} style={{ marginRight: 8 }} />
-            <Typography variant="title2" color={theme.colors.primaryDark} style={styles.headerTitle}>
+            <Flower2 color={theme.colors.primaryDark} size={20} style={{ marginRight: 6 }} />
+            <Typography variant="title3" color={theme.colors.primaryDark} style={styles.headerTitle}>
               Bloom AI
             </Typography>
           </View>
-          <Typography variant="caption1" color={theme.colors.textMedium}>
-            Your intelligent maternal assistant
-          </Typography>
         </View>
 
         <KeyboardAvoidingView 
@@ -192,9 +179,6 @@ export default function AdvisoryScreen() {
           {/* Typing Indicator */}
           {loading && (
             <Animated.View style={[styles.messageRow, styles.messageRowAI, { opacity: fadeAnim, marginBottom: 8 }]}>
-              <View style={styles.aiAvatar}>
-                <Sparkles color={theme.colors.background} size={16} />
-              </View>
               <View style={styles.aiBubble}>
                 <Typography variant="body" color={theme.colors.textMedium}>Bloom AI is typing...</Typography>
               </View>
@@ -218,11 +202,11 @@ export default function AdvisoryScreen() {
             </View>
           )}
 
-          {/* Input Area */}
+          {/* Clean Input Area */}
           <View style={styles.inputContainer}>
             <TextInput
-              style={styles.textInput}
-              placeholder="Message Bloom AI..."
+              style={[styles.textInput, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }]}
+              placeholder="Message..."
               placeholderTextColor={theme.colors.textMedium}
               value={inputText}
               onChangeText={setInputText}
@@ -234,7 +218,7 @@ export default function AdvisoryScreen() {
               onPress={() => handleSend(inputText)}
               disabled={!inputText.trim() || loading}
             >
-              <Send color={theme.colors.background} size={20} />
+              <Send color={theme.colors.background} size={18} style={{marginLeft: -2, marginTop: 2}}/>
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
@@ -255,14 +239,9 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
     paddingHorizontal: theme.spacing[5],
     paddingVertical: theme.spacing[4],
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.05)',
-    backgroundColor: isDark ? theme.colors.background : theme.colors.surface,
+    borderBottomColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+    backgroundColor: 'transparent',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 4,
-    elevation: 2,
     zIndex: 10,
   },
   headerTitleWrap: {
@@ -275,7 +254,7 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   },
   keyboardAvoidingView: {
     flex: 1,
-    paddingBottom: 110, // Gives permanent space for the absolute tab bar
+    paddingBottom: 85, // Gives permanent space for the absolute tab bar
   },
   chatListContent: {
     paddingHorizontal: theme.spacing[4],
@@ -293,34 +272,25 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   },
   messageRowAI: {
     alignSelf: 'flex-start',
-    alignItems: 'flex-end', // Aligns avatar to bottom of bubble
   },
   userBubble: {
-    paddingHorizontal: theme.spacing[4],
-    paddingVertical: theme.spacing[3],
-    borderRadius: 20,
-    borderBottomRightRadius: 4,
-  },
-  aiAvatar: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: theme.colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
+    backgroundColor: theme.colors.primaryDark,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 24,
+    borderBottomRightRadius: 6, // Squircle tail
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   aiBubble: {
-    backgroundColor: isDark ? theme.colors.background : theme.colors.surface,
-    paddingHorizontal: theme.spacing[4],
-    paddingVertical: theme.spacing[3],
-    borderRadius: 20,
-    borderBottomLeftRadius: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 24,
+    borderBottomLeftRadius: 6, // Squircle tail
   },
   aiBubbleDanger: {
     backgroundColor: '#FFF0F0',
@@ -348,11 +318,11 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    paddingHorizontal: theme.spacing[4],
-    paddingVertical: theme.spacing[3],
-    backgroundColor: isDark ? theme.colors.background : theme.colors.surface,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: theme.colors.background,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.05)',
+    borderTopColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
   },
   textInput: {
     flex: 1,

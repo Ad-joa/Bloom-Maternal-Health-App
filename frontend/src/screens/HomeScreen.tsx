@@ -11,7 +11,7 @@ import {
   Activity, Droplets, Stethoscope, Heart, Sun,
   Moon, Sparkles, Bell, ChevronRight, Zap,
   Baby, Apple, Lightbulb, Calendar, Luggage, Info, Target,
-  Headphones, PlayCircle, BookOpen, FileText
+  Headphones, PlayCircle, BookOpen, FileText, Wind
 } from 'lucide-react-native';
 import { getWeeksPregnant, getDaysUntilDue, parseDateSafely } from '../utils/dateUtils';
 import { getAncVisits, getEducationalContent } from '../api/api';
@@ -188,8 +188,28 @@ export default function HomeScreen({ navigation }: any) {
   const headerAnim = useRef(new Animated.Value(0)).current;
   
   const [motivationIndex, setMotivationIndex] = useState(0);
-  const fadeAnim = useRef(new Animated.Value(1)).current;
-  const slideAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
+
+  const getConditionInsight = (conditions: string | undefined) => {
+    if (!conditions) return null;
+    const lower = conditions.toLowerCase();
+    if (lower.includes('diabet') || lower.includes('sugar')) {
+      return { title: 'Blood Sugar Management', text: 'Remember to log your fasting blood sugar this morning.', color: theme.colors.danger, icon: (props:any) => <Activity {...props} /> };
+    }
+    if (lower.includes('hyperten') || lower.includes('blood pressure') || lower.includes('preeclamp')) {
+      return { title: 'Blood Pressure Monitor', text: 'Take a moment to relax and check your blood pressure today.', color: theme.colors.danger, icon: (props:any) => <Heart {...props} /> };
+    }
+    if (lower.includes('asthma')) {
+      return { title: 'Asthma Care', text: 'Keep your inhaler nearby and avoid triggers today.', color: theme.colors.info, icon: (props:any) => <Wind {...props} /> };
+    }
+    if (lower.includes('anemia') || lower.includes('iron')) {
+      return { title: 'Iron Intake', text: 'Don\'t forget your iron supplements and vitamin C for absorption.', color: theme.colors.danger, icon: (props:any) => <Droplets {...props} /> };
+    }
+    return { title: 'Health Profile Active', text: 'We are keeping your medical history in mind for personalized care.', color: theme.colors.primaryDark, icon: (props:any) => <Stethoscope {...props} /> };
+  };
+
+  const conditionInsight = getConditionInsight(user?.medical_conditions);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -344,6 +364,29 @@ export default function HomeScreen({ navigation }: any) {
               </View>
             ))}
           </ScrollView>
+
+          {/* ── Personalized Condition Insight ── */}
+          {conditionInsight && (
+            <Animated.View style={[styles.heroCard, { marginBottom: 16, borderColor: conditionInsight.color, transform: [{ scale: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [0.95, 1] }) }] }]}>
+              <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+              <LinearGradient
+                colors={isDark ? ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.01)'] : ['rgba(255,255,255,0.9)', 'rgba(255,255,255,0.4)']}
+                style={StyleSheet.absoluteFillObject}
+              />
+              <View style={{ padding: 20, flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+                <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', alignItems: 'center', justifyContent: 'center' }}>
+                  {conditionInsight.icon({ size: 24, color: conditionInsight.color })}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                    <Heart size={14} color={conditionInsight.color} />
+                    <Typography variant="headline" style={{ color: theme.colors.textHigh }}>{conditionInsight.title}</Typography>
+                  </View>
+                  <Typography variant="caption1" style={{ color: theme.colors.textMedium, lineHeight: 18 }}>{conditionInsight.text}</Typography>
+                </View>
+              </View>
+            </Animated.View>
+          )}
 
           {/* ── Hero Card ── */}
           <Animated.View style={[styles.heroCard, { transform: [{ scale: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [0.95, 1] }) }] }]}>

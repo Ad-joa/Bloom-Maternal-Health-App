@@ -8,11 +8,14 @@ import { Typography } from '../components/Typography';
 import { ChevronLeft, PlayCircle, PauseCircle, Headphones, BookOpen, FileText, Clock, User, ChevronRight } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { Audio } from 'expo-av';
+import { useAuth } from '../context/AuthContext';
+import { Star } from 'lucide-react-native';
 
 export default function ResourceListScreen({ route, navigation }: any) {
   const { category, title } = route.params || { category: 'article', title: 'Resources' };
   const { theme, isDark } = useTheme();
   const { t } = useTranslation();
+  const { user } = useAuth();
   const styles = getStyles(theme, isDark);
   
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
@@ -82,7 +85,9 @@ export default function ResourceListScreen({ route, navigation }: any) {
     article: [
       { id: '1', title: 'Foods to Avoid During Pregnancy', snippet: 'A comprehensive list of what to eat and what to avoid.', readTime: '5 min read' },
       { id: '2', title: 'Understanding Braxton Hicks', snippet: 'How to tell the difference between practice and real contractions.', readTime: '3 min read' },
-      { id: '3', title: 'The Importance of Hydration', snippet: 'Why drinking enough water is crucial for you and your baby.', readTime: '4 min read' },
+      { id: '3', title: 'Managing Blood Pressure Naturally', snippet: 'Tips for those dealing with hypertension or preeclampsia symptoms.', readTime: '5 min read' },
+      { id: '4', title: 'Asthma Management in Pregnancy', snippet: 'How to ensure you and your baby get enough oxygen.', readTime: '4 min read' },
+      { id: '5', title: 'The Importance of Hydration', snippet: 'Why drinking enough water is crucial for you and your baby.', readTime: '4 min read' },
       { id: '4', title: 'Sleeping Positions for 3rd Trimester', snippet: 'Tips and tricks to get comfortable when your belly is growing.', readTime: '6 min read' },
       { id: '5', title: 'Postpartum Mental Health', snippet: 'What to expect in the weeks following delivery.', readTime: '8 min read' },
       { id: '6', title: 'Creating a Birth Plan', snippet: 'Essential items to include when communicating your delivery preferences.', readTime: '7 min read' },
@@ -98,7 +103,23 @@ export default function ResourceListScreen({ route, navigation }: any) {
     ]
   };
 
-  const resources = (MOCK_RESOURCES as any)[category] || MOCK_RESOURCES.article;
+  const rawResources = (MOCK_RESOURCES as any)[category] || MOCK_RESOURCES.article;
+
+  // Personalization Logic
+  const userConditions = user?.medical_conditions?.toLowerCase() || '';
+  const conditionWords = userConditions.split(/[\s,]+/).filter(w => w.length > 3);
+  const hasPersonalization = conditionWords.length > 0;
+  
+  const recommendedResources = hasPersonalization 
+    ? rawResources.filter((r: any) => {
+        const textToSearch = (r.title + ' ' + (r.snippet || '') + ' ' + (r.author || '')).toLowerCase();
+        return conditionWords.some((word: string) => textToSearch.includes(word));
+      })
+    : [];
+
+  const regularResources = hasPersonalization 
+    ? rawResources.filter((r: any) => !recommendedResources.includes(r))
+    : rawResources;
 
   const handleAudioPress = async (item: any) => {
     if (playingAudioId === item.id && sound) {
@@ -269,10 +290,31 @@ export default function ResourceListScreen({ route, navigation }: any) {
           </Typography>
         </View>
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-          {resources.map((item: any) => renderItem(item))}
-          <View style={{ height: 120 }} />
-        </ScrollView>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        
+        {recommendedResources.length > 0 && (
+          <View style={styles.recommendationSection}>
+            <View style={styles.recommendationHeader}>
+              <Star size={18} color={theme.colors.warning} fill={theme.colors.warning} style={{ marginRight: 8 }} />
+              <Typography variant="title3" style={{ color: theme.colors.primaryDark }}>
+                Recommended for You
+              </Typography>
+            </View>
+            <Typography variant="caption1" style={{ color: theme.colors.textMedium, marginBottom: 16 }}>
+              Based on your health profile ({user?.medical_conditions})
+            </Typography>
+            {recommendedResources.map((item: any) => renderItem(item))}
+            <View style={styles.divider} />
+          </View>
+        )}
+
+        <Typography variant="title3" style={{ color: theme.colors.textHigh, marginBottom: 16 }}>
+          {recommendedResources.length > 0 ? 'All Resources' : 'Latest Content'}
+        </Typography>
+
+        {regularResources.map((item: any) => renderItem(item))}
+        <View style={{ height: 120 }} />
+      </ScrollView>
       </SafeAreaView>
     </View>
   );
@@ -298,9 +340,22 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
   },
   scrollContent: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingTop: 16,
-    gap: 16,
+    paddingBottom: 40,
+  },
+  recommendationSection: {
+    marginBottom: 8,
+  },
+  recommendationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+    marginVertical: 16,
   },
   
   // Audio
