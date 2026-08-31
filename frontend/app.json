@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "frontend",
-    "slug": "frontend",
+    "name": "Bloom",
+    "slug": "bloom-maternal-health",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo.jpg",
+    "icon": "./assets/images/app_icon.jpg",
     "splash": {
-      "image": "./assets/images/splash_logo.png",
+      "image": "./assets/images/splash_clean.jpg",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -17,8 +17,7 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
-        "foregroundImage": "./assets/images/logo.jpg",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/app_icon.jpg"
       },
       "predictiveBackGestureEnabled": false
     },
