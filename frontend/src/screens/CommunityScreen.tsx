@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import {
   View, StyleSheet, Dimensions, TouchableOpacity, FlatList,
   KeyboardAvoidingView, Platform, Modal, TextInput as RNTextInput,
@@ -9,6 +9,7 @@ import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BounceButton } from '../components/BounceButton';
 import { BackgroundMesh } from '../components/BackgroundMesh';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,7 +21,9 @@ import { useAuth } from '../context/AuthContext';
 
 const { width } = Dimensions.get('window');
 
-const socket = io(getBaseUrl() || 'http://127.0.0.1:8000');
+const socket = io(getBaseUrl() || 'http://127.0.0.1:8000', {
+  autoConnect: false
+});
 
 // Deterministic color based on author name for consistent avatar colors
 const AVATAR_COLORS = [
@@ -72,34 +75,87 @@ export default function CommunityScreen({ navigation, isNested }: any) {
   const [modalVisible, setModalVisible] = useState(false);
   const [newPostContent, setNewPostContent] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
+
+
+  const saveLikes = async (newLikes: Set<string>) => {
+    try {
+      await AsyncStorage.setItem('@bloom_liked_posts', JSON.stringify(Array.from(newLikes)));
+    } catch (e) {
+      console.error("Failed to save likes", e);
+    }
+  };
+
   React.useEffect(() => {
+    const loadLikes = async () => {
+      try {
+        const stored = await AsyncStorage.getItem('@bloom_liked_posts');
+        if (stored) {
+          setLikedPostIds(new Set(JSON.parse(stored)));
+        }
+      } catch (e) {
+        console.error("Failed to load likes", e);
+      }
+    };
+    loadLikes();
+    
+    // Connect socket with auth token
+    const connectSocket = async () => {
+      const storedToken = await AsyncStorage.getItem('@bloom_token');
+      socket.auth = { token: storedToken };
+      socket.connect();
+    };
+    connectSocket();
+
     socket.on('init_posts', (data) => {
       setPosts(data);
       setLoading(false);
       Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }).start();
     });
-    socket.on('posts_updated', (data) => {
-      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-      setPosts(data);
+
+    socket.on('post_liked', ({ postId, likes }) => {
+      setPosts(prev => prev.map(p => p.id === postId ? { ...p, likes } : p));
     });
+
+    socket.on('post_created', (newPost) => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setPosts(prev => [newPost, ...prev]);
+    });
+
+    socket.on('connect_error', (err) => {
+      console.error("Socket connect error:", err.message);
+      setLoading(false);
+    });
+
     const timeout = setTimeout(() => setLoading(false), 2500);
     return () => {
       socket.off('init_posts');
-      socket.off('posts_updated');
+      socket.off('post_liked');
+      socket.off('post_created');
+      socket.off('connect_error');
+      socket.disconnect();
       clearTimeout(timeout);
     };
   }, []);
 
   const toggleLike = useCallback((id: string) => {
-    setPosts(prev => prev.map(post =>
-      post.id === id
-        ? { ...post, liked: !post.liked, likes: post.liked ? post.likes - 1 : post.likes + 1 }
-        : post
-    ));
-    socket.emit('toggle_like', id);
-  }, []);
+    const isLiked = likedPostIds.has(id);
+    
+    // Optimistic UI Update
+    const newLikedIds = new Set(likedPostIds);
+    if (isLiked) {
+      newLikedIds.delete(id);
+    } else {
+      newLikedIds.add(id);
+    }
+    setLikedPostIds(newLikedIds);
+    saveLikes(newLikedIds);
+
+    // Tell server
+    socket.emit('toggle_like', { postId: id, isLiked: !isLiked });
+  }, [likedPostIds]);
 
   const handleCreatePost = () => {
     if (!newPostContent.trim()) return;
@@ -121,15 +177,17 @@ export default function CommunityScreen({ navigation, isNested }: any) {
     setModalVisible(false);
   };
 
-  const filteredPosts = posts.filter(p => {
-    if (activeTab === 'all') return true;
-    if (activeTab === 'trending') return p.likes >= 3;
-    if (activeTab === 'q_a') return p.content.includes('?');
-    if (activeTab === 'support') return p.likes < 3 && !p.content.includes('?');
-    return true;
-  });
+  const filteredPosts = useMemo(() => {
+    return posts.filter(p => {
+      if (activeTab === 'all') return true;
+      if (activeTab === 'trending') return p.likes >= 3;
+      if (activeTab === 'q_a') return p.content.includes('?');
+      if (activeTab === 'support') return p.likes < 3 && !p.content.includes('?');
+      return true;
+    });
+  }, [posts, activeTab]);
 
-  const renderEmpty = () => (
+  const renderEmpty = useCallback(() => (
     <View style={styles.emptyContainer}>
       <LinearGradient
         colors={isDark ? ['rgba(168,85,247,0.15)', 'rgba(236,72,153,0.10)'] : ['rgba(168,85,247,0.08)', 'rgba(236,72,153,0.05)']}
@@ -148,84 +206,18 @@ export default function CommunityScreen({ navigation, isNested }: any) {
         <Typography variant="subhead" color="#fff" style={{ marginLeft: 8, fontFamily: theme.typography.families.headingBold }}>Start a Post</Typography>
       </BounceButton>
     </View>
-  );
+  ), [isDark, theme, activeTab, t]);
 
-  const renderPost = ({ item, index }: { item: any; index: number }) => {
-    const gradColors = getAvatarGradient(item.author || 'M');
-    return (
-      <Animated.View style={{ opacity: fadeAnim }}>
-        <View style={[styles.postCard, { borderColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)' }]}>
-          <BlurView intensity={isDark ? 25 : 50} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
-          <LinearGradient
-            colors={isDark ? ['rgba(255,255,255,0.04)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.2)']}
-            style={StyleSheet.absoluteFillObject}
-          />
-
-          {/* Header */}
-          <View style={styles.postHeader}>
-            <LinearGradient colors={gradColors as [string, string]} style={styles.avatar}>
-              <Typography variant="headline" color="#fff" style={{ fontFamily: theme.typography.families.headingBold }}>
-                {(item.author || 'M')[0].toUpperCase()}
-              </Typography>
-            </LinearGradient>
-            <View style={{ flex: 1, marginLeft: 12 }}>
-              <Typography variant="subhead" color={theme.colors.textHigh} style={{ fontFamily: theme.typography.families.headingBold }}>
-                {item.author || 'Mama'}
-              </Typography>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
-                {item.week && (
-                  <View style={styles.weekBadge}>
-                    <Typography variant="caption2" color={theme.colors.primaryDark} style={{ fontFamily: theme.typography.families.headingBold }}>
-                      Week {item.week}
-                    </Typography>
-                  </View>
-                )}
-                {item.created_at && <TimeAgo date={item.created_at} />}
-              </View>
-            </View>
-            {item.likes >= 5 && (
-              <View style={styles.hotBadge}>
-                <Typography variant="caption2" color="#F59E0B" style={{ fontFamily: theme.typography.families.headingBold }}>🔥 Hot</Typography>
-              </View>
-            )}
-          </View>
-
-          {/* Content */}
-          <Typography variant="body" color={theme.colors.textHigh} style={styles.postContent}>
-            {item.content}
-          </Typography>
-
-          {/* Footer */}
-          <View style={styles.postFooter}>
-            <BounceButton style={styles.actionBtn} onPress={() => toggleLike(item.id)}>
-              <View style={[styles.actionBtnInner, item.liked && { backgroundColor: 'rgba(236,72,153,0.12)' }]}>
-                <Heart
-                  size={18}
-                  color={item.liked ? '#EC4899' : theme.colors.textMedium}
-                  fill={item.liked ? '#EC4899' : 'transparent'}
-                />
-                <Typography
-                  variant="caption1"
-                  color={item.liked ? '#EC4899' : theme.colors.textMedium}
-                  style={{ marginLeft: 5, fontFamily: theme.typography.families.headingBold }}
-                >
-                  {item.likes}
-                </Typography>
-              </View>
-            </BounceButton>
-            <BounceButton style={styles.actionBtn}>
-              <View style={styles.actionBtnInner}>
-                <MessageCircle size={18} color={theme.colors.textMedium} />
-                <Typography variant="caption1" color={theme.colors.textMedium} style={{ marginLeft: 5, fontFamily: theme.typography.families.headingBold }}>
-                  {item.comments || 0}
-                </Typography>
-              </View>
-            </BounceButton>
-          </View>
-        </View>
-      </Animated.View>
-    );
-  };
+  const renderPost = useCallback(({ item }: { item: any }) => (
+    <PostItem 
+      item={{...item, liked: likedPostIds.has(item.id)}} 
+      toggleLike={toggleLike} 
+      theme={theme} 
+      isDark={isDark} 
+      fadeAnim={fadeAnim} 
+      styles={styles} 
+    />
+  ), [toggleLike, theme, isDark, fadeAnim, styles, likedPostIds]);
 
   const renderContent = () => (
     <>
@@ -284,6 +276,11 @@ export default function CommunityScreen({ navigation, isNested }: any) {
           contentContainerStyle={[styles.listContent, filteredPosts.length === 0 && { flexGrow: 1 }]}
           showsVerticalScrollIndicator={false}
           ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+          initialNumToRender={8}
+          maxToRenderPerBatch={10}
+          windowSize={11}
+          removeClippedSubviews={Platform.OS === 'android'}
+          updateCellsBatchingPeriod={50}
         />
       )}
 
@@ -572,4 +569,83 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 20,
   },
+});
+
+const PostItem = React.memo(({ item, toggleLike, theme, isDark, fadeAnim, styles }: any) => {
+  const gradColors = getAvatarGradient(item.author || 'M');
+  const handleLike = useCallback(() => toggleLike(item.id), [toggleLike, item.id]);
+
+  return (
+    <Animated.View style={{ opacity: fadeAnim }}>
+      <View style={[styles.postCard, { borderColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)' }]}>
+        <BlurView intensity={isDark ? 25 : 50} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+        <LinearGradient
+          colors={isDark ? ['rgba(255,255,255,0.04)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.2)']}
+          style={StyleSheet.absoluteFillObject}
+        />
+
+        {/* Header */}
+        <View style={styles.postHeader}>
+          <LinearGradient colors={gradColors as [string, string]} style={styles.avatar}>
+            <Typography variant="headline" color="#fff" style={{ fontFamily: theme.typography.families.headingBold }}>
+              {(item.author || 'M')[0].toUpperCase()}
+            </Typography>
+          </LinearGradient>
+          <View style={{ flex: 1, marginLeft: 12 }}>
+            <Typography variant="subhead" color={theme.colors.textHigh} style={{ fontFamily: theme.typography.families.headingBold }}>
+              {item.author || 'Mama'}
+            </Typography>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+              {item.week && (
+                <View style={styles.weekBadge}>
+                  <Typography variant="caption2" color={theme.colors.primaryDark} style={{ fontFamily: theme.typography.families.headingBold }}>
+                    Week {item.week}
+                  </Typography>
+                </View>
+              )}
+              {item.created_at && <TimeAgo date={item.created_at} />}
+            </View>
+          </View>
+          {item.likes >= 5 && (
+            <View style={styles.hotBadge}>
+              <Typography variant="caption2" color="#F59E0B" style={{ fontFamily: theme.typography.families.headingBold }}>🔥 Hot</Typography>
+            </View>
+          )}
+        </View>
+
+        {/* Content */}
+        <Typography variant="body" color={theme.colors.textHigh} style={styles.postContent}>
+          {item.content}
+        </Typography>
+
+        {/* Footer */}
+        <View style={styles.postFooter}>
+          <BounceButton style={styles.actionBtn} onPress={handleLike}>
+            <View style={[styles.actionBtnInner, item.liked && { backgroundColor: 'rgba(236,72,153,0.12)' }]}>
+              <Heart
+                size={18}
+                color={item.liked ? '#EC4899' : theme.colors.textMedium}
+                fill={item.liked ? '#EC4899' : 'transparent'}
+              />
+              <Typography
+                variant="caption1"
+                color={item.liked ? '#EC4899' : theme.colors.textMedium}
+                style={{ marginLeft: 5, fontFamily: theme.typography.families.headingBold }}
+              >
+                {item.likes}
+              </Typography>
+            </View>
+          </BounceButton>
+          <BounceButton style={styles.actionBtn}>
+            <View style={styles.actionBtnInner}>
+              <MessageCircle size={18} color={theme.colors.textMedium} />
+              <Typography variant="caption1" color={theme.colors.textMedium} style={{ marginLeft: 5, fontFamily: theme.typography.families.headingBold }}>
+                {item.comments || 0}
+              </Typography>
+            </View>
+          </BounceButton>
+        </View>
+      </View>
+    </Animated.View>
+  );
 });

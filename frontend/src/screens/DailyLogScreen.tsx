@@ -7,6 +7,8 @@ import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
 import { TextInput } from '../components/TextInput';
 import { Activity, Droplet, Thermometer, Wind, AlertCircle, Save, Check, Flame, Eye, Baby, AlertTriangle, Smile, Meh, Frown, Brain, HeartPulse } from 'lucide-react-native';
+import { ScreenWrapper } from '../components/ScreenWrapper';
+import { Card } from '../components/Card';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { KickCounter } from '../components/KickCounter';
@@ -110,21 +112,7 @@ export default function TrackerScreen({ navigation }: any) {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
-      <LinearGradient 
-        colors={isDark
-          ? ['#1A1A1A', '#121212', '#121212']
-          : ['#FFF5F5', '#FFFFFF', '#FAFAFA']
-        } 
-        style={StyleSheet.absoluteFillObject}
-        start={{x: 0, y: 0}} end={{x: 0, y: 1}}
-      />
-
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <ScreenWrapper isNested={true}>
         {/* Header */}
         <View style={styles.header}>
           <Typography variant="largeTitle" style={styles.headerTitle}>{t('tracker.title', 'Tracker')}</Typography>
@@ -151,10 +139,9 @@ export default function TrackerScreen({ navigation }: any) {
             </View>
           )}
 
-          {/* Vitals Section */}
           <View style={styles.section}>
             <Typography variant="title3" style={styles.sectionTitle}>{t('tracker.vitalsTitle', 'Vitals')}</Typography>
-            <View style={styles.glassCard}>
+            <Card variant="premium-glass" style={{ padding: 0 }}>
               <View style={styles.inputRow}>
                 <View style={styles.inputHalf}>
                   <Typography variant="caption1" style={styles.inputLabel}>{t('tracker.weightLabel', 'Weight (kg)')}</Typography>
@@ -178,7 +165,7 @@ export default function TrackerScreen({ navigation }: any) {
                   />
                 </View>
               </View>
-            </View>
+            </Card>
           </View>
 
           {/* Severity Section (Moved up for better UX) */}
@@ -325,17 +312,19 @@ export default function TrackerScreen({ navigation }: any) {
             )}
           </View>
 
-          {/* Notes Section */}
           <View style={styles.section}>
             <Typography variant="title3" style={styles.sectionTitle}>Daily Notes</Typography>
-            <TextInput
-              placeholder="Any notes for your doctor or thoughts for today?"
-              value={notes}
-              onChangeText={setNotes}
-              multiline
-              numberOfLines={4}
-              style={[styles.glassCard, { minHeight: 120, padding: 16, textAlignVertical: 'top' }]}
-            />
+            <Card variant="premium-glass">
+              <TextInput
+                placeholder="Any notes for your doctor or thoughts for today?"
+                value={notes}
+                onChangeText={setNotes}
+                multiline
+                numberOfLines={4}
+                style={{ minHeight: 100, textAlignVertical: 'top', color: theme.colors.textHigh }}
+                placeholderTextColor={theme.colors.textMedium}
+              />
+            </Card>
           </View>
 
           {/* Save Button */}
@@ -364,19 +353,11 @@ export default function TrackerScreen({ navigation }: any) {
           </TouchableOpacity>
 
         </ScrollView>
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+    </ScreenWrapper>
   );
 }
 
 const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  safeArea: {
-    flex: 1,
-  },
   header: {
     paddingHorizontal: 24,
     paddingTop: 16,

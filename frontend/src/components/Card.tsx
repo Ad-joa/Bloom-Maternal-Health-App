@@ -1,19 +1,27 @@
 import React from 'react';
 import { View, ViewProps, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme/ThemeContext';
+import { Typography } from './Typography';
 
-export type CardVariant = 'elevated' | 'outlined' | 'filled' | 'glass';
+export type CardVariant = 'elevated' | 'outlined' | 'filled' | 'glass' | 'premium-glass';
 
 export interface CardProps extends ViewProps {
   variant?: CardVariant;
   children: React.ReactNode;
   intensity?: number;
+  /** Optional icon to render in the top left header of the card */
+  headerIcon?: React.ElementType;
+  /** Optional title to render in the header */
+  title?: string;
 }
 
 export const Card: React.FC<CardProps> = ({
   variant = 'elevated',
   intensity = 60,
+  headerIcon: HeaderIcon,
+  title,
   style,
   children,
   ...props
@@ -36,6 +44,39 @@ export const Card: React.FC<CardProps> = ({
       : {}; // glass handled separately
 
   const containerStyle: StyleProp<ViewStyle> = [base, variantStyle, style];
+
+  if (variant === 'premium-glass') {
+    return (
+      <View style={[{ borderRadius: 24, overflow: 'hidden', borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }, style]} {...props}>
+        <BlurView
+          intensity={isDark ? 30 : 70}
+          tint={isDark ? 'dark' : 'light'}
+          style={StyleSheet.absoluteFillObject}
+        />
+        <LinearGradient
+          colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.2)']}
+          style={StyleSheet.absoluteFillObject}
+        />
+        <View style={{ padding: theme.spacing[5] }}>
+          {(HeaderIcon || title) && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: theme.spacing[4] }}>
+              {HeaderIcon && <HeaderIcon color={theme.colors.primaryDark} size={24} />}
+              {title && (
+                <Typography 
+                  variant="headline" 
+                  color={theme.colors.textHigh} 
+                  style={HeaderIcon ? { marginLeft: theme.spacing[3] } : undefined}
+                >
+                  {title}
+                </Typography>
+              )}
+            </View>
+          )}
+          {children}
+        </View>
+      </View>
+    );
+  }
 
   if (variant === 'glass') {
     return (

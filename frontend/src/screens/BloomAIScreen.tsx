@@ -187,6 +187,20 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
     setInputText(prompt);
   };
 
+  const handleClearChat = async () => {
+    try {
+      setLoading(true);
+      await clearAdvisoryHistory();
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setMessages([{ id: '1', text: t('ai.welcomeMsg', `Hi I'm Bloom, Your Maternal Health companion`), sender: 'ai' }]);
+      hasFetchedInsight.current = false; // Reset to allow fetching proactive insight again if desired
+    } catch (e) {
+      console.error("Failed to clear chat", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([]);
 
   React.useEffect(() => {
@@ -213,14 +227,23 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
           </Typography>
         </View>
       ) : (
-        <ScrollView
-          ref={scrollViewRef}
-          style={styles.scrollView}
-          contentContainerStyle={styles.chatContainer}
-          onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
-          showsVerticalScrollIndicator={false}
-        >
-          {messages.map((msg) => (
+        <View style={styles.chatWrapper}>
+          <TouchableOpacity 
+            style={[styles.clearButton, { opacity: loading ? 0.5 : 1 }]}
+            onPress={handleClearChat}
+            disabled={loading}
+            activeOpacity={0.7}
+          >
+            <Trash2 color={theme.colors.textMedium} size={18} />
+          </TouchableOpacity>
+          <ScrollView
+            ref={scrollViewRef}
+            style={styles.scrollView}
+            contentContainerStyle={styles.chatContainer}
+            onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+            showsVerticalScrollIndicator={false}
+          >
+            {messages.map((msg) => (
             <View
               key={msg.id}
               style={[
@@ -255,6 +278,7 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
             </View>
           )}
         </ScrollView>
+        </View>
       )}
 
       <View style={[styles.inputArea, { paddingBottom: keyboardVisible ? (Platform.OS === 'ios' ? 16 : 24) : Math.max(insets.bottom, 16) + 20 }]}>
@@ -294,8 +318,6 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
         </View>
       </View>
     </KeyboardAvoidingView>
-  </SafeAreaView>
-</View>
   );
 
   return (
@@ -326,6 +348,18 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     backgroundColor: 'transparent',
     alignItems: 'flex-start',
     zIndex: 10,
+  },
+  chatWrapper: {
+    flex: 1,
+  },
+  clearButton: {
+    position: 'absolute',
+    top: 10,
+    right: 16,
+    zIndex: 20,
+    padding: 8,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+    borderRadius: 20,
   },
   scrollView: {
     flex: 1,

@@ -3,11 +3,12 @@ import { View, StyleSheet, ScrollView, TouchableOpacity, Modal, Alert, Dimension
 import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
-import { CheckCircle2, CalendarHeart, Plus, Check, Circle, X, Trash2 } from 'lucide-react-native';
+import { ScreenWrapper } from '../components/ScreenWrapper';
+import { EmptyState } from '../components/EmptyState';
+import { CheckCircle2, CalendarHeart, Plus, Check, Circle, X, Trash2, CalendarOff } from 'lucide-react-native';
 import { useAuth } from '../context/AuthContext';
 import { getAncVisits, createAncVisit, updateAncVisit, getSymptomLogs, deleteAncVisit } from '../api/api';
 import { TextInput } from '../components/TextInput';
-import { BackgroundMesh } from '../components/BackgroundMesh';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -143,8 +144,7 @@ export default function ANCVisitScreen() {
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      <BackgroundMesh />
+    <ScreenWrapper>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
@@ -165,61 +165,57 @@ export default function ANCVisitScreen() {
           Next Appointment
         </Typography>
         {nextVisit ? (
-          <View style={styles.premiumCardWrapper}>
-            <BlurView intensity={isDark ? 30 : 70} tint={isDark ? 'dark' : 'light'} style={[styles.premiumCard, { borderColor: theme.colors.primary, borderWidth: 1 }]}>
-              <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.2)']} style={StyleSheet.absoluteFillObject} />
-              <View style={styles.rowBetween}>
-                <View style={styles.row}>
-                  <CalendarHeart color={theme.colors.primaryDark} size={32} />
-                  <View style={{marginLeft: theme.spacing[4]}}>
-                    <Typography variant="headline" color={theme.colors.textHigh}>{nextVisit.date} at {nextVisit.time}</Typography>
-                    <Typography variant="subhead" color={theme.colors.textMedium}>{nextVisit.doctor || 'Routine Checkup'}</Typography>
-                  </View>
+          <Card variant="premium-glass" style={{ borderColor: theme.colors.primary, borderWidth: 1 }}>
+            <View style={styles.rowBetween}>
+              <View style={styles.row}>
+                <CalendarHeart color={theme.colors.primaryDark} size={32} />
+                <View style={{marginLeft: theme.spacing[4]}}>
+                  <Typography variant="headline" color={theme.colors.textHigh}>{nextVisit.date} at {nextVisit.time}</Typography>
+                  <Typography variant="subhead" color={theme.colors.textMedium}>{nextVisit.doctor || 'Routine Checkup'}</Typography>
                 </View>
-                <TouchableOpacity onPress={() => handleDeleteVisit(nextVisit.id)} style={styles.iconBtn}>
-                  <Trash2 color={theme.colors.danger} size={20} />
-                </TouchableOpacity>
               </View>
-              <View style={styles.actionsRow}>
-                <TouchableOpacity style={styles.markAttendedBtn} onPress={() => handleMarkAttended(nextVisit.id)}>
-                  <Check color={theme.colors.background} size={16} />
-                  <Typography variant="caption1" color={theme.colors.background} style={{marginLeft: 4}}>Mark as Attended</Typography>
-                </TouchableOpacity>
-              </View>
-            </BlurView>
-          </View>
+              <TouchableOpacity onPress={() => handleDeleteVisit(nextVisit.id)} style={styles.iconBtn}>
+                <Trash2 color={theme.colors.danger} size={20} />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.actionsRow}>
+              <TouchableOpacity style={styles.markAttendedBtn} onPress={() => handleMarkAttended(nextVisit.id)}>
+                <Check color={theme.colors.background} size={16} />
+                <Typography variant="caption1" color={theme.colors.background} style={{marginLeft: 4}}>Mark as Attended</Typography>
+              </TouchableOpacity>
+            </View>
+          </Card>
         ) : (
-          <View style={styles.premiumCardWrapper}>
-            <BlurView intensity={isDark ? 30 : 70} tint={isDark ? 'dark' : 'light'} style={styles.premiumCard}>
-              <Typography variant="body" color={theme.colors.textMedium} align="center">
-                No upcoming appointments scheduled.
-              </Typography>
-            </BlurView>
-          </View>
+          <EmptyState 
+            icon={CalendarOff} 
+            title="No Appointments"
+            description="You have no upcoming antenatal checkups scheduled."
+            actionLabel="Schedule Now"
+            onActionPress={() => setModalVisible(true)}
+            actionIcon={Plus}
+          />
         )}
 
         {otherUpcoming.length > 0 && (
           <View style={{marginTop: 12}}>
             <Typography variant="caption1" style={[styles.sectionTitle, { marginBottom: 8 }]}>OTHER UPCOMING</Typography>
             {otherUpcoming.map(visit => (
-              <View key={visit.id} style={[styles.premiumCardWrapper, { marginBottom: 8 }]}>
-                <BlurView intensity={isDark ? 30 : 70} tint={isDark ? 'dark' : 'light'} style={styles.premiumCard}>
-                  <View style={styles.rowBetween}>
-                    <View style={styles.row}>
-                       <View style={styles.dateCircle}>
-                        <Typography variant="subhead" color={theme.colors.primaryDark}>{visit.date.split('-')[2] || visit.date.split(' ')[0]}</Typography>
-                      </View>
-                      <View style={{marginLeft: theme.spacing[4]}}>
-                        <Typography variant="headline" color={theme.colors.textHigh}>{visit.doctor || 'Checkup'} - {visit.time}</Typography>
-                        <Typography variant="subhead" color={theme.colors.textMedium}>{visit.date}</Typography>
-                      </View>
+              <Card key={visit.id} variant="premium-glass" style={{ marginBottom: 8, padding: 16 }}>
+                <View style={styles.rowBetween}>
+                  <View style={styles.row}>
+                     <View style={styles.dateCircle}>
+                      <Typography variant="subhead" color={theme.colors.primaryDark}>{visit.date.split('-')[2] || visit.date.split(' ')[0]}</Typography>
                     </View>
-                    <TouchableOpacity onPress={() => handleDeleteVisit(visit.id)} style={styles.iconBtn}>
-                      <Trash2 color={theme.colors.danger} size={20} />
-                    </TouchableOpacity>
+                    <View style={{marginLeft: theme.spacing[4]}}>
+                      <Typography variant="headline" color={theme.colors.textHigh}>{visit.doctor || 'Checkup'} - {visit.time}</Typography>
+                      <Typography variant="subhead" color={theme.colors.textMedium}>{visit.date}</Typography>
+                    </View>
                   </View>
-                </BlurView>
-              </View>
+                  <TouchableOpacity onPress={() => handleDeleteVisit(visit.id)} style={styles.iconBtn}>
+                    <Trash2 color={theme.colors.danger} size={20} />
+                  </TouchableOpacity>
+                </View>
+              </Card>
             ))}
           </View>
         )}
@@ -227,10 +223,7 @@ export default function ANCVisitScreen() {
         <Typography variant="title3" style={[styles.sectionTitle, { marginTop: 16 }]}>
           Preparation Checklist
         </Typography>
-        <View style={styles.cardContainer}>
-          <BlurView intensity={isDark ? 30 : 70} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
-          <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
-          
+        <Card variant="premium-glass" style={{ padding: 0, marginBottom: 24 }}>
           {checklist.map((item, index) => (
             <TouchableOpacity 
               key={item.id} 
@@ -248,7 +241,7 @@ export default function ANCVisitScreen() {
               </Typography>
             </TouchableOpacity>
           ))}
-        </View>
+        </Card>
 
         <Typography variant="title3" style={styles.sectionTitle}>
           Doctor's Cheat Sheet
@@ -256,8 +249,7 @@ export default function ANCVisitScreen() {
         <Typography variant="caption1" color={theme.colors.textMedium} style={{marginBottom: 8}}>
           Notes saved from your daily tracker to ask your doctor.
         </Typography>
-        <View style={[styles.premiumCardWrapper, { backgroundColor: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,200,0.5)' }]}>
-          <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={styles.premiumCard}>
+        <Card variant="premium-glass" style={{ backgroundColor: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,200,0.5)' }}>
             {notes.length > 0 ? (
               notes.map((log: any, index: number) => (
                 <View key={index} style={{ marginBottom: index === notes.length - 1 ? 0 : 12, paddingBottom: index === notes.length - 1 ? 0 : 12, borderBottomWidth: index === notes.length - 1 ? 0 : 1, borderBottomColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
@@ -270,37 +262,34 @@ export default function ANCVisitScreen() {
             ) : (
               <Typography style={styles.bullet} color={theme.colors.textMedium}>No notes saved yet. Add notes in your Daily Log to see them here!</Typography>
             )}
-          </BlurView>
-        </View>
+        </Card>
 
         <Typography variant="title3" style={[styles.sectionTitle, {marginTop: theme.spacing[6]}]}>
           Past Visits
         </Typography>
         
         {pastVisits.length > 0 ? pastVisits.map((visit, index) => (
-          <View key={index} style={styles.premiumCardWrapper}>
-            <BlurView intensity={isDark ? 30 : 70} tint={isDark ? 'dark' : 'light'} style={styles.premiumCard}>
-              <View style={styles.rowBetween}>
-                <View style={styles.row}>
-                  <View style={styles.dateCircle}>
-                    <Typography variant="subhead" color={theme.colors.primaryDark}>{visit.date.split('-')[2] || visit.date.split(' ')[0]}</Typography>
-                  </View>
-                  <View style={{marginLeft: theme.spacing[4], flex: 1}}>
-                    <Typography variant="headline" color={theme.colors.textHigh}>{visit.doctor || 'Checkup'} - {visit.time}</Typography>
-                    <Typography variant="subhead" color={theme.colors.textMedium}>{visit.notes || 'Routine antenatal checkup'}</Typography>
-                    
-                    <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 8}}>
-                      <CheckCircle2 color={theme.colors.success} size={16} />
-                      <Typography variant="caption1" color={theme.colors.success} style={{marginLeft: 4}}>Attended on {visit.date}</Typography>
-                    </View>
+          <Card key={index} variant="premium-glass" style={{ marginBottom: 12, padding: 16 }}>
+            <View style={styles.rowBetween}>
+              <View style={styles.row}>
+                <View style={styles.dateCircle}>
+                  <Typography variant="subhead" color={theme.colors.primaryDark}>{visit.date.split('-')[2] || visit.date.split(' ')[0]}</Typography>
+                </View>
+                <View style={{marginLeft: theme.spacing[4], flex: 1}}>
+                  <Typography variant="headline" color={theme.colors.textHigh}>{visit.doctor || 'Checkup'} - {visit.time}</Typography>
+                  <Typography variant="subhead" color={theme.colors.textMedium}>{visit.notes || 'Routine antenatal checkup'}</Typography>
+                  
+                  <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 8}}>
+                    <CheckCircle2 color={theme.colors.success} size={16} />
+                    <Typography variant="caption1" color={theme.colors.success} style={{marginLeft: 4}}>Attended on {visit.date}</Typography>
                   </View>
                 </View>
-                <TouchableOpacity onPress={() => handleDeleteVisit(visit.id)} style={styles.iconBtn}>
-                  <Trash2 color={theme.colors.textMedium} size={18} />
-                </TouchableOpacity>
               </View>
-            </BlurView>
-          </View>
+              <TouchableOpacity onPress={() => handleDeleteVisit(visit.id)} style={styles.iconBtn}>
+                <Trash2 color={theme.colors.textMedium} size={18} />
+              </TouchableOpacity>
+            </View>
+          </Card>
         )) : (
           <Typography variant="body" color={theme.colors.textMedium} align="center" style={{marginTop: 20}}>
             No past visits recorded.
@@ -361,7 +350,7 @@ export default function ANCVisitScreen() {
 
         <View style={{height: 100}} />
       </ScrollView>
-    </View>
+    </ScreenWrapper>
   );
 }
 

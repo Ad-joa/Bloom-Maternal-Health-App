@@ -23,7 +23,7 @@ router.get('/', authenticateToken, async (req: any, res: any, next: any) => {
     const userId = req.user.userId;
     
     // Fetch last 10 symptom logs
-    const logs = await (prisma as any).symptom_logs.findMany({
+    const logs = await prisma.symptom_logs.findMany({
       where: { user_id: userId },
       orderBy: { created_at: 'desc' },
       take: 10
@@ -35,29 +35,7 @@ router.get('/', authenticateToken, async (req: any, res: any, next: any) => {
   }
 });
 
-// Helper to evaluate basic rules
-const evaluateRules = (logData: any, rules: any[]) => {
-  const triggeredAlerts = [];
-  const bpSys = logData.blood_pressure ? parseInt(logData.blood_pressure.split('/')[0]) : 0;
-  const bpDia = logData.blood_pressure ? parseInt(logData.blood_pressure.split('/')[1]) : 0;
-  
-  for (const rule of rules) {
-    let isTriggered = false;
-    const cond = rule.condition.toLowerCase();
-    
-    if (cond.includes('severity') && cond.includes('severe') && logData.severity.toLowerCase() === 'severe') {
-      isTriggered = true;
-    }
-    if (cond.includes('blood_pressure') && cond.includes('> 140') && bpSys > 140) isTriggered = true;
-    if (cond.includes('blood_pressure') && cond.includes('> 90') && bpDia > 90) isTriggered = true;
-    if (cond.includes('symptoms') && cond.includes('headache') && logData.symptoms.toLowerCase().includes('headache')) isTriggered = true;
-    if (cond.includes('symptoms') && cond.includes('bleeding') && logData.symptoms.toLowerCase().includes('bleeding')) isTriggered = true;
-
-    if (isTriggered) triggeredAlerts.push(rule);
-  }
-  return triggeredAlerts;
-};
-
+import { evaluateRules } from '../services/symptomService';
 // POST /logs - Create a new log for the authenticated user
 router.post('/', authenticateToken, validate(logSchema), async (req: any, res: any, next: any) => {
   try {
@@ -65,7 +43,7 @@ router.post('/', authenticateToken, validate(logSchema), async (req: any, res: a
     const { symptoms, severity, notes, blood_pressure, weight } = req.body;
     
     // Use an Interactive Transaction to save log & evaluate alerts atomically
-    const resultLog = await (prisma as any).$transaction(async (tx: any) => {
+    const resultLog = await prisma.$transaction(async (tx: any) => {
       // 1. Create the symptom log
       const newLog = await tx.symptom_logs.create({
         data: {
@@ -104,6 +82,36 @@ router.post('/', authenticateToken, validate(logSchema), async (req: any, res: a
     res.status(201).json(resultLog);
   } catch (error) {
     next(error);
+  }
+});
+
+// POST /sync/symptoms - Sync offline logs
+router.post('/sync', async (req: any, res: any, next: any) => {
+  try {
+    const { logs } = req.body;
+    if (!logs || !Array.isArray(logs)) {
+      return res.status(400).json({ success: false, detail: "Invalid logs payload" });
+    }
+
+    const mappedLogs = logs.map(log => ({
+      user_id: parseInt(log.user_id),
+      symptoms: log.symptoms,
+      severity: log.severity || 'unknown',
+      notes: log.notes || '',
+      blood_pressure: log.blood_pressure || null,
+      weight: log.weight ? parseFloat(log.weight) : null,
+      created_at: new Date(log.created_at)
+    }));
+
+    await prisma.symptom_logs.createMany({
+      data: mappedLogs,
+      skipDuplicates: true
+    });
+
+    res.json({ success: true, count: mappedLogs.length });
+  } catch (error) {
+    console.error('Sync Error:', error);
+    res.status(500).json({ success: false, detail: "Server error during sync" });
   }
 });
 

@@ -8,7 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { scheduleHydrationReminder, scheduleMedicationReminder, registerForPushNotificationsAsync } from '../utils/notifications';
 import * as Notifications from 'expo-notifications';
-import { BackgroundMesh } from '../components/BackgroundMesh';
+import { ScreenWrapper } from '../components/ScreenWrapper';
 import { TextInput } from '../components/TextInput';
 
 import { Bell, Droplet, Pill, Clock } from 'lucide-react-native';
@@ -146,9 +146,8 @@ export default function RemindersScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      <BackgroundMesh />
-      <SafeAreaView edges={['top']} style={styles.safeArea}>
+    <>
+      <ScreenWrapper isNested={true}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View  style={styles.header}>
             <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.title}>
@@ -160,9 +159,7 @@ export default function RemindersScreen() {
           </View>
 
           {/* Hydration Card */}
-          <View style={styles.premiumCardWrapper}>
-            <BlurView intensity={isDark ? 30 : 70} tint={isDark ? 'dark' : 'light'} style={styles.premiumCard}>
-              <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.2)']} style={StyleSheet.absoluteFillObject} />
+          <Card variant="premium-glass" style={styles.premiumCardWrapper}>
               <View style={styles.cardRow}>
                 <View style={[styles.iconBox, { backgroundColor: '#E0F2FE' }]}>
                   <Droplet color="#0284C7" size={24} />
@@ -176,13 +173,10 @@ export default function RemindersScreen() {
                   trackColor={{ false: 'rgba(0,0,0,0.1)', true: theme.colors.primary }}
                 />
               </View>
-            </BlurView>
-          </View>
+          </Card>
 
           {/* Medication Card */}
-          <View style={styles.premiumCardWrapper}>
-            <BlurView intensity={isDark ? 30 : 70} tint={isDark ? 'dark' : 'light'} style={styles.premiumCard}>
-              <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.2)']} style={StyleSheet.absoluteFillObject} />
+          <Card variant="premium-glass" style={styles.premiumCardWrapper}>
               <View style={styles.cardRow}>
                 <View style={[styles.iconBox, { backgroundColor: '#FCE7F3' }]}>
                   <Pill color="#BE185D" size={24} />
@@ -196,13 +190,10 @@ export default function RemindersScreen() {
                   trackColor={{ false: 'rgba(0,0,0,0.1)', true: theme.colors.primary }}
                 />
               </View>
-            </BlurView>
-          </View>
+          </Card>
 
           {/* General Card */}
-          <View style={styles.premiumCardWrapper}>
-            <BlurView intensity={isDark ? 30 : 70} tint={isDark ? 'dark' : 'light'} style={styles.premiumCard}>
-              <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.2)']} style={StyleSheet.absoluteFillObject} />
+          <Card variant="premium-glass" style={styles.premiumCardWrapper}>
               <View style={styles.cardRow}>
                 <View style={[styles.iconBox, { backgroundColor: '#FEF3C7' }]}>
                   <Bell color="#B45309" size={24} />
@@ -216,11 +207,10 @@ export default function RemindersScreen() {
                   trackColor={{ false: 'rgba(0,0,0,0.1)', true: theme.colors.primary }}
                 />
               </View>
-            </BlurView>
-          </View>
+          </Card>
 
         </ScrollView>
-      </SafeAreaView>
+    </ScreenWrapper>
 
       {/* Time Picker Modal */}
       <Modal
@@ -252,7 +242,7 @@ export default function RemindersScreen() {
         </View>
       </Modal>
 
-    </View>
+    </>
   );
 }
 
@@ -263,14 +253,8 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   header: { marginBottom: theme.spacing[6] },
   title: { marginBottom: theme.spacing[2], fontFamily: theme.typography.families.headingBold },
   premiumCardWrapper: {
-    borderRadius: 20,
-    overflow: 'hidden',
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-  },
-  premiumCard: {
     padding: 16,
+    marginBottom: 12,
   },
   cardRow: {
     flexDirection: 'row',

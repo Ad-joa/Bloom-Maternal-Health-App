@@ -8,7 +8,7 @@ const router = express.Router();
 router.get('/', authenticateToken, async (req: any, res: any) => {
   try {
     const userId = req.user.userId;
-    const visits = await (prisma as any).anc_visits.findMany({
+    const visits = await prisma.anc_visits.findMany({
       where: { user_id: userId },
       orderBy: { created_at: 'desc' }
     });
@@ -25,7 +25,7 @@ router.post('/', authenticateToken, async (req: any, res: any) => {
     const userId = req.user.userId;
     const { date, time, doctor, notes, status, attendance_status } = req.body;
 
-    const newVisit = await (prisma as any).anc_visits.create({
+    const newVisit = await prisma.anc_visits.create({
       data: {
         user_id: userId,
         date: date || new Date().toISOString().split('T')[0],
@@ -52,12 +52,12 @@ router.put('/:id', authenticateToken, async (req: any, res: any) => {
     const { attendance_status, status } = req.body;
 
     // Ensure the visit belongs to the user
-    const visit = await (prisma as any).anc_visits.findFirst({
+    const visit = await prisma.anc_visits.findFirst({
       where: { id: visitId, user_id: userId }
     });
     if (!visit) return res.status(404).json({ detail: "Visit not found" });
 
-    const updatedVisit = await (prisma as any).anc_visits.update({
+    const updatedVisit = await prisma.anc_visits.update({
       where: { id: visitId },
       data: {
         attendance_status: attendance_status || visit.attendance_status,
@@ -79,12 +79,12 @@ router.delete('/:id', authenticateToken, async (req: any, res: any) => {
     const visitId = parseInt(req.params.id);
 
     // Ensure the visit belongs to the user
-    const visit = await (prisma as any).anc_visits.findFirst({
+    const visit = await prisma.anc_visits.findFirst({
       where: { id: visitId, user_id: userId }
     });
     if (!visit) return res.status(404).json({ detail: "Visit not found" });
 
-    await (prisma as any).anc_visits.delete({
+    await prisma.anc_visits.delete({
       where: { id: visitId }
     });
 

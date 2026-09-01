@@ -1,0 +1,49 @@
+import { Request, Response } from 'express';
+import prisma from '../lib/prisma';
+import { getAdvisoryResponse } from '../services/aiService';
+
+export const getAdvisory = async (req: any, res: any) => {
+  try {
+    const { symptoms } = req.body;
+    const user_id = req.user.userId;
+
+    const advice = await getAdvisoryResponse(user_id, symptoms);
+    res.json({ advice });
+  } catch (error) {
+    console.error("Error in advisory:", error);
+    res.status(500).json({ detail: "Server error" });
+  }
+};
+
+export const getAdvisoryHistory = async (req: any, res: any) => {
+  try {
+    const user_id = req.user.userId;
+    if (!user_id) return res.status(401).json({ detail: "Unauthorized" });
+
+    const chats = await prisma.bloom_ai_chats.findMany({
+      where: { user_id },
+      orderBy: { created_at: 'asc' },
+    });
+    
+    res.json(chats);
+  } catch (error) {
+    console.error("Error fetching chat history:", error);
+    res.status(500).json({ detail: "Server error" });
+  }
+};
+
+export const clearAdvisoryHistory = async (req: any, res: any) => {
+  try {
+    const user_id = req.user.userId;
+    if (!user_id) return res.status(401).json({ detail: "Unauthorized" });
+
+    await prisma.bloom_ai_chats.deleteMany({
+      where: { user_id },
+    });
+    
+    res.json({ success: true, detail: "Chat history cleared" });
+  } catch (error) {
+    console.error("Error clearing chat history:", error);
+    res.status(500).json({ detail: "Server error" });
+  }
+};

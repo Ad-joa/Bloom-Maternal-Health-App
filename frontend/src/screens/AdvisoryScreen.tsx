@@ -18,8 +18,7 @@ import { useAuth } from '../context/AuthContext';
 import { Typography } from '../components/Typography';
 import { Send, Flower2, AlertTriangle, User, Volume2, ArrowLeft, ArrowUp, Mic } from 'lucide-react-native';
 import * as Speech from 'expo-speech';
-import { BlurView } from 'expo-blur';
-import { LinearGradient } from 'expo-linear-gradient';
+import { ScreenWrapper } from '../components/ScreenWrapper';
 
 interface Message {
   id: string;
@@ -148,20 +147,13 @@ export default function AdvisoryScreen({ navigation }: any) {
   };
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation?.canGoBack() ? navigation.goBack() : null} style={{ padding: 8 }}>
-            <ArrowLeft color={theme.colors.textHigh} size={24} />
-          </TouchableOpacity>
-        </View>
-
-        <KeyboardAvoidingView 
-          style={styles.keyboardAvoidingView} 
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-        >
+    <ScreenWrapper isNested={true}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation?.canGoBack() ? navigation.goBack() : null} style={{ padding: 8 }}>
+          <ArrowLeft color={theme.colors.textHigh} size={24} />
+        </TouchableOpacity>
+      </View>
           {/* Chat List or Empty State */}
           {messages.length === 1 && !loading ? (
             <View style={styles.emptyStateContainer}>
@@ -232,20 +224,11 @@ export default function AdvisoryScreen({ navigation }: any) {
               <ArrowUp color={theme.colors.background} size={20} />
             </TouchableOpacity>
           </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </View>
+      </ScreenWrapper>
   );
 }
 
 const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  safeArea: {
-    flex: 1,
-  },
   header: {
     paddingHorizontal: theme.spacing[4],
     paddingVertical: theme.spacing[2],
@@ -260,10 +243,6 @@ const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   },
   headerTitle: {
     fontFamily: theme.typography.families.headingBold,
-  },
-  keyboardAvoidingView: {
-    flex: 1,
-    paddingBottom: 85, // Gives permanent space for the absolute tab bar
   },
   chatListContent: {
     paddingHorizontal: theme.spacing[4],
