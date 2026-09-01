@@ -51,6 +51,16 @@ export default function BloomAIScreen({ navigation, route, isNested }: any) {
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
+      headerTitle: () => (
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity onPress={() => navigation.navigate('BloomAIHistory')} style={{ marginRight: 10 }}>
+            <Ionicons name="time-outline" size={22} color="#fff" />
+          </TouchableOpacity>
+          <Typography variant="title3" color="#fff" style={{ fontFamily: theme.typography.families.headingBold }}>
+            Bloom AI
+          </Typography>
+        </View>
+      ),
       headerRight: () => (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <TouchableOpacity 
@@ -68,8 +78,8 @@ export default function BloomAIScreen({ navigation, route, isNested }: any) {
               alignItems: 'center'
             }}
           >
-            <Ionicons name="add" size={16} color={theme.colors.primary} style={{ marginRight: 4 }} />
-            <Typography variant="subhead" color={theme.colors.primary} style={{ fontFamily: theme.typography.families.headingBold }}>
+            <Ionicons name="add" size={16} color="#fff" style={{ marginRight: 4 }} />
+            <Typography variant="subhead" color="#fff" style={{ fontFamily: theme.typography.families.headingBold }}>
               New Chat
             </Typography>
           </TouchableOpacity>
@@ -350,25 +360,8 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  header: {
-    paddingHorizontal: theme.spacing[4],
-    paddingTop: theme.spacing[2],
-    paddingBottom: theme.spacing[2],
-    backgroundColor: 'transparent',
-    alignItems: 'flex-start',
-    zIndex: 10,
-  },
   chatWrapper: {
     flex: 1,
-  },
-  clearButton: {
-    position: 'absolute',
-    top: 10,
-    right: 16,
-    zIndex: 20,
-    padding: 8,
-    backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-    borderRadius: 20,
   },
   scrollView: {
     flex: 1,

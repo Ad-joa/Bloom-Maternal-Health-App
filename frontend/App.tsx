@@ -345,7 +345,7 @@ function Navigation() {
             <Stack.Screen
               name="BloomAI"
               component={BloomAIScreen}
-              options={{ title: 'Bloom AI Assistant' }}
+              options={{ title: 'Bloom AI' }}
             />
             <Stack.Screen
               name="BloomAIHistory"
