@@ -59,14 +59,19 @@ export default function BloomAIScreen({ navigation, route, isNested }: any) {
               setMessages([{ id: '1', text: t('ai.welcomeMsg', `Hi I'm Bloom, Your Maternal Health companion`), sender: 'ai' }]);
               hasFetchedInsight.current = false;
             }}
-            style={{ marginRight: 16 }}
+            style={{ 
+              marginRight: 16, 
+              paddingHorizontal: 12, 
+              paddingVertical: 6, 
+              borderRadius: 20,
+              flexDirection: 'row',
+              alignItems: 'center'
+            }}
           >
-            <Typography variant="subhead" color={theme.colors.primary} style={{ fontFamily: theme.typography.families.headingSemibold }}>
+            <Ionicons name="add" size={16} color={theme.colors.primary} style={{ marginRight: 4 }} />
+            <Typography variant="subhead" color={theme.colors.primary} style={{ fontFamily: theme.typography.families.headingBold }}>
               New Chat
             </Typography>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('BloomAIHistory')}>
-            <Ionicons name="time-outline" size={24} color={theme.colors.textHigh} />
           </TouchableOpacity>
         </View>
       )

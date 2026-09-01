@@ -87,7 +87,7 @@ export default function BloomAIHistoryScreen({ navigation }: any) {
           style={styles.deleteButton}
           onPress={() => handleDelete(item.session_id)}
         >
-          <Trash2 size={18} color={theme.colors.error || '#ff3b30'} />
+          <Trash2 size={18} color={theme.colors.danger || '#ff3b30'} />
         </TouchableOpacity>
       </TouchableOpacity>
     );

@@ -69,7 +69,7 @@ export default function HelpSupportScreen({ navigation }: any) {
   };
 
   const handleEmailSupport = () => {
-    Linking.openURL('mailto:support@bloomhealth.app?subject=Bloom App Support Request');
+    Linking.openURL('mailto:asareprosper143@gmail.com?subject=Bloom App Support Request');
   };
 
   const handleBloomAI = () => {
