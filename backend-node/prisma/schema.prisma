@@ -151,6 +151,7 @@ model health_alerts {
 model bloom_ai_chats {
   id          Int      @id @default(autoincrement())
   user_id     Int
+  session_id  String?
   text        String
   sender      String   // "user" or "ai"
   created_at  DateTime @default(now())

@@ -5,7 +5,7 @@ import { evaluateSymptoms } from './symptomService';
 // Initialize Gemini Client
 export const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || 'MISSING_KEY' });
 
-export const getAdvisoryResponse = async (user_id: number | null, symptoms: string[]) => {
+export const getAdvisoryResponse = async (user_id: number | null, symptoms: string[], session_id?: string) => {
   let context = null;
   let userDetails = "";
   
@@ -47,7 +47,7 @@ export const getAdvisoryResponse = async (user_id: number | null, symptoms: stri
 
     // Save user message to history
     await prisma.bloom_ai_chats.create({
-      data: { user_id, text: userPrompt, sender: 'user' }
+      data: { user_id, session_id, text: userPrompt, sender: 'user' }
     });
   }
 
@@ -65,7 +65,7 @@ export const getAdvisoryResponse = async (user_id: number | null, symptoms: stri
     ${userDetails}
     
     STRICT RULES:
-    1. BREVITY IS MANDATORY: Respond in 2-3 sentences MAX. Never exceed 4 sentences. No long paragraphs.
+    1. CONCISE & PRECISE: You may use more than 3 sentences if needed, but always keep explanations brief, precise, and to the point. No long, rambling paragraphs.
     2. BE PRECISE AND INSIGHTFUL: Give one clear, actionable insight or reassurance. No filler words, no generic advice.
     3. CONTEXT-AWARE: Reference her trimester, recent logs, or conditions naturally — don't just list facts.
     4. PLAIN TEXT ONLY: No asterisks (*), no hashtags (#), no bold, no markdown. Use dashes (-) for short lists if needed.
@@ -74,12 +74,32 @@ export const getAdvisoryResponse = async (user_id: number | null, symptoms: stri
   `;
 
   try {
+    // Fetch chat history to give Gemini context (only if user is logged in)
+    let chatHistory: any[] = [];
+    if (user_id && session_id) {
+      chatHistory = await prisma.bloom_ai_chats.findMany({
+        where: { user_id, session_id },
+        orderBy: { id: 'desc' },
+        take: 6, // 3 pairs of turns
+      });
+    }
+    
+    // Reverse to chronological order and exclude the current message we just saved
+    const chronologicalHistory = chatHistory.reverse().filter(msg => msg.text !== userPrompt);
+
+    const contents = chronologicalHistory.map((msg: any) => ({
+      role: msg.sender === 'user' ? 'user' : 'model',
+      parts: [{ text: msg.text || '' }]
+    }));
+    
+    // Add current prompt
+    contents.push({ role: 'user', parts: [{ text: userPrompt }] });
+
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: userPrompt,
+      model: 'gemini-3.6-flash',
+      contents: contents as any,
       config: {
-        systemInstruction: systemInstruction,
-        maxOutputTokens: 300,
+        systemInstruction: systemInstruction
       }
     });
     
@@ -87,7 +107,7 @@ export const getAdvisoryResponse = async (user_id: number | null, symptoms: stri
     
     if (user_id && advice) {
       await prisma.bloom_ai_chats.create({
-        data: { user_id, text: advice, sender: 'ai' }
+        data: { user_id, session_id, text: advice, sender: 'ai' }
       });
     }
     
@@ -98,7 +118,7 @@ export const getAdvisoryResponse = async (user_id: number | null, symptoms: stri
     const advice = rulesResult.text;
     if (user_id) {
       await prisma.bloom_ai_chats.create({
-        data: { user_id, text: advice, sender: 'ai' }
+        data: { user_id, session_id, text: advice, sender: 'ai' }
       });
     }
     return advice;
@@ -144,7 +164,7 @@ export const getPartnerSummary = async (user_id: number) => {
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.6-flash',
       contents: "Generate partner summary JSON",
       config: {
         systemInstruction: systemInstruction,

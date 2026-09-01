@@ -13,6 +13,7 @@ import DueDateRevealScreen from './src/screens/DueDateRevealScreen';
 import AuthScreen from './src/screens/AuthScreen';
 import AnalysisScreen from './src/screens/AnalysisScreen';
 import BloomAIScreen from './src/screens/BloomAIScreen';
+import BloomAIHistoryScreen from './src/screens/BloomAIHistoryScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import CommunityScreen from './src/screens/CommunityScreen';
 import ArticleScreen from './src/screens/ArticleScreen';
@@ -84,7 +85,8 @@ export type RootStackParamList = {
   Fitness: undefined;
   HospitalBag: undefined;
   HelpSupport: undefined;
-  BloomAI: undefined;
+  BloomAI: { sessionId?: string };
+  BloomAIHistory: undefined;
   Community: undefined;
   ResourceList: { category: string; title: string };
   KickCounter: undefined;
@@ -344,6 +346,11 @@ function Navigation() {
               name="BloomAI"
               component={BloomAIScreen}
               options={{ title: 'Bloom AI Assistant' }}
+            />
+            <Stack.Screen
+              name="BloomAIHistory"
+              component={BloomAIHistoryScreen}
+              options={{ title: 'Chat History' }}
             />
             <Stack.Screen
               name="Community"

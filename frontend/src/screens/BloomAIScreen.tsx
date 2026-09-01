@@ -10,7 +10,7 @@ import { BlurView } from 'expo-blur';
 import { Send, ArrowUp, ArrowLeft, Mic, Trash2 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { getAdvisory, getSymptomLogs, getAdvisoryHistory, clearAdvisoryHistory } from '../api/api';
+import { getAdvisory, getSymptomLogs, getAdvisoryHistoryBySession } from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 
@@ -35,7 +35,7 @@ const PROMPT_POOL = [
   "Any concerns based on my vitals?"
 ];
 
-export default function BloomAIScreen({ navigation, isNested }: any) {
+export default function BloomAIScreen({ navigation, route, isNested }: any) {
   const { theme, isDark } = useTheme();
   const styles = getStyles(theme, isDark);
   const insets = useSafeAreaInsets();
@@ -47,6 +47,32 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const hasFetchedInsight = useRef(false);
+  const [currentSessionId, setCurrentSessionId] = useState(route?.params?.sessionId || (Date.now().toString(36) + Math.random().toString(36).substring(2)));
+
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity 
+            onPress={() => {
+              setCurrentSessionId(Date.now().toString(36) + Math.random().toString(36).substring(2));
+              setMessages([{ id: '1', text: t('ai.welcomeMsg', `Hi I'm Bloom, Your Maternal Health companion`), sender: 'ai' }]);
+              hasFetchedInsight.current = false;
+            }}
+            style={{ marginRight: 16 }}
+          >
+            <Typography variant="subhead" color={theme.colors.primary} style={{ fontFamily: theme.typography.families.headingSemibold }}>
+              New Chat
+            </Typography>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('BloomAIHistory')}>
+            <Ionicons name="time-outline" size={24} color={theme.colors.textHigh} />
+          </TouchableOpacity>
+        </View>
+      )
+    });
+  }, [navigation, theme]);
+
   const [messages, setMessages] = useState<Message[]>([
     { id: '1', text: t('ai.welcomeMsg', `Hi I'm Bloom, Your Maternal Health companion`), sender: 'ai' },
   ]);
@@ -83,7 +109,7 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
 
         const proactivePrompt = `The user just opened the chat. Based on her recent health logs, give a brief, warm, proactive check-in. Acknowledge her most recent logged data (${logSummary}) and offer one helpful tip or reassurance. Keep it to 2-3 sentences max.`;
 
-        const response = await getAdvisory([proactivePrompt]);
+        const response = await getAdvisory([proactivePrompt], currentSessionId);
         const adviceStr = typeof response.advice === 'string' ? response.advice : response.advice?.text;
 
         if (adviceStr) {
@@ -105,7 +131,7 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
     // First fetch history
     const loadHistory = async () => {
       try {
-        const history = await getAdvisoryHistory();
+        const history = await getAdvisoryHistoryBySession(currentSessionId);
         if (history && history.length > 0) {
           const formattedHistory = history.map((msg: any) => ({
             id: msg.id.toString(),
@@ -131,7 +157,7 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
     
     loadHistory();
     
-  }, [user?.id]);
+  }, [user?.id, currentSessionId]);
 
   React.useEffect(() => {
     if (loading) {
@@ -161,7 +187,7 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
 
     try {
       // Call our rule-based backend engine!
-      const response = await getAdvisory([userText]);
+      const response = await getAdvisory([userText], currentSessionId);
       const adviceStr = typeof response.advice === 'string' ? response.advice : response.advice.text;
 
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -185,20 +211,6 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
 
   const handlePromptPress = (prompt: string) => {
     setInputText(prompt);
-  };
-
-  const handleClearChat = async () => {
-    try {
-      setLoading(true);
-      await clearAdvisoryHistory();
-      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-      setMessages([{ id: '1', text: t('ai.welcomeMsg', `Hi I'm Bloom, Your Maternal Health companion`), sender: 'ai' }]);
-      hasFetchedInsight.current = false; // Reset to allow fetching proactive insight again if desired
-    } catch (e) {
-      console.error("Failed to clear chat", e);
-    } finally {
-      setLoading(false);
-    }
   };
 
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([]);
@@ -228,14 +240,6 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
         </View>
       ) : (
         <View style={styles.chatWrapper}>
-          <TouchableOpacity 
-            style={[styles.clearButton, { opacity: loading ? 0.5 : 1 }]}
-            onPress={handleClearChat}
-            disabled={loading}
-            activeOpacity={0.7}
-          >
-            <Trash2 color={theme.colors.textMedium} size={18} />
-          </TouchableOpacity>
           <ScrollView
             ref={scrollViewRef}
             style={styles.scrollView}
