@@ -1,44 +1,90 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Animated, Platform, FlatList, KeyboardAvoidingView, Switch, UIManager, LayoutAnimation, ActivityIndicator, Modal, TextInput as RNTextInput } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useState, useRef, useCallback } from 'react';
+import {
+  View, StyleSheet, Dimensions, TouchableOpacity, FlatList,
+  KeyboardAvoidingView, Platform, Modal, TextInput as RNTextInput,
+  ActivityIndicator, Animated, LayoutAnimation, Alert
+} from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
-import { Card } from '../components/Card';
 import { BounceButton } from '../components/BounceButton';
 import { BackgroundMesh } from '../components/BackgroundMesh';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
+import { Heart, MessageCircle, PenLine, X, Users, Sparkles, TrendingUp } from 'lucide-react-native';
 import { io } from 'socket.io-client';
 import { getBaseUrl } from '../api/api';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../context/AuthContext';
+
+const { width } = Dimensions.get('window');
 
 const socket = io(getBaseUrl() || 'http://127.0.0.1:8000');
+
+// Deterministic color based on author name for consistent avatar colors
+const AVATAR_COLORS = [
+  ['#F472B6', '#EC4899'],
+  ['#A78BFA', '#7C3AED'],
+  ['#34D399', '#059669'],
+  ['#60A5FA', '#2563EB'],
+  ['#FBBF24', '#D97706'],
+  ['#F87171', '#DC2626'],
+  ['#38BDF8', '#0284C7'],
+];
+const getAvatarGradient = (name: string) => {
+  const idx = (name?.charCodeAt(0) || 0) % AVATAR_COLORS.length;
+  return AVATAR_COLORS[idx];
+};
+
+const CATEGORY_TABS = [
+  { id: 'all', label: 'All', icon: Sparkles },
+  { id: 'trending', label: 'Trending', icon: TrendingUp },
+  { id: 'q_a', label: 'Q&A', icon: MessageCircle },
+  { id: 'support', label: 'Support', icon: Users },
+];
+
+function TimeAgo({ date }: { date: string }) {
+  const now = new Date();
+  const then = new Date(date);
+  const diffMs = now.getTime() - then.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  let text = 'just now';
+  if (diffMins >= 1 && diffMins < 60) text = `${diffMins}m ago`;
+  else if (diffHours >= 1 && diffHours < 24) text = `${diffHours}h ago`;
+  else if (diffDays >= 1) text = `${diffDays}d ago`;
+
+  return <Typography variant="caption1" color="rgba(150,150,160,1)">{text}</Typography>;
+}
 
 export default function CommunityScreen({ navigation, isNested }: any) {
   const { theme, isDark } = useTheme();
   const styles = getStyles(theme, isDark);
+  const insets = useSafeAreaInsets();
+  const { user } = useAuth();
+  const { t } = useTranslation();
+
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [newPostContent, setNewPostContent] = useState('');
-  const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState('all');
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   React.useEffect(() => {
-    // Listen for initial data payload
     socket.on('init_posts', (data) => {
       setPosts(data);
       setLoading(false);
+      Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }).start();
     });
-
-    // Listen for live updates
     socket.on('posts_updated', (data) => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setPosts(data);
     });
-
-    // Fallback timeout in case the WebSocket fails to connect
-    const timeout = setTimeout(() => {
-      setLoading(false);
-    }, 2000);
-
+    const timeout = setTimeout(() => setLoading(false), 2500);
     return () => {
       socket.off('init_posts');
       socket.off('posts_updated');
@@ -46,124 +92,214 @@ export default function CommunityScreen({ navigation, isNested }: any) {
     };
   }, []);
 
-  const toggleLike = (id: string) => {
-    // Optimistic UI update for instantaneous feedback
-    setPosts(prev => prev.map(post => {
-      if (post.id === id) {
-        return {
-          ...post,
-          liked: !post.liked,
-          likes: post.liked ? post.likes - 1 : post.likes + 1
-        };
-      }
-      return post;
-    }));
-
-    // Send to backend for real-time broadcast
+  const toggleLike = useCallback((id: string) => {
+    setPosts(prev => prev.map(post =>
+      post.id === id
+        ? { ...post, liked: !post.liked, likes: post.liked ? post.likes - 1 : post.likes + 1 }
+        : post
+    ));
     socket.emit('toggle_like', id);
-  };
+  }, []);
 
   const handleCreatePost = () => {
     if (!newPostContent.trim()) return;
-    
     socket.emit('create_post', {
-      author: 'Mama',
-      week: 32,
-      content: newPostContent.trim()
+      author: user?.name || 'Mama',
+      week: (() => {
+        if (user?.due_date) {
+          const due = new Date(user.due_date);
+          const now = new Date();
+          const msLeft = due.getTime() - now.getTime();
+          const weeksLeft = msLeft / (7 * 24 * 60 * 60 * 1000);
+          return Math.max(1, Math.min(42, Math.round(40 - weeksLeft)));
+        }
+        return null;
+      })(),
+      content: newPostContent.trim(),
     });
-    
     setNewPostContent('');
     setModalVisible(false);
   };
 
-  const renderEmptyState = () => (
-    <View style={styles.emptyStateContainer}>
-      <View style={styles.emptyStateIconWrapper}>
-        <Ionicons name="chatbubbles-outline" size={48} color={theme.colors.primaryDark} />
-      </View>
-      <Typography variant="title2" style={{ marginTop: 16, marginBottom: 8, textAlign: 'center' }}>
-        {t('support.emptyTitle', "It's quiet in here...")}
+  const filteredPosts = posts.filter(p => {
+    if (activeTab === 'all') return true;
+    if (activeTab === 'trending') return p.likes >= 3;
+    if (activeTab === 'q_a') return p.content.includes('?');
+    if (activeTab === 'support') return p.likes < 3 && !p.content.includes('?');
+    return true;
+  });
+
+  const renderEmpty = () => (
+    <View style={styles.emptyContainer}>
+      <LinearGradient
+        colors={isDark ? ['rgba(168,85,247,0.15)', 'rgba(236,72,153,0.10)'] : ['rgba(168,85,247,0.08)', 'rgba(236,72,153,0.05)']}
+        style={styles.emptyIconRing}
+      >
+        <Users color={theme.colors.primaryDark} size={40} />
+      </LinearGradient>
+      <Typography variant="title2" style={{ marginTop: 20, marginBottom: 8, textAlign: 'center', fontFamily: theme.typography.families.headingBold }}>
+        {activeTab === 'trending' ? 'No trending posts yet' : "It's quiet in here..."}
       </Typography>
-      <Typography variant="body" color={theme.colors.textMedium} style={{ textAlign: 'center', paddingHorizontal: 32 }}>
-        {t('support.emptyDesc', "No one has posted in this community yet. Be the first to start the conversation!")}
+      <Typography variant="body" color={theme.colors.textMedium} style={{ textAlign: 'center', paddingHorizontal: 40, lineHeight: 22 }}>
+        {t('support.emptyDesc', 'Be the first to start a conversation in this community!')}
       </Typography>
+      <BounceButton style={[styles.emptyCtaButton, { backgroundColor: theme.colors.primaryDark }]} onPress={() => setModalVisible(true)}>
+        <PenLine color="#fff" size={16} />
+        <Typography variant="subhead" color="#fff" style={{ marginLeft: 8, fontFamily: theme.typography.families.headingBold }}>Start a Post</Typography>
+      </BounceButton>
     </View>
   );
 
-  const renderPost = ({ item, index }: { item: any, index: number }) => (
-    <View >
-      <Card variant="glass" style={styles.postCard}>
-      <View style={styles.postHeader}>
-        <View style={styles.avatar}>
-          <Typography variant="headline" color={theme.colors.background}>{item.author[0]}</Typography>
-        </View>
-        <View style={styles.postMeta}>
-          <Typography variant="headline" color={theme.colors.textHigh}>{item.author}</Typography>
-          <Typography variant="caption1" color={theme.colors.textMedium}>{t('home.week', 'Week')} {item.week}</Typography>
-        </View>
-      </View>
-      
-      <Typography variant="body" color={theme.colors.textHigh} style={styles.postContent}>
-        {item.content}
-      </Typography>
+  const renderPost = ({ item, index }: { item: any; index: number }) => {
+    const gradColors = getAvatarGradient(item.author || 'M');
+    return (
+      <Animated.View style={{ opacity: fadeAnim }}>
+        <View style={[styles.postCard, { borderColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)' }]}>
+          <BlurView intensity={isDark ? 25 : 50} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+          <LinearGradient
+            colors={isDark ? ['rgba(255,255,255,0.04)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.2)']}
+            style={StyleSheet.absoluteFillObject}
+          />
 
-      <View style={styles.postFooter}>
-        <BounceButton style={styles.actionButton} onPress={() => toggleLike(item.id)}>
-          <Ionicons name={item.liked ? "heart" : "heart-outline"} size={20} color={item.liked ? theme.colors.primaryDark : theme.colors.textMedium} />
-          <Typography variant="subhead" color={item.liked ? theme.colors.primaryDark : theme.colors.textMedium} style={{ marginLeft: 6 }}>
-            {item.likes}
+          {/* Header */}
+          <View style={styles.postHeader}>
+            <LinearGradient colors={gradColors as [string, string]} style={styles.avatar}>
+              <Typography variant="headline" color="#fff" style={{ fontFamily: theme.typography.families.headingBold }}>
+                {(item.author || 'M')[0].toUpperCase()}
+              </Typography>
+            </LinearGradient>
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Typography variant="subhead" color={theme.colors.textHigh} style={{ fontFamily: theme.typography.families.headingBold }}>
+                {item.author || 'Mama'}
+              </Typography>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                {item.week && (
+                  <View style={styles.weekBadge}>
+                    <Typography variant="caption2" color={theme.colors.primaryDark} style={{ fontFamily: theme.typography.families.headingBold }}>
+                      Week {item.week}
+                    </Typography>
+                  </View>
+                )}
+                {item.created_at && <TimeAgo date={item.created_at} />}
+              </View>
+            </View>
+            {item.likes >= 5 && (
+              <View style={styles.hotBadge}>
+                <Typography variant="caption2" color="#F59E0B" style={{ fontFamily: theme.typography.families.headingBold }}>🔥 Hot</Typography>
+              </View>
+            )}
+          </View>
+
+          {/* Content */}
+          <Typography variant="body" color={theme.colors.textHigh} style={styles.postContent}>
+            {item.content}
           </Typography>
-        </BounceButton>
-        <BounceButton style={styles.actionButton}>
-          <Ionicons name="chatbubble-outline" size={20} color={theme.colors.textMedium} />
-          <Typography variant="subhead" color={theme.colors.textMedium} style={{ marginLeft: 6 }}>
-            {item.comments}
-          </Typography>
-        </BounceButton>
-      </View>
-    </Card>
-    </View>
-  );
+
+          {/* Footer */}
+          <View style={styles.postFooter}>
+            <BounceButton style={styles.actionBtn} onPress={() => toggleLike(item.id)}>
+              <View style={[styles.actionBtnInner, item.liked && { backgroundColor: 'rgba(236,72,153,0.12)' }]}>
+                <Heart
+                  size={18}
+                  color={item.liked ? '#EC4899' : theme.colors.textMedium}
+                  fill={item.liked ? '#EC4899' : 'transparent'}
+                />
+                <Typography
+                  variant="caption1"
+                  color={item.liked ? '#EC4899' : theme.colors.textMedium}
+                  style={{ marginLeft: 5, fontFamily: theme.typography.families.headingBold }}
+                >
+                  {item.likes}
+                </Typography>
+              </View>
+            </BounceButton>
+            <BounceButton style={styles.actionBtn}>
+              <View style={styles.actionBtnInner}>
+                <MessageCircle size={18} color={theme.colors.textMedium} />
+                <Typography variant="caption1" color={theme.colors.textMedium} style={{ marginLeft: 5, fontFamily: theme.typography.families.headingBold }}>
+                  {item.comments || 0}
+                </Typography>
+              </View>
+            </BounceButton>
+          </View>
+        </View>
+      </Animated.View>
+    );
+  };
 
   const renderContent = () => (
     <>
+      {/* Header */}
       {!isNested && (
         <View style={styles.header}>
-          <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.headerTitle}>
-            {t('support.communityTab', 'Community')}
-          </Typography>
-          <Typography variant="body" color={theme.colors.textMedium}>
-            {t('support.communitySubtitle', 'Connect with other mothers.')}
-          </Typography>
+          <View>
+            <Typography variant="largeTitle" color={theme.colors.textHigh} style={{ fontFamily: theme.typography.families.headingBold }}>
+              Community
+            </Typography>
+            <Typography variant="body" color={theme.colors.textMedium} style={{ marginTop: 2 }}>
+              Connect, share and support each other 💜
+            </Typography>
+          </View>
+          <BounceButton style={[styles.composeBtn, { backgroundColor: theme.colors.primaryDark }]} onPress={() => setModalVisible(true)}>
+            <PenLine color="#fff" size={18} />
+            <Typography variant="subhead" color="#fff" style={{ marginLeft: 6, fontFamily: theme.typography.families.headingBold }}>Post</Typography>
+          </BounceButton>
         </View>
       )}
 
+      {/* Category Tabs */}
+      <View style={styles.tabsRow}>
+        {CATEGORY_TABS.map(tab => {
+          const isActive = activeTab === tab.id;
+          const Icon = tab.icon;
+          return (
+            <BounceButton key={tab.id} onPress={() => setActiveTab(tab.id)} style={styles.tabBtn}>
+              <View style={[styles.tabInner, isActive && { backgroundColor: theme.colors.primaryDark }]}>
+                <Icon size={14} color={isActive ? '#fff' : theme.colors.textMedium} />
+                <Typography
+                  variant="caption1"
+                  color={isActive ? '#fff' : theme.colors.textMedium}
+                  style={{ marginLeft: 5, fontFamily: isActive ? theme.typography.families.headingBold : theme.typography.families.bodyRegular }}
+                >
+                  {tab.label}
+                </Typography>
+              </View>
+            </BounceButton>
+          );
+        })}
+      </View>
+
+      {/* Posts List */}
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
+          <Typography variant="body" color={theme.colors.textMedium} style={{ marginTop: 12 }}>Loading community posts...</Typography>
         </View>
       ) : (
-          <FlatList
-            data={posts}
-            keyExtractor={item => item.id}
-            renderItem={renderPost}
-            ListEmptyComponent={renderEmptyState}
-            contentContainerStyle={[styles.listContent, posts.length === 0 && { flex: 1 }]}
-            showsVerticalScrollIndicator={false}
-          />
-        )}
+        <FlatList
+          data={filteredPosts}
+          keyExtractor={item => item.id}
+          renderItem={renderPost}
+          ListEmptyComponent={renderEmpty}
+          contentContainerStyle={[styles.listContent, filteredPosts.length === 0 && { flexGrow: 1 }]}
+          showsVerticalScrollIndicator={false}
+          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+        />
+      )}
 
       {/* Floating Action Button */}
-      <TouchableOpacity 
-        style={styles.fab}
-        onPress={() => setModalVisible(true)}
-      >
-        <View style={styles.fabInner}>
-          <Ionicons name="add" size={32} color={theme.colors.background} />
-        </View>
-      </TouchableOpacity>
+      {!isNested && (
+        <BounceButton style={[styles.fab, { bottom: insets.bottom + 90 }]} onPress={() => setModalVisible(true)}>
+          <LinearGradient
+            colors={[theme.colors.primary, theme.colors.primaryDark]}
+            style={styles.fabGradient}
+          >
+            <PenLine color="#fff" size={22} />
+          </LinearGradient>
+        </BounceButton>
+      )}
 
-      {/* Create Post Modal */}
+      {/* Compose Modal */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -171,29 +307,58 @@ export default function CommunityScreen({ navigation, isNested }: any) {
         onRequestClose={() => setModalVisible(false)}
       >
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: theme.colors.background }]}>
+          <View style={[styles.modalSheet, { backgroundColor: isDark ? '#1A1A2E' : '#FAFAFA' }]}>
+            <BlurView intensity={isDark ? 40 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+
+            {/* Handle */}
+            <View style={styles.modalHandle} />
+
+            {/* Modal Header */}
             <View style={styles.modalHeader}>
-              <Typography variant="title3">{t('support.startConversation', 'Start a Conversation')}</Typography>
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Ionicons name="close" size={24} color={theme.colors.textHigh} />
+              <View style={[styles.modalAvatar, { overflow: 'hidden' }]}>
+                <LinearGradient colors={getAvatarGradient(user?.name || 'M') as [string, string]} style={StyleSheet.absoluteFillObject} />
+                <Typography variant="headline" color="#fff" style={{ fontFamily: theme.typography.families.headingBold }}>
+                  {(user?.name || 'M')[0].toUpperCase()}
+                </Typography>
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Typography variant="subhead" color={theme.colors.textHigh} style={{ fontFamily: theme.typography.families.headingBold }}>
+                  {user?.name || 'Mama'}
+                </Typography>
+                <Typography variant="caption1" color={theme.colors.textMedium}>Sharing with Community</Typography>
+              </View>
+              <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeBtn}>
+                <X color={theme.colors.textHigh} size={20} />
               </TouchableOpacity>
             </View>
+
+            {/* Text Input */}
             <RNTextInput
-              style={[styles.modalInput, { color: theme.colors.textHigh, borderColor: theme.colors.border }]}
-              placeholder={t('support.whatsOnMind', "What's on your mind?")}
+              style={[styles.modalInput, { color: theme.colors.textHigh }]}
+              placeholder="What's on your mind? Ask a question, share a tip, or offer support..."
               placeholderTextColor={theme.colors.textMedium}
               multiline
               autoFocus
               value={newPostContent}
               onChangeText={setNewPostContent}
+              textAlignVertical="top"
             />
-            <BounceButton 
-              style={[styles.modalSubmitButton, { backgroundColor: newPostContent.trim() ? theme.colors.primary : theme.colors.border }]}
-              onPress={handleCreatePost}
-              disabled={!newPostContent.trim()}
-            >
-              <Typography variant="headline" color={theme.colors.background}>{t('support.post', 'Post')}</Typography>
-            </BounceButton>
+
+            {/* Character count & Post Button */}
+            <View style={styles.modalFooter}>
+              <Typography variant="caption1" color={newPostContent.length > 450 ? '#EF4444' : theme.colors.textMedium}>
+                {newPostContent.length}/500
+              </Typography>
+              <BounceButton
+                style={[styles.postBtn, { backgroundColor: newPostContent.trim() ? theme.colors.primaryDark : theme.colors.border }]}
+                onPress={handleCreatePost}
+                disabled={!newPostContent.trim()}
+              >
+                <Typography variant="subhead" color="#fff" style={{ fontFamily: theme.typography.families.headingBold }}>
+                  Share Post
+                </Typography>
+              </BounceButton>
+            </View>
           </View>
         </KeyboardAvoidingView>
       </Modal>
@@ -202,9 +367,8 @@ export default function CommunityScreen({ navigation, isNested }: any) {
 
   return (
     <View style={styles.container}>
-      {isNested ? (
-        renderContent()
-      ) : (
+      <BackgroundMesh />
+      {isNested ? renderContent() : (
         <SafeAreaView edges={['top']} style={styles.safeArea}>
           {renderContent()}
         </SafeAreaView>
@@ -214,140 +378,198 @@ export default function CommunityScreen({ navigation, isNested }: any) {
 }
 
 const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
+  container: { flex: 1, backgroundColor: theme.colors.background },
+  safeArea: { flex: 1 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 12,
+  },
+  composeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  tabsRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    gap: 8,
+    marginBottom: 12,
+  },
+  tabBtn: { flexShrink: 1 },
+  tabInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  emptyStateContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: Dimensions.get('window').height * 0.15,
-  },
-  emptyStateIconWrapper: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  safeArea: {
-    flex: 1,
-  },
-  header: {
-    paddingHorizontal: theme.spacing[4],
-    marginTop: theme.spacing[2],
-    marginBottom: theme.spacing[4],
-  },
-  headerTitle: {
-    fontFamily: theme.typography.families.headingBold,
-  },
   listContent: {
-    paddingHorizontal: theme.spacing[4],
-    paddingBottom: 160, // Space for FAB and Bottom Nav
-    gap: theme.spacing[4],
+    paddingHorizontal: 16,
+    paddingBottom: 160,
+    paddingTop: 4,
   },
   postCard: {
-    padding: theme.spacing[4],
+    borderRadius: 20,
+    borderWidth: 1,
+    overflow: 'hidden',
+    padding: 16,
   },
   postHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: theme.spacing[3],
+    marginBottom: 12,
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)',
-    borderWidth: 1,
-    borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: theme.spacing[3],
   },
-  postMeta: {
-    justifyContent: 'center',
+  weekBadge: {
+    backgroundColor: isDark ? 'rgba(168,85,247,0.15)' : 'rgba(168,85,247,0.08)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  hotBadge: {
+    backgroundColor: isDark ? 'rgba(245,158,11,0.15)' : 'rgba(245,158,11,0.10)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
   postContent: {
     lineHeight: 24,
-    marginBottom: theme.spacing[4],
+    marginBottom: 14,
   },
   postFooter: {
     flexDirection: 'row',
+    gap: 8,
     borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-    paddingTop: theme.spacing[3],
-    gap: theme.spacing[6],
+    borderTopColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+    paddingTop: 12,
   },
-  actionButton: {
+  actionBtn: {},
+  actionBtnInner: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 16,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 60,
+    paddingBottom: 40,
+  },
+  emptyIconRing: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyCtaButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 24,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 24,
   },
   fab: {
     position: 'absolute',
-    bottom: 110, // Avoid bottom nav bar
-    right: theme.spacing[6],
+    right: 20,
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: theme.colors.primaryDark,
-    justifyContent: 'center',
-    alignItems: 'center',
+    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 8,
   },
-  fabInner: {
+  fabGradient: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    width: '100%',
-    height: '100%',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.55)',
     justifyContent: 'flex-end',
   },
-  modalContent: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: theme.spacing[5],
-    paddingBottom: Platform.OS === 'ios' ? 40 : theme.spacing[5],
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 10,
+  modalSheet: {
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    padding: 20,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
+    overflow: 'hidden',
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)',
+    alignSelf: 'center',
+    marginBottom: 20,
   },
   modalHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: theme.spacing[4],
+    marginBottom: 16,
+  },
+  modalAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
   },
   modalInput: {
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: theme.spacing[4],
     fontSize: 16,
-    fontFamily: theme.typography.families.bodyRegular,
-    minHeight: 100,
-    textAlignVertical: 'top',
-    marginBottom: theme.spacing[4],
+    fontFamily: undefined,
+    lineHeight: 24,
+    minHeight: 120,
+    maxHeight: 200,
+    marginBottom: 16,
+    paddingTop: 4,
   },
-  modalSubmitButton: {
-    paddingVertical: 14,
-    borderRadius: 12,
+  modalFooter: {
+    flexDirection: 'row',
     alignItems: 'center',
-  }
+    justifyContent: 'space-between',
+    borderTopWidth: 1,
+    borderTopColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+    paddingTop: 14,
+  },
+  postBtn: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 20,
+  },
 });

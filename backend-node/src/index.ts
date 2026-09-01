@@ -53,8 +53,12 @@ const apiLimiter = rateLimit({
 // Apply rate limiter to all API routes
 app.use('/', apiLimiter);
 
+// Per-socket liked post tracking (in-memory, resets on reconnect — acceptable for this use case)
+const socketLikedPosts = new Map<string, Set<string>>();
+
 io.on('connection', async (socket) => {
   console.log(`Socket connected: ${socket.id}`);
+  socketLikedPosts.set(socket.id, new Set());
 
   // Send initial posts from database
   try {
@@ -62,27 +66,45 @@ io.on('connection', async (socket) => {
       orderBy: { created_at: 'desc' },
       take: 50
     });
-    // Add a dummy 'liked' field for the frontend UI state
-    const formattedPosts = posts.map(p => ({ ...p, liked: false }));
+    const likedByMe = socketLikedPosts.get(socket.id) || new Set();
+    const formattedPosts = posts.map(p => ({ ...p, liked: likedByMe.has(p.id) }));
     socket.emit('init_posts', formattedPosts);
   } catch (error) {
     console.error("Error fetching posts:", error);
   }
 
-  // Handle toggling like
-  socket.on('toggle_like', async (postId) => {
+  // Handle toggling like — properly increments or decrements
+  socket.on('toggle_like', async (postId: string) => {
     try {
-      await prisma.community_posts.update({
-        where: { id: postId },
-        data: { likes: { increment: 1 } } // Simplified: just increments for demo
-      });
-      
+      const likedByMe = socketLikedPosts.get(socket.id) || new Set();
+      const alreadyLiked = likedByMe.has(postId);
+
+      if (alreadyLiked) {
+        likedByMe.delete(postId);
+        await prisma.community_posts.update({
+          where: { id: postId },
+          data: { likes: { decrement: 1 } }
+        });
+      } else {
+        likedByMe.add(postId);
+        await prisma.community_posts.update({
+          where: { id: postId },
+          data: { likes: { increment: 1 } }
+        });
+      }
+      socketLikedPosts.set(socket.id, likedByMe);
+
       const posts = await prisma.community_posts.findMany({
         orderBy: { created_at: 'desc' },
         take: 50
       });
-      const formattedPosts = posts.map(p => ({ ...p, liked: false }));
-      io.emit('posts_updated', formattedPosts);
+
+      // Broadcast to ALL sockets with their own liked state
+      io.sockets.sockets.forEach((s) => {
+        const myLiked = socketLikedPosts.get(s.id) || new Set();
+        const formatted = posts.map(p => ({ ...p, liked: myLiked.has(p.id) }));
+        s.emit('posts_updated', formatted);
+      });
     } catch (error) {
       console.error("Error toggling like:", error);
     }
@@ -94,23 +116,28 @@ io.on('connection', async (socket) => {
       await prisma.community_posts.create({
         data: {
           author: post.author,
-          week: post.week,
+          week: post.week ?? null,
           content: post.content,
         }
       });
-      
+
       const posts = await prisma.community_posts.findMany({
         orderBy: { created_at: 'desc' },
         take: 50
       });
-      const formattedPosts = posts.map(p => ({ ...p, liked: false }));
-      io.emit('posts_updated', formattedPosts);
+
+      io.sockets.sockets.forEach((s) => {
+        const myLiked = socketLikedPosts.get(s.id) || new Set();
+        const formatted = posts.map(p => ({ ...p, liked: myLiked.has(p.id) }));
+        s.emit('posts_updated', formatted);
+      });
     } catch (error) {
       console.error("Error creating post:", error);
     }
   });
 
   socket.on('disconnect', () => {
+    socketLikedPosts.delete(socket.id);
     console.log(`Socket disconnected: ${socket.id}`);
   });
 });
@@ -194,22 +221,28 @@ app.post('/advisory', authenticateToken, async (req: any, res: any) => {
 
     // No danger detected. Ask Gemini for an empathetic, personalized response.
     const systemInstruction = `
-      You are Bloom AI, an empathetic, proactive, and highly personalized maternal health companion. 
-      You are NOT a generic encyclopedia. You are a deeply caring companion talking directly to a pregnant mother.
+      You are Bloom AI, a warm and concise maternal health companion for a pregnant mother.
       
-      Here is her profile:
+      Her profile:
       ${userDetails}
       
-      Instructions:
-      1. BE PROACTIVE & CONTEXT-AWARE: Actively weave her trimester, age, medical conditions, and primary goal into your responses. For example, if she is in her 3rd trimester and her goal is to prepare for birth, relate her current feelings to that specific context.
-      2. BE A COMPANION: Do not just spit out facts. Validate her feelings, celebrate her milestones, and occasionally ask a gentle follow-up question to see how she is really doing.
-      3. REFERENCE RECENT LOGS: Review her recent logs provided in her profile. If her current message relates to a recently logged symptom, or if she has an ongoing pattern, acknowledge it to show you remember and care. If she hasn't logged recently, you may gently encourage her to log her vitals when appropriate.
-      4. NO MARKDOWN OR SPECIAL CHARACTERS: You must write in plain text ONLY. Absolutely NO asterisks (*), hashtags (#), or bolding. Use standard paragraph breaks, numbers (1, 2, 3), or dashes (-) for lists instead of asterisks.
-      5. KEEP IT EXTREMELY PRECISE & BRIEF: Maximum 1-2 short paragraphs or plain text lists. DO NOT write long paragraphs unless she explicitly demands more details.
-      6. SAFETY DISCLAIMER: Always include a brief, gentle reminder to consult her doctor for medical concerns.
+      STRICT RULES:
+      1. BREVITY IS MANDATORY: Respond in 2-3 sentences MAX. Never exceed 4 sentences. No long paragraphs.
+      2. BE PRECISE AND INSIGHTFUL: Give one clear, actionable insight or reassurance. No filler words, no generic advice.
+      3. CONTEXT-AWARE: Reference her trimester, recent logs, or conditions naturally — don't just list facts.
+      4. PLAIN TEXT ONLY: No asterisks (*), no hashtags (#), no bold, no markdown. Use dashes (-) for short lists if needed.
+      5. HUMAN TONE: Be warm and caring but brief — like a knowledgeable friend texting, not a textbook.
+      6. End with a one-line doctor reminder ONLY if the topic is medical. Skip it for casual questions.
     `;
 
     const userPrompt = Array.isArray(symptoms) ? symptoms.join(', ') : symptoms;
+
+    // Save user message to history
+    if (user_id) {
+      await prisma.bloom_ai_chats.create({
+        data: { user_id, text: userPrompt, sender: 'user' }
+      });
+    }
 
     try {
       const response = await ai.models.generateContent({
@@ -217,18 +250,66 @@ app.post('/advisory', authenticateToken, async (req: any, res: any) => {
         contents: userPrompt,
         config: {
           systemInstruction: systemInstruction,
+          maxOutputTokens: 300,
         }
       });
       
-      res.json({ advice: response.text });
+      const advice = response.text;
+      
+      if (user_id) {
+        await prisma.bloom_ai_chats.create({
+          data: { user_id, text: advice, sender: 'ai' }
+        });
+      }
+      
+      res.json({ advice });
     } catch (aiError) {
       console.error("Gemini API Error:", aiError);
       // Fallback to rules engine if AI fails or key is missing
-      res.json({ advice: rulesResult.text });
+      const advice = rulesResult.text;
+      if (user_id) {
+        await prisma.bloom_ai_chats.create({
+          data: { user_id, text: advice, sender: 'ai' }
+        });
+      }
+      res.json({ advice });
     }
 
   } catch (error) {
     console.error(error);
+    res.status(500).json({ detail: "Server error" });
+  }
+});
+
+app.get('/advisory/history', authenticateToken, async (req: any, res: any) => {
+  try {
+    const user_id = req.user.userId;
+    if (!user_id) return res.status(401).json({ detail: "Unauthorized" });
+
+    const chats = await prisma.bloom_ai_chats.findMany({
+      where: { user_id },
+      orderBy: { created_at: 'asc' },
+    });
+    
+    res.json(chats);
+  } catch (error) {
+    console.error("Error fetching chat history:", error);
+    res.status(500).json({ detail: "Server error" });
+  }
+});
+
+app.delete('/advisory/history', authenticateToken, async (req: any, res: any) => {
+  try {
+    const user_id = req.user.userId;
+    if (!user_id) return res.status(401).json({ detail: "Unauthorized" });
+
+    await prisma.bloom_ai_chats.deleteMany({
+      where: { user_id },
+    });
+    
+    res.json({ success: true, detail: "Chat history cleared" });
+  } catch (error) {
+    console.error("Error clearing chat history:", error);
     res.status(500).json({ detail: "Server error" });
   }
 });

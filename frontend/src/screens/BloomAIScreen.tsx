@@ -7,10 +7,10 @@ import { BounceButton } from '../components/BounceButton';
 import { BackgroundMesh } from '../components/BackgroundMesh';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import { Send, ArrowUp, ArrowLeft, Mic } from 'lucide-react-native';
+import { Send, ArrowUp, ArrowLeft, Mic, Trash2 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { getAdvisory } from '../api/api';
+import { getAdvisory, getSymptomLogs, getAdvisoryHistory, clearAdvisoryHistory } from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 
@@ -25,17 +25,14 @@ const PROMPT_POOL = [
   "Why am I so tired?",
   "What should I pack for the hospital?",
   "How to manage morning sickness?",
-  "Can I drink coffee while pregnant?",
-  "What are good exercises for the second trimester?",
-  "How do I track fetal kicks?",
-  "Tips for better sleep with a bump?",
-  "When should I call my doctor?",
-  "What is a birth plan?",
-  "How can my partner support me right now?",
+  "How is my baby developing this week?",
+  "What should I eat for more energy?",
   "Are these Braxton Hicks contractions?",
   "What foods help with heartburn?",
   "Is it normal to feel this emotional?",
-  "What should I ask at my next ultrasound?"
+  "What should I ask at my next ultrasound?",
+  "Review my recent health logs",
+  "Any concerns based on my vitals?"
 ];
 
 export default function BloomAIScreen({ navigation, isNested }: any) {
@@ -49,8 +46,9 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
   const pulseAnim = useRef(new Animated.Value(0.5)).current;
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
+  const hasFetchedInsight = useRef(false);
   const [messages, setMessages] = useState<Message[]>([
-    { id: '1', text: t('ai.welcomeMsg', `Hi I'm Bloom, Your Maternal Health  companion`), sender: 'ai' },
+    { id: '1', text: t('ai.welcomeMsg', `Hi I'm Bloom, Your Maternal Health companion`), sender: 'ai' },
   ]);
 
   React.useEffect(() => {
@@ -58,6 +56,82 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
     const hideSub = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => setKeyboardVisible(false));
     return () => { showSub.remove(); hideSub.remove(); };
   }, []);
+
+  // Proactive health check-in: fetch recent logs and ask AI for a personalized greeting
+  React.useEffect(() => {
+    if (hasFetchedInsight.current || !user?.id) return;
+    hasFetchedInsight.current = true;
+
+    const fetchProactiveInsight = async () => {
+      try {
+        const logs = await getSymptomLogs(user.id);
+        if (!logs || logs.length === 0) return; // No logs, keep the default greeting
+
+        // Build a summary of recent activity to send to the AI
+        const recentLog = logs[0];
+        const logSummary = [
+          recentLog.symptoms ? `Symptoms: ${recentLog.symptoms}` : null,
+          recentLog.severity ? `Severity: ${recentLog.severity}` : null,
+          recentLog.blood_pressure ? `BP: ${recentLog.blood_pressure}` : null,
+          recentLog.weight ? `Weight: ${recentLog.weight}kg` : null,
+          recentLog.notes ? `Notes: ${recentLog.notes}` : null,
+        ].filter(Boolean).join(', ');
+
+        if (!logSummary) return;
+
+        setLoading(true);
+
+        const proactivePrompt = `The user just opened the chat. Based on her recent health logs, give a brief, warm, proactive check-in. Acknowledge her most recent logged data (${logSummary}) and offer one helpful tip or reassurance. Keep it to 2-3 sentences max.`;
+
+        const response = await getAdvisory([proactivePrompt]);
+        const adviceStr = typeof response.advice === 'string' ? response.advice : response.advice?.text;
+
+        if (adviceStr) {
+          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+          setMessages(prev => [...prev, {
+            id: 'proactive-insight',
+            text: adviceStr,
+            sender: 'ai'
+          }]);
+        }
+      } catch (e) {
+        // Silently fail — the user still has the generic greeting
+        console.log('Proactive insight fetch failed:', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // First fetch history
+    const loadHistory = async () => {
+      try {
+        const history = await getAdvisoryHistory();
+        if (history && history.length > 0) {
+          const formattedHistory = history.map((msg: any) => ({
+            id: msg.id.toString(),
+            text: msg.text,
+            sender: msg.sender
+          }));
+          
+          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+          // Prepend welcome message, then append history
+          setMessages([
+            { id: '1', text: t('ai.welcomeMsg', `Hi I'm Bloom, Your Maternal Health companion`), sender: 'ai' },
+            ...formattedHistory
+          ]);
+        } else {
+          // If no history, do proactive insight
+          const timer = setTimeout(fetchProactiveInsight, 1200);
+          return () => clearTimeout(timer);
+        }
+      } catch (e) {
+        console.error("Failed to load history", e);
+      }
+    };
+    
+    loadHistory();
+    
+  }, [user?.id]);
 
   React.useEffect(() => {
     if (loading) {
@@ -220,6 +294,8 @@ export default function BloomAIScreen({ navigation, isNested }: any) {
         </View>
       </View>
     </KeyboardAvoidingView>
+  </SafeAreaView>
+</View>
   );
 
   return (

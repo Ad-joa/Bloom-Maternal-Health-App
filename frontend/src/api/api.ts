@@ -98,6 +98,26 @@ export const getAdvisory = async (symptoms: string[]) => {
     }
 };
 
+export const getAdvisoryHistory = async () => {
+    try {
+        const response = await apiClient.get('/advisory/history');
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching advisory history:", error);
+        throw error;
+    }
+};
+
+export const clearAdvisoryHistory = async () => {
+    try {
+        const response = await apiClient.delete('/advisory/history');
+        return response.data;
+    } catch (error) {
+        console.error("Error clearing advisory history:", error);
+        throw error;
+    }
+};
+
 export const loginUser = async (credentials: any) => {
     try {
         const response = await apiClient.post('/auth/login', credentials);

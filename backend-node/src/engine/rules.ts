@@ -18,10 +18,10 @@ export function evaluateSymptoms(symptoms: string[], userContext?: UserContext |
     const { trimester, medical_conditions: conditions, age } = userContext;
     
     if (trimester) {
-      personalPrefix += `[Context: Trimester ${trimester}] `;
+      personalPrefix += `Being in your ${trimester === 1 ? 'first' : trimester === 2 ? 'second' : 'third'} trimester, `;
     }
     if (conditions && conditions.toLowerCase() !== "none") {
-      personalPrefix += `Given your medical history of ${conditions}, please be extra cautious. `;
+      personalPrefix += `given your history of ${conditions}, please be extra cautious. `;
     }
     if (age && age > 35) {
       personalPrefix += "As a mother over 35, we strongly recommend consulting a doctor for new symptoms. ";
