@@ -5,15 +5,19 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { Typography } from '../components/Typography';
 import { useTheme } from '../theme/ThemeContext';
-import { ChevronLeft, Baby, Clock, CheckCircle } from 'lucide-react-native';
+import { ChevronLeft, Baby, Clock, CheckCircle, RotateCcw } from 'lucide-react-native';
+import { useAuth } from '../context/AuthContext';
+import { saveKickSession } from '../api/kicks';
 
 export default function KickCounterScreen({ navigation }: any) {
   const { theme, isDark } = useTheme();
   const styles = getStyles(theme, isDark);
+  const { user } = useAuth();
   
   const [kicks, setKicks] = useState<{ id: string; time: Date }[]>([]);
   const [sessionStart, setSessionStart] = useState<Date | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -25,14 +29,34 @@ export default function KickCounterScreen({ navigation }: any) {
     return () => clearInterval(interval);
   }, [sessionStart, kicks.length]);
 
-  const handleLogKick = () => {
+  const handleLogKick = async () => {
     if (kicks.length >= 10) return;
     const now = new Date();
     if (kicks.length === 0) {
       setSessionStart(now);
       setElapsedSeconds(0);
     }
-    setKicks(prev => [{ id: Math.random().toString(), time: now }, ...prev]);
+    const newKicks = [{ id: Math.random().toString(), time: now }, ...kicks];
+    setKicks(newKicks);
+
+    // When session is complete (10 kicks), save to DB
+    if (newKicks.length === 10 && user) {
+      setIsSaving(true);
+      try {
+        await saveKickSession(10, elapsedSeconds);
+      } catch (e) {
+        // Fail silently — data was counted, just not saved remotely
+        console.error('Failed to save kick session:', e);
+      } finally {
+        setIsSaving(false);
+      }
+    }
+  };
+
+  const handleReset = () => {
+    setKicks([]);
+    setSessionStart(null);
+    setElapsedSeconds(0);
   };
 
   const formatTime = (totalSeconds: number) => {
@@ -109,6 +133,18 @@ export default function KickCounterScreen({ navigation }: any) {
                 </>
               )}
             </TouchableOpacity>
+            {isComplete && (
+              <TouchableOpacity
+                style={styles.resetBtn}
+                activeOpacity={0.7}
+                onPress={handleReset}
+              >
+                <RotateCcw size={18} color={theme.colors.textMedium} style={{ marginRight: 8 }} />
+                <Typography variant="subhead" style={{ color: theme.colors.textMedium }}>
+                  {isSaving ? 'Saving...' : 'Start New Session'}
+                </Typography>
+              </TouchableOpacity>
+            )}
           </View>
 
           {/* History List */}
@@ -231,5 +267,15 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     backgroundColor: isDark ? 'rgba(147,51,234,0.15)' : 'rgba(147,51,234,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
-  }
+  },
+  resetBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 24,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
+  },
 });

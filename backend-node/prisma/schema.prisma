@@ -38,6 +38,9 @@ model users {
   reminders               reminders[]
   health_alerts           health_alerts[]
   bloom_ai_chats          bloom_ai_chats[]
+  kick_sessions           kick_sessions[]
+  contraction_logs        contraction_logs[]
+  breathing_sessions      breathing_sessions[]
 }
 
 model symptom_logs {
@@ -159,4 +162,38 @@ model bloom_ai_chats {
   users       users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id, created_at(sort: Asc)])
+}
+
+model kick_sessions {
+  id           Int      @id @default(autoincrement())
+  user_id      Int
+  kick_count   Int
+  duration_sec Int
+  created_at   DateTime @default(now())
+  users        users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, created_at(sort: Desc)])
+}
+
+model contraction_logs {
+  id            Int      @id @default(autoincrement())
+  user_id       Int
+  start_time    DateTime
+  end_time      DateTime
+  duration_sec  Int
+  frequency_sec Int?
+  created_at    DateTime @default(now())
+  users         users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, created_at(sort: Desc)])
+}
+
+model breathing_sessions {
+  id           Int      @id @default(autoincrement())
+  user_id      Int
+  duration_sec Int
+  created_at   DateTime @default(now())
+  users        users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, created_at(sort: Desc)])
 }

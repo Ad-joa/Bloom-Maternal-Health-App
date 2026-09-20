@@ -14,6 +14,9 @@ import educationalRoutes from './routes/educational';
 import hospitalsRoutes from './routes/hospitals';
 import usersRoutes from './routes/users';
 import advisoryRoutes from './routes/advisory';
+import kicksRoutes from './routes/kicks';
+import contractionsRoutes from './routes/contractions';
+import breathingRoutes from './routes/breathing';
 
 import { globalErrorHandler } from './middleware/errorHandler';
 import { setupCommunitySocket } from './sockets/communitySocket';
@@ -67,6 +70,9 @@ app.use('/educational', educationalRoutes);
 app.use('/hospitals', hospitalsRoutes);
 app.use('/users', usersRoutes);
 app.use('/advisory', advisoryRoutes);
+app.use('/kicks', kicksRoutes);
+app.use('/contractions', contractionsRoutes);
+app.use('/breathing', breathingRoutes);
 
 // Miscellaneous route
 app.get('/trimester/:trimester_id', (req, res) => {
