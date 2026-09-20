@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Anima
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp } from '@react-navigation/native';
 import { getTrimesterInfo } from '../api/api';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { ChevronDown, ChevronUp, AlertTriangle, CheckCircle, Baby, Activity } from 'lucide-react-native';
@@ -27,6 +27,9 @@ interface Props {
 }
 
 const AccordionItem = ({ title, icon, children, defaultOpen = false }: any) => {
+  const { theme } = useTheme();
+  const { isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   const toggleOpen = () => {
@@ -54,6 +57,9 @@ const AccordionItem = ({ title, icon, children, defaultOpen = false }: any) => {
 };
 
 export default function TrimesterScreen({ route }: Props) {
+  const { theme } = useTheme();
+  const { isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
   const { trimesterId } = route.params;
   const [info, setInfo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -80,7 +86,7 @@ export default function TrimesterScreen({ route }: Props) {
 
   if (loading) {
     return (
-      <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.center}>
+      <LinearGradient colors={[theme.colors.background, theme.colors.surfaceVariant, theme.colors.primaryLight]} style={styles.center}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
       </LinearGradient>
     );
@@ -96,11 +102,11 @@ export default function TrimesterScreen({ route }: Props) {
   ];
 
   return (
-    <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.container}>
+    <LinearGradient colors={[theme.colors.background, theme.colors.surfaceVariant, theme.colors.primaryLight]} style={styles.container}>
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          <View style={{ opacity: fadeAnim, transform: [{ translateY: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }}>
+          <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }}>
             {/* Hero Header */}
             <LinearGradient
               colors={[theme.colors.primaryLight, theme.colors.primary]}
@@ -108,7 +114,7 @@ export default function TrimesterScreen({ route }: Props) {
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
-              <Typography variant="largeTitle" color="#fff" style={styles.title}>
+              <Typography variant="largeTitle" color={theme.colors.background} style={styles.title}>
                 {info?.title || `Trimester ${trimesterId}`}
               </Typography>
               <Typography variant="body" color="#ffffffd0" style={styles.subtitle}>
@@ -116,7 +122,7 @@ export default function TrimesterScreen({ route }: Props) {
               </Typography>
               <View style={styles.sizeIndicator}>
                 <Typography variant="title3">🍋</Typography>
-                <Typography variant="subhead" color="#fff" style={{ marginLeft: 8 }}>Baby is the size of a lemon</Typography>
+                <Typography variant="subhead" color={theme.colors.background} style={{ marginLeft: 8 }}>Baby is the size of a lemon</Typography>
               </View>
             </LinearGradient>
 
@@ -153,7 +159,7 @@ export default function TrimesterScreen({ route }: Props) {
                 ))}
               </AccordionItem>
             </View>
-          </View>
+          </Animated.View>
 
         </ScrollView>
       </SafeAreaView>
@@ -161,7 +167,7 @@ export default function TrimesterScreen({ route }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -181,7 +187,7 @@ const styles = StyleSheet.create({
     padding: theme.spacing[6],
     borderRadius: theme.radii.xl,
     marginBottom: theme.spacing[6],
-    shadowColor: theme.colors.primaryDark,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
     shadowRadius: 16,
@@ -209,9 +215,9 @@ const styles = StyleSheet.create({
   accordionCard: {
     padding: 0, // Reset padding because we use internal views
     overflow: 'hidden',
-    backgroundColor: '#fff',
+    backgroundColor: isDark ? theme.colors.background : theme.colors.surface,
     borderWidth: 0,
-    shadowColor: theme.colors.primaryDark,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
@@ -222,7 +228,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: theme.spacing[4],
-    backgroundColor: '#fff',
+    backgroundColor: isDark ? theme.colors.background : theme.colors.surface,
   },
   accordionHeaderLeft: {
     flexDirection: 'row',
@@ -240,7 +246,7 @@ const styles = StyleSheet.create({
   accordionContent: {
     padding: theme.spacing[4],
     paddingTop: 0,
-    backgroundColor: '#fff',
+    backgroundColor: isDark ? theme.colors.background : theme.colors.surface,
   },
   accordionText: {
     lineHeight: 24,

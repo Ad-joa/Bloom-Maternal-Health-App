@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
   },
   badge: {
     backgroundColor: theme.colors.danger,
-    borderRadius: theme.radii.pill,
+    borderRadius: theme.borderRadius.full,
     paddingHorizontal: 6,
     paddingVertical: 2,
     minWidth: 20,

@@ -1,0 +1,42 @@
+name: Production CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: backend-node/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: ./backend-node
+        run: npm ci
+
+      - name: TypeScript Check
+        working-directory: ./backend-node
+        run: npm run build
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend-node
+          push: false # Set to true when connected to a registry like AWS ECR or Docker Hub
+          tags: bloom-backend:latest
+          
+      - name: Note on Deployment
+        run: echo "In a real deployment, we would push to ECR/DockerHub and trigger a rolling update in Kubernetes or SSH into our server to run docker-compose pull && docker-compose up -d"

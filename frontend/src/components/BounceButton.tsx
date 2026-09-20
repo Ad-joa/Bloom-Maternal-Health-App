@@ -2,6 +2,8 @@ import React, { useRef } from 'react';
 import { Animated, Pressable, PressableProps, StyleProp, ViewStyle } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 interface BounceButtonProps extends PressableProps {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
@@ -9,15 +11,13 @@ interface BounceButtonProps extends PressableProps {
   hapticStyle?: Haptics.ImpactFeedbackStyle;
 }
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-
 export const BounceButton: React.FC<BounceButtonProps> = ({ 
   children, 
   style, 
   onPress, 
   onPressIn, 
   onPressOut, 
-  scaleTo = 0.92,
+  scaleTo = 0.96,
   hapticStyle = Haptics.ImpactFeedbackStyle.Light,
   ...props 
 }) => {
@@ -27,8 +27,8 @@ export const BounceButton: React.FC<BounceButtonProps> = ({
     Animated.spring(scaleValue, {
       toValue: scaleTo,
       useNativeDriver: true,
-      speed: 60,
-      bounciness: 15,
+      speed: 80,
+      bounciness: 0,
     }).start();
     
     // Trigger haptic feedback
@@ -43,8 +43,8 @@ export const BounceButton: React.FC<BounceButtonProps> = ({
     Animated.spring(scaleValue, {
       toValue: 1,
       useNativeDriver: true,
-      speed: 30,
-      bounciness: 15,
+      speed: 80,
+      bounciness: 0,
     }).start();
 
     if (onPressOut) onPressOut(e);
@@ -57,7 +57,7 @@ export const BounceButton: React.FC<BounceButtonProps> = ({
       onPress={onPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      style={[{ transform: [{ scale: scaleValue }] }, style]}
+      style={[{ justifyContent: 'center', alignItems: 'center' }, style, { transform: [{ scale: scaleValue }] }]}
       {...props}
     >
       {children}

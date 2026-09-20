@@ -1,7 +1,25 @@
+export const parseDateSafely = (dateStr: string): Date => {
+  if (!dateStr) return new Date(NaN);
+  
+  if (dateStr.includes('/')) {
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+      // DD/MM/YYYY
+      return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+    }
+  } else if (dateStr.includes('-')) {
+    const p2 = dateStr.split('T')[0].split('-');
+    if (p2.length === 3) return new Date(parseInt(p2[0]), parseInt(p2[1]) - 1, parseInt(p2[2]));
+  }
+  
+  return new Date(dateStr);
+};
+
 export const getDaysUntilDue = (dueDateStr: string): number => {
   if (!dueDateStr) return 0;
   try {
-    const due = new Date(dueDateStr);
+    const due = parseDateSafely(dueDateStr);
+    if (isNaN(due.getTime())) return 0;
     const today = new Date();
     const diffTime = due.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -14,7 +32,8 @@ export const getDaysUntilDue = (dueDateStr: string): number => {
 export const getWeeksPregnant = (dueDateStr: string): number => {
   if (!dueDateStr) return 0;
   try {
-    const due = new Date(dueDateStr);
+    const due = parseDateSafely(dueDateStr);
+    if (isNaN(due.getTime())) return 0;
     // Average pregnancy is 280 days (40 weeks)
     // If due date is X days away, then days pregnant = 280 - X
     const today = new Date();

@@ -1,249 +1,368 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Animated, Platform, FlatList, KeyboardAvoidingView, Switch, UIManager, LayoutAnimation, ActivityIndicator } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { 
+  View, 
+  StyleSheet, 
+  KeyboardAvoidingView, 
+  Platform, 
+  FlatList, 
+  TouchableOpacity, 
+  TextInput,
+  ActivityIndicator,
+  Animated,
+  ScrollView
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getAdvisory } from '../api/api';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { Typography } from '../components/Typography';
-import { Button } from '../components/Button';
-import { TextInput } from '../components/TextInput';
-import { BounceButton } from '../components/BounceButton';
-import { Card } from '../components/Card';
-import { AlertTriangle, Info, Check } from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Send, Flower2, AlertTriangle, User, Volume2, ArrowLeft, ArrowUp, Mic } from 'lucide-react-native';
+import * as Speech from 'expo-speech';
+import { ScreenWrapper } from '../components/ScreenWrapper';
 
-const COMMON_SYMPTOMS = [
-  "Nausea", "Headache", "Swollen Feet", "Fever", "Back Pain", 
-  "Cramping", "Spotting", "Fatigue", "Heartburn"
+interface Message {
+  id: string;
+  role: 'user' | 'ai';
+  text: string;
+  isDanger?: boolean;
+}
+
+const QUICK_REPLIES = [
+  "I'm feeling very nauseous",
+  "Is it safe to eat sushi?",
+  "I have a mild headache",
+  "How much water should I drink?"
 ];
 
-export default function AdvisoryScreen() {
+export default function AdvisoryScreen({ navigation }: any) {
+  const { theme } = useTheme();
+  const { isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
   const { user } = useAuth();
-  const [selectedChips, setSelectedChips] = useState<string[]>([]);
-  const [additionalSymptoms, setAdditionalSymptoms] = useState('');
-  const [advice, setAdvice] = useState<any>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+  const flatListRef = useRef<FlatList>(null);
+  
+  // Animation for the typing indicator
+  const fadeAnim = useRef(new Animated.Value(0.3)).current;
 
-  const toggleChip = (symptom: string) => {
-    if (selectedChips.includes(symptom)) {
-      setSelectedChips(prev => prev.filter(s => s !== symptom));
+  useEffect(() => {
+    // Initial Welcome Message
+    const conditionText = user?.medical_conditions ? ` I've noted your condition (${user.medical_conditions}) and I'll keep it in mind.` : '';
+    setMessages([
+      {
+        id: 'welcome',
+        role: 'ai',
+        text: `Hi I'm Bloom, your pregnancy companion`,
+      }
+    ]);
+  }, [user]);
+
+  useEffect(() => {
+    if (loading) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+          Animated.timing(fadeAnim, { toValue: 0.3, duration: 500, useNativeDriver: true })
+        ])
+      ).start();
     } else {
-      setSelectedChips(prev => [...prev, symptom]);
+      fadeAnim.setValue(1);
+      fadeAnim.stopAnimation();
     }
+  }, [loading]);
+
+  const handleSpeak = (text: string) => {
+    Speech.stop();
+    Speech.speak(text);
   };
 
-  const handleSubmit = async () => {
-    const allSymptoms = [
-      ...selectedChips,
-      ...additionalSymptoms.split(',').map(s => s.trim()).filter(s => s)
-    ];
+  const handleSend = async (text: string) => {
+    if (!text.trim()) return;
 
-    if (allSymptoms.length === 0) {
-      Alert.alert("Input Required", "Please select or enter your symptoms.");
-      return;
-    }
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      text: text.trim(),
+    };
 
+    setMessages(prev => [...prev, userMessage]);
+    setInputText('');
     setLoading(true);
-    setAdvice(null);
-    try {
-      const response = await getAdvisory(allSymptoms, user?.id);
-      const adviceStr = typeof response.advice === 'string' ? response.advice : response.advice.text;
-      
-      const isDanger = allSymptoms.some(s => ['fever', 'spotting', 'cramping'].includes(s.toLowerCase()));
-      
-      setAdvice({
-        text: adviceStr || "Please consult a healthcare provider.",
-        severity: isDanger ? 'danger' : 'normal'
-      });
 
+    try {
+      const response = await getAdvisory([text.trim()]);
+      const adviceStr = typeof response.advice === 'string' ? response.advice : response.advice?.text;
+      
+      // Basic client-side danger check just for UI styling (the backend also checks this)
+      const isDanger = text.toLowerCase().includes('severe bleeding') || text.toLowerCase().includes('chest pain') || text.toLowerCase().includes('convulsions');
+      
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'ai',
+        text: adviceStr || "I'm having trouble connecting right now. Please try again.",
+        isDanger: response.severity === 'danger' || isDanger
+      };
+      
+      setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
-      console.error(error);
-      Alert.alert("Error", "Could not fetch advisory. Please try again later.");
+      const errorMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'ai',
+        text: "Sorry, I encountered an error connecting to my servers.",
+      };
+      setMessages(prev => [...prev, errorMsg]);
     } finally {
       setLoading(false);
     }
   };
 
+  const renderMessage = ({ item }: { item: Message }) => {
+    const isUser = item.role === 'user';
+
+    if (isUser) {
+      return (
+        <View style={[styles.messageRow, styles.messageRowUser]}>
+          <View style={styles.userBubble}>
+            <Typography variant="body" color={theme.colors.background}>{item.text}</Typography>
+          </View>
+        </View>
+      );
+    }
+
+    return (
+      <View style={[styles.messageRow, styles.messageRowAI]}>
+        <View style={[styles.aiBubble, item.isDanger && styles.aiBubbleDanger]}>
+          <Typography variant="body" color={theme.colors.textHigh} style={{lineHeight: 22}}>
+            {item.text}
+          </Typography>
+          <TouchableOpacity style={styles.speakButton} onPress={() => handleSpeak(item.text)}>
+            <Volume2 size={16} color={theme.colors.textMedium} />
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
   return (
-    <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.container}>
-      <SafeAreaView edges={['top']} style={styles.safeArea}>
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          
-          <View style={styles.header}>
-            <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.headerTitle}>
-              Symptom Checker
-            </Typography>
-            <Typography variant="body" color={theme.colors.textMedium} style={styles.subtitle}>
-              Select common symptoms or describe what you are feeling to get intelligent advisory guidance.
-            </Typography>
-          </View>
-
-          <View style={styles.section}>
-            <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
-              Common Symptoms
-            </Typography>
-            <View style={styles.chipContainer}>
-              {COMMON_SYMPTOMS.map((symptom) => {
-                const isSelected = selectedChips.includes(symptom);
-                return (
-                  <BounceButton
-                    key={symptom}
-                    onPress={() => toggleChip(symptom)}
-                    style={[styles.chip, isSelected && styles.chipSelected]}
-                  >
-                    {isSelected && <Check size={16} color="#fff" style={{ marginRight: 6 }} />}
-                    <Typography 
-                      variant="subhead" 
-                      color={isSelected ? '#fff' : theme.colors.textHigh}
-                    >
-                      {symptom}
-                    </Typography>
-                  </BounceButton>
-                );
-              })}
-            </View>
-          </View>
-
-          <View style={styles.section}>
-            <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
-              Other Symptoms
-            </Typography>
-            <TextInput
-              placeholder="E.g. blurry vision, dizziness..."
-              value={additionalSymptoms}
-              onChangeText={setAdditionalSymptoms}
-              multiline
-              style={styles.textArea}
-            />
-          </View>
-
-          <Button 
-            title="Analyze Symptoms" 
-            onPress={handleSubmit} 
-            loading={loading} 
-            style={styles.button}
-          />
-
-          {advice && (
-            <Card 
-              style={[
-                styles.resultCard, 
-                { borderLeftColor: advice.severity === 'danger' ? theme.colors.danger : theme.colors.success }
-              ]}
-            >
-              <View style={styles.resultHeader}>
-                {advice.severity === 'danger' ? (
-                  <AlertTriangle color={theme.colors.danger} size={24} />
-                ) : (
-                  <Info color={theme.colors.success} size={24} />
-                )}
-                <Typography 
-                  variant="title3" 
-                  color={advice.severity === 'danger' ? theme.colors.danger : theme.colors.success}
-                  style={styles.resultTitle}
-                >
-                  {advice.severity === 'danger' ? "Medical Attention Recommended" : "Advisory"}
-                </Typography>
+    <ScreenWrapper isNested={true}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation?.canGoBack() ? navigation.goBack() : null} style={{ padding: 8 }}>
+          <ArrowLeft color={theme.colors.textHigh} size={24} />
+        </TouchableOpacity>
+      </View>
+          {/* Chat List or Empty State */}
+          {messages.length === 1 && !loading ? (
+            <View style={styles.emptyStateContainer}>
+              <View style={styles.glowingRingOuter}>
+                <View style={styles.glowingRingInner} />
               </View>
-              <Typography variant="body" color={theme.colors.textHigh} style={styles.resultText}>
-                {advice.text}
+              <Typography variant="title2" style={styles.emptyStateText}>
+                {messages[0].text}
               </Typography>
-            </Card>
+            </View>
+          ) : (
+            <FlatList
+              ref={flatListRef}
+              data={messages}
+              keyExtractor={item => item.id}
+              renderItem={renderMessage}
+              contentContainerStyle={styles.chatListContent}
+              onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+              onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
+            />
           )}
 
-        </ScrollView>
-      </SafeAreaView>
-    </LinearGradient>
+          {/* Typing Indicator */}
+          {loading && (
+            <Animated.View style={[styles.messageRow, styles.messageRowAI, { opacity: fadeAnim, marginBottom: 8 }]}>
+              <View style={styles.aiBubble}>
+                <Typography variant="body" color={theme.colors.textMedium}>Bloom AI is typing...</Typography>
+              </View>
+            </Animated.View>
+          )}
+
+          {/* Quick Replies */}
+          {messages.length === 1 && !loading && (
+            <View style={styles.quickRepliesContainer}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="always">
+                {QUICK_REPLIES.map((reply, idx) => (
+                  <TouchableOpacity 
+                    key={idx} 
+                    style={styles.quickReplyPill}
+                    onPress={() => handleSend(reply)}
+                  >
+                    <Typography variant="subhead" color={theme.colors.primaryDark}>{reply}</Typography>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* Clean Input Area */}
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={[styles.textInput, { color: theme.colors.textHigh }]}
+              placeholder="Ask about your pregnancy..."
+              placeholderTextColor={theme.colors.textMedium}
+              value={inputText}
+              onChangeText={setInputText}
+              multiline
+              maxLength={500}
+            />
+            <TouchableOpacity style={styles.micButton}>
+              <Mic color={theme.colors.textMedium} size={20} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]} 
+              onPress={() => handleSend(inputText)}
+              disabled={!inputText.trim() || loading}
+            >
+              <ArrowUp color={theme.colors.background} size={20} />
+            </TouchableOpacity>
+          </View>
+      </ScreenWrapper>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: theme.spacing[4],
-    paddingBottom: theme.spacing[8],
-  },
+const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   header: {
-    marginBottom: theme.spacing[6],
-    marginTop: theme.spacing[2],
+    paddingHorizontal: theme.spacing[4],
+    paddingVertical: theme.spacing[2],
+    backgroundColor: 'transparent',
+    alignItems: 'flex-start',
+    zIndex: 10,
+  },
+  headerTitleWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
   },
   headerTitle: {
     fontFamily: theme.typography.families.headingBold,
-    marginBottom: theme.spacing[2],
   },
-  subtitle: {
-    lineHeight: 24,
-  },
-  section: {
-    marginBottom: theme.spacing[6],
-  },
-  sectionTitle: {
-    marginBottom: theme.spacing[4],
-    fontFamily: theme.typography.families.headingBold,
-  },
-  chipContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: theme.spacing[3],
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    paddingVertical: theme.spacing[3],
+  chatListContent: {
     paddingHorizontal: theme.spacing[4],
-    borderRadius: theme.radii.pill,
-    shadowColor: theme.colors.primaryDark,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: '#f5f5f5',
+    paddingTop: theme.spacing[5],
+    paddingBottom: theme.spacing[2],
   },
-  chipSelected: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
+  messageRow: {
+    flexDirection: 'row',
+    marginBottom: theme.spacing[4],
+    maxWidth: '85%',
   },
-  textArea: {
-    minHeight: 100,
-    textAlignVertical: 'top',
-    backgroundColor: '#fff',
-    borderWidth: 0,
-    shadowColor: theme.colors.primaryDark,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+  messageRowUser: {
+    alignSelf: 'flex-end',
+    justifyContent: 'flex-end',
   },
-  button: {
-    marginTop: theme.spacing[2],
-    marginBottom: theme.spacing[6],
+  messageRowAI: {
+    alignSelf: 'flex-start',
   },
-  resultCard: {
-    borderLeftWidth: 4,
-    backgroundColor: '#fff',
-    shadowColor: theme.colors.primaryDark,
+  userBubble: {
+    backgroundColor: theme.colors.primaryDark,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 24,
+    borderBottomRightRadius: 6, // Squircle tail
+    shadowColor: theme.colors.primary,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4,
   },
-  resultHeader: {
+  aiBubble: {
+    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 24,
+    borderBottomLeftRadius: 6, // Squircle tail
+  },
+  aiBubbleDanger: {
+    backgroundColor: '#FFF0F0',
+    borderWidth: 1,
+    borderColor: theme.colors.danger + '40',
+  },
+  speakButton: {
+    marginTop: 8,
+    alignSelf: 'flex-end',
+    padding: 4,
+  },
+  quickRepliesContainer: {
+    paddingVertical: theme.spacing[2],
+    paddingHorizontal: theme.spacing[4],
+  },
+  quickReplyPill: {
+    backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+    paddingHorizontal: theme.spacing[4],
+    paddingVertical: 12,
+    borderRadius: 24,
+    marginRight: theme.spacing[3],
+  },
+  inputContainer: {
     flexDirection: 'row',
+    alignItems: 'flex-end',
+    paddingHorizontal: 6,
+    paddingVertical: 6,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
+    borderRadius: 30,
+  },
+  textInput: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 12,
+    minHeight: 44,
+    maxHeight: 120,
+    fontFamily: theme.typography.families.bodyRegular,
+    fontSize: 16,
+  },
+  micButton: {
+    padding: 10,
+    marginRight: 4,
+    marginBottom: 2,
+  },
+  sendButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: theme.colors.primary,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: theme.spacing[3],
+    marginLeft: theme.spacing[3],
   },
-  resultTitle: {
-    marginLeft: theme.spacing[2],
+  sendButtonDisabled: {
+    backgroundColor: theme.colors.textMedium,
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 60,
+  },
+  glowingRingOuter: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: theme.colors.primary + '20',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  glowingRingInner: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 8,
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.background,
+  },
+  emptyStateText: {
     fontFamily: theme.typography.families.headingBold,
-  },
-  resultText: {
-    lineHeight: 24,
+    color: theme.colors.textHigh,
   }
 });

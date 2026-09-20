@@ -1,442 +1,980 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions, Alert, Animated as RNAnimated } from 'react-native';
+import {
+  View, StyleSheet, ScrollView, TouchableOpacity,
+  StatusBar, Dimensions, Animated, Platform, Alert, Image
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { useTranslation } from 'react-i18next';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { Typography } from '../components/Typography';
-import { BounceButton } from '../components/BounceButton';
-import { Card } from '../components/Card';
+import {
+  Activity, Droplets, Stethoscope, Heart, Sun,
+  Moon, Sparkles, Bell, ChevronRight, Zap,
+  Baby, Apple, Lightbulb, Calendar, Luggage, Info, Target,
+  Headphones, PlayCircle, BookOpen, FileText, Wind, Timer, Camera
+} from 'lucide-react-native';
+import { getWeeksPregnant, getDaysUntilDue, parseDateSafely } from '../utils/dateUtils';
+import { getAncVisits, getEducationalContent } from '../api/api';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Droplet, Heart, CheckCircle, MessageCircle, Calendar, ChevronRight } from 'lucide-react-native';
-import { getDaysUntilDue, getWeeksPregnant, getCurrentTrimester } from '../utils/dateUtils';
+import { BlurView } from 'expo-blur';
+import Svg, { Circle } from 'react-native-svg';
+import { useTranslation } from 'react-i18next';
 
 const { width } = Dimensions.get('window');
+const CARD_WIDTH = width - 48;
+
+const FETUS_SIZE_MAP: Record<number, { image: any; stageName: string; weight: string; length: string }> = {
+  2:  { image: require('../../assets/images/fetus_2.jpg'), stageName: 'Blastocyst', weight: '< 1 g', length: '1 mm' },
+  7:  { image: require('../../assets/images/fetus_7.jpg'), stageName: 'Embryo', weight: '1 g', length: '1.6 cm' },
+  14: { image: require('../../assets/images/fetus_14.jpg'), stageName: 'Early Fetus', weight: '43 g', length: '8.7 cm' },
+  35: { image: require('../../assets/images/fetus_35.jpg'), stageName: 'Late Preterm', weight: '2.4 kg', length: '46.2 cm' },
+  41: { image: require('../../assets/images/fetus_41.jpg'), stageName: 'Full Term', weight: '3.5 kg', length: '51.2 cm' },
+};
 
 const getBabySize = (weeks: number) => {
-  if (weeks < 4) return { emoji: '🌱', name: 'a Poppy Seed' };
-  if (weeks === 4) return { emoji: '🌾', name: 'a Sesame Seed' };
-  if (weeks === 5) return { emoji: '🍏', name: 'an Apple Seed' };
-  if (weeks === 6) return { emoji: '🫐', name: 'a Sweet Pea' };
-  if (weeks === 7) return { emoji: '🫐', name: 'a Blueberry' };
-  if (weeks === 8) return { emoji: '🍓', name: 'a Raspberry' };
-  if (weeks === 9) return { emoji: '🫒', name: 'a Green Olive' };
-  if (weeks === 10) return { emoji: '🍓', name: 'a Strawberry' };
-  if (weeks === 11) return { emoji: '🍋', name: 'a Lime' };
-  if (weeks === 12) return { emoji: '🥝', name: 'a Plum' };
-  if (weeks === 13) return { emoji: '🍑', name: 'a Peach' };
-  if (weeks === 14) return { emoji: '🍋', name: 'a Lemon' };
-  if (weeks === 15) return { emoji: '🍎', name: 'an Apple' };
-  if (weeks === 16) return { emoji: '🥑', name: 'an Avocado' };
-  if (weeks === 17) return { emoji: '🧅', name: 'a Turnip' };
-  if (weeks === 18) return { emoji: '🫑', name: 'a Bell Pepper' };
-  if (weeks === 19) return { emoji: '🍅', name: 'a Tomato' };
-  if (weeks === 20) return { emoji: '🍌', name: 'a Banana' };
-  if (weeks === 21) return { emoji: '🥕', name: 'a Carrot' };
-  if (weeks === 22) return { emoji: '🥥', name: 'a Coconut' };
-  if (weeks === 23) return { emoji: '🥭', name: 'a Mango' };
-  if (weeks === 24) return { emoji: '🌽', name: 'an Ear of Corn' };
-  if (weeks === 25) return { emoji: '🥦', name: 'a Cauliflower' };
-  if (weeks === 26) return { emoji: '🥬', name: 'a Lettuce' };
-  if (weeks === 27) return { emoji: '🥬', name: 'a Cabbage' };
-  if (weeks === 28) return { emoji: '🍆', name: 'an Eggplant' };
-  if (weeks === 29) return { emoji: '🎃', name: 'a Butternut Squash' };
-  if (weeks === 30) return { emoji: '🥬', name: 'a Large Cabbage' };
-  if (weeks === 31) return { emoji: '🥥', name: 'a Coconut' };
-  if (weeks === 32) return { emoji: '🥔', name: 'a Jicama' };
-  if (weeks === 33) return { emoji: '🍍', name: 'a Pineapple' };
-  if (weeks === 34) return { emoji: '🍈', name: 'a Cantaloupe' };
-  if (weeks === 35) return { emoji: '🍈', name: 'a Honeydew Melon' };
-  if (weeks === 36) return { emoji: '🥬', name: 'a Romaine Lettuce' };
-  if (weeks === 37) return { emoji: '🥬', name: 'a Swiss Chard' };
-  if (weeks === 38) return { emoji: '🎃', name: 'a Winter Squash' };
-  if (weeks === 39) return { emoji: '🍉', name: 'a Mini Watermelon' };
-  return { emoji: '🍉', name: 'a Watermelon' };
+  const keys = Object.keys(FETUS_SIZE_MAP).map(Number).sort((a, b) => a - b);
+  const closest = keys.reduce((prev, curr) =>
+    Math.abs(curr - weeks) < Math.abs(prev - weeks) ? curr : prev
+  );
+  return FETUS_SIZE_MAP[closest] ?? FETUS_SIZE_MAP[14];
 };
 
-type Props = {
-  navigation: any; 
+const DAILY_TIPS = [
+  { tip: 'Drink at least 8–10 glasses of water today.', icon: '💧' },
+  { tip: 'Take a gentle 20-minute walk if you feel up to it.', icon: '🚶‍♀️' },
+  { tip: 'Practice 5 minutes of deep belly breathing.', icon: '🧘‍♀️' },
+  { tip: 'Eat a calcium-rich snack like yogurt or cheese.', icon: '🥛' },
+  { tip: 'Rest with your feet elevated for 15 minutes.', icon: '🛋️' },
+  { tip: 'Connect with a friend who lifts your spirit.', icon: '❤️' },
+  { tip: 'Take your prenatal vitamin if you haven\'t today.', icon: '💊' },
+  { tip: 'Try prenatal yoga to ease back pain and stretch out.', icon: '🧘‍♀️' },
+  { tip: 'Snack on almonds or walnuts for healthy fats and energy.', icon: '🥜' },
+  { tip: 'Listen to your favorite calming music for 10 minutes.', icon: '🎵' },
+  { tip: 'Do a few pelvic floor (Kegel) exercises while sitting.', icon: '💪' },
+  { tip: 'Read a chapter of a book to unwind before bed.', icon: '📖' },
+  { tip: 'Incorporate leafy greens like spinach into your meals today.', icon: '🥗' },
+  { tip: 'Massage your belly with a gentle, hydrating lotion.', icon: '🧴' },
+  { tip: 'Take a warm, relaxing bath (not too hot!) tonight.', icon: '🛁' },
+  { tip: 'Journal your thoughts or pregnancy milestones for 5 minutes.', icon: '📝' },
+  { tip: 'Get some fresh air and sunlight to boost your vitamin D.', icon: '☀️' },
+  { tip: 'Prep some healthy snacks so they are ready when hunger strikes.', icon: '🍎' },
+  { tip: 'Practice sleeping on your left side to improve blood flow.', icon: '🛏️' },
+  { tip: 'Take a moment to talk or sing to your baby.', icon: '🎶' },
+  { tip: 'Limit caffeine today and opt for a warm herbal tea.', icon: '🍵' },
+  { tip: 'Stretch your calves gently before bed to prevent leg cramps.', icon: '🦵' },
+  { tip: 'Focus on small, frequent meals to keep nausea at bay.', icon: '🥪' },
+  { tip: 'Ask for help with a chore you usually do yourself.', icon: '🤝' },
+  { tip: 'Treat yourself to your favorite healthy pregnancy craving.', icon: '🍓' },
+  { tip: 'Spend a few minutes visualizing a positive birth experience.', icon: '✨' },
+  { tip: 'Avoid screens 30 minutes before bed for better sleep.', icon: '📱' },
+  { tip: 'Eat an iron-rich meal, like lentils, beans, or lean meat.', icon: '🥩' },
+  { tip: 'Take deep breaths if you feel overwhelmed. You are doing great.', icon: '🌬️' },
+  { tip: 'Plan a relaxing date night or self-care evening.', icon: '🕯️' }
+];
+
+const WEEKLY_DATA: Record<number, { fetal: string; maternal: string; todo: string; ancPreview: string }> = {
+  12: { fetal: 'Baby\'s vital organs are fully formed.', maternal: 'Nausea might start to subside.', todo: 'Schedule NIPT (Genetic) Screening', ancPreview: 'Nuchal translucency ultrasound & blood test' },
+  16: { fetal: 'Baby can make facial expressions.', maternal: 'You might feel a "fluttering" (quickening).', todo: 'Start practicing sleeping on your side', ancPreview: 'Fetal heart rate check & fundal height' },
+  20: { fetal: 'Baby is covered in a protective coating (vernix).', maternal: 'Your uterus has reached your belly button.', todo: 'Schedule your 20-week Anatomy Scan', ancPreview: 'Detailed anatomy scan to check baby\'s organs' },
+  24: { fetal: 'Inner ear is fully developed; they can hear you!', maternal: 'You may notice Braxton Hicks contractions.', todo: 'Research local pediatrician options', ancPreview: 'Glucose screening for gestational diabetes' },
+  28: { fetal: 'Baby\'s eyes can now open and close.', maternal: 'Third trimester begins! Fatigue may return.', todo: 'Take Glucose Tolerance Test', ancPreview: 'Antibody screen (if Rh negative) & iron check' },
+  32: { fetal: 'Baby is practicing breathing movements.', maternal: 'Shortness of breath as uterus pushes up.', todo: 'Pack your hospital bag', ancPreview: 'Discuss birth plan & signs of preterm labor' },
+  36: { fetal: 'Baby is rapidly gaining fat (1 oz/day).', maternal: 'Baby might "drop" lower into your pelvis.', todo: 'Install the car seat', ancPreview: 'Group B Strep (GBS) swab test' },
+  40: { fetal: 'Your baby has reached full term and is ready to meet you!', maternal: 'The waiting game. Rest as much as possible.', todo: 'Rest and watch for signs of active labor', ancPreview: 'Cervical check & membrane sweep discussion' },
 };
 
-export default function HomeScreen({ navigation }: Props) {
-  const { user } = useAuth();
-  const { t } = useTranslation();
-  
-  const dueDate = user?.due_date || '';
-  const daysUntilDue = dueDate ? getDaysUntilDue(dueDate) : 0;
-  const weeksPregnant = dueDate ? getWeeksPregnant(dueDate) : 0;
-  const currentTrimester = dueDate ? getCurrentTrimester(dueDate) : (user?.trimester || 1);
-  const babySize = getBabySize(weeksPregnant);
+const getWeeklyData = (weeks: number) => {
+  const keys = Object.keys(WEEKLY_DATA).map(Number).sort((a, b) => a - b);
+  const closest = keys.reduce((prev, curr) =>
+    Math.abs(curr - weeks) < Math.abs(prev - weeks) ? curr : prev
+  );
+  return WEEKLY_DATA[closest] ?? WEEKLY_DATA[28];
+};
 
-  // Calculate Progress
-  const totalDaysPregnancy = 280; // 40 weeks
-  const daysPregnant = totalDaysPregnancy - daysUntilDue;
-  const progressPercent = Math.min(Math.max((daysPregnant / totalDaysPregnancy) * 100, 0), 100);
+const MOTIVATIONS = [
+  { quote: "If you educate a man you educate an individual, but if you educate a woman you educate a nation.", author: "Dr. J.E. Kwegyir Aggrey" },
+  { quote: "Motherhood is the ultimate act of faith in the future.", author: "Ama Ata Aidoo" },
+  { quote: "We are the women who birth nations. Our strength is inherited from the earth itself.", author: "Taiye Selasi" },
+  { quote: "There is no tool for development more effective than the empowerment of women.", author: "Kofi Annan" },
+  { quote: "To carry a child is to carry the future of our people in your hands.", author: "J.J. Rawlings" },
+  { quote: "To be a mother is to be the first teacher, the first guide, and the first love of the next generation.", author: "Kwame Nkrumah" },
+  { quote: "A tree has roots in the soil yet reaches to the sky. A mother roots her child in love so they may reach the stars.", author: "Wangari Maathai" },
+  { quote: "The true strength of our nation lies in the courageous hearts of its mothers.", author: "Yaa Asantewaa" },
+  { quote: "It always seems impossible until it is done. Trust your incredible body.", author: "Nelson Mandela" },
+  { quote: "There is no limit to what we, as women, can accomplish.", author: "Ellen Johnson Sirleaf" }
+];
 
-  // Generate a mock calendar ribbon for the next 7 days
-  const today = new Date();
-  const calendarDays = Array.from({ length: 7 }).map((_, i) => {
-    const d = new Date(today);
-    d.setDate(today.getDate() + i - 3); // Center around today
-    return {
-      dayStr: d.toLocaleDateString('en-US', { weekday: 'short' })[0], // 'M', 'T', 'W'
-      dateNum: d.getDate(),
-      isToday: i === 3,
-    };
-  });
+// ── Circular Progress Ring ───────────────────────────────
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+const RING_SIZE = 180;
+const STROKE = 10;
+const R = (RING_SIZE - STROKE) / 2;
+const CIRCUMFERENCE = 2 * Math.PI * R;
 
-  const [dailyQuote, setDailyQuote] = useState('');
-  const fadeAnim = useRef(new RNAnimated.Value(1)).current;
-
-  const motivations = [
-    "Your body is doing incredible things today.",
-    "Rest when you need to. You are growing a life.",
-    "Every day brings you closer to meeting your baby.",
-    "Trust your instincts; you are already a great mother.",
-    "It's okay to feel overwhelmed. Take it one breath at a time.",
-    "You are strong, resilient, and capable."
-  ];
+function CircularProgress({ percent, isDark, theme }: { percent: number; isDark: boolean; theme: any }) {
+  const animVal = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Initial random quote
-    setDailyQuote(motivations[Math.floor(Math.random() * motivations.length)]);
+    Animated.timing(animVal, {
+      toValue: percent,
+      duration: 1400,
+      useNativeDriver: false,
+    }).start();
+  }, [percent]);
 
-    const intervalId = setInterval(() => {
-      // Fade out
-      RNAnimated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 500,
-        useNativeDriver: true,
-      }).start(() => {
-        // Change quote while invisible
-        setDailyQuote(motivations[Math.floor(Math.random() * motivations.length)]);
-        // Fade in
-        RNAnimated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 500,
-          useNativeDriver: true,
-        }).start();
-      });
-    }, 10000); // 10 seconds
-
-    return () => clearInterval(intervalId);
-  }, []);
-
-  const actionButtons = [
-    { id: 'tracker', label: t('actions.log'), icon: <Droplet color="#fff" size={24} />, route: 'Tracker', color: theme.colors.primary },
-    { id: 'symptoms', label: t('actions.symptoms'), icon: <Heart color={theme.colors.textHigh} size={24} />, route: 'Advisory', color: '#fff' },
-    { id: 'ai', label: t('actions.ai'), icon: <MessageCircle color={theme.colors.textHigh} size={24} />, route: 'BloomAI', color: '#fff' },
-    { id: 'checkin', label: t('actions.checkin'), icon: <CheckCircle color={theme.colors.textHigh} size={24} />, route: 'Tracker', color: '#fff' },
-  ];
-
-  const insights = [
-    { id: '1', title: 'Today\'s chance\nof symptoms', subtitle: 'View Insights', color: theme.colors.primaryLight, route: 'Insights' },
-    { id: '2', title: 'What makes you\nfeel loved?', subtitle: 'QUIZ', color: theme.colors.primaryDark, textLight: true, route: 'BloomAI' },
-    { id: '3', title: 'Nutrition Check', subtitle: 'Drink Water', color: '#F3E8FF', route: 'Tracker' },
-  ];
+  const strokeDashoffset = animVal.interpolate({
+    inputRange: [0, 100],
+    outputRange: [CIRCUMFERENCE, 0],
+  });
 
   return (
-    <LinearGradient
-      colors={['#ffffff', '#fdf2f4', '#fce7eb']}
-      style={styles.container}
-    >
-      <SafeAreaView edges={['top']} style={styles.safeArea}>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-          
-          {/* Header Row */}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={styles.avatar}>
-              <Typography variant="headline" color="#fff">
-                {user?.name ? user.name[0].toUpperCase() : 'B'}
-              </Typography>
-            </TouchableOpacity>
-            <View style={styles.dateSelector}>
-              <Typography variant="headline" color={theme.colors.textHigh} style={{ marginRight: 8 }}>
-                {today.toLocaleDateString('en-US', { day: 'numeric', month: 'long' })}
-              </Typography>
-              <Calendar color={theme.colors.textHigh} size={20} />
-            </View>
-          </View>
-
-          {/* Calendar Ribbon */}
-          <View  style={styles.calendarRibbon}>
-            {calendarDays.map((day, idx) => (
-              <View key={idx} style={[styles.dayColumn, day.isToday && styles.todayColumn]}>
-                <Typography variant="caption1" color={theme.colors.textMedium} style={styles.dayStr}>
-                  {day.dayStr}
-                </Typography>
-                <Typography variant="title3" color={theme.colors.textHigh} style={styles.dateNum}>
-                  {day.dateNum}
-                </Typography>
-              </View>
-            ))}
-          </View>
-
-          {/* Main Content Layout */}
-          <View  style={styles.contentLayout}>
-            
-            {/* 1. Pregnancy Status Card */}
-            <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate('Trimester', { trimesterId: currentTrimester })}>
-              <Card style={styles.statusCard}>
-                <View style={styles.statusHeader}>
-                  <Typography variant="headline" color={theme.colors.primaryDark}>
-                    {t('home.trimester')} {currentTrimester}
-                  </Typography>
-                  <ChevronRight size={20} color={theme.colors.primaryDark} />
-                </View>
-
-                {dueDate ? (
-                  <>
-                    <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.heroTitle}>
-                      {t('home.week')} {weeksPregnant}
-                    </Typography>
-                    <Typography variant="body" color={theme.colors.textMedium} style={styles.heroSubtitle}>
-                      {daysUntilDue} {t('home.untilDue')}
-                    </Typography>
-                    
-                    {/* Progress Bar */}
-                    <View style={styles.progressContainer}>
-                      <View style={[styles.progressBar, { width: `${progressPercent}%` }]} />
-                    </View>
-
-                    <View style={styles.babySizeChip}>
-                      <Typography variant="title3">{babySize.emoji}</Typography>
-                      <Typography variant="caption1" color={theme.colors.textHigh} style={{ marginLeft: 6 }}>
-                        {t('home.babySize')} {babySize.name}
-                      </Typography>
-                    </View>
-                  </>
-                ) : (
-                  <>
-                    <Typography variant="largeTitle" color={theme.colors.textHigh} style={styles.heroTitle}>
-                      {t('home.welcome')}
-                    </Typography>
-                    <Typography variant="body" color={theme.colors.textMedium} style={styles.heroSubtitle}>
-                      {t('home.setupProfile')}
-                    </Typography>
-                  </>
-                )}
-              </Card>
-            </TouchableOpacity>
-
-            {/* 2. Quick Actions Grid Card */}
-            <Card style={styles.actionsCard}>
-              <Typography variant="headline" color={theme.colors.textHigh} style={{ marginBottom: theme.spacing[4] }}>
-                {t('home.quickActions')}
-              </Typography>
-              <View style={styles.actionGrid}>
-                {actionButtons.map(btn => (
-                  <BounceButton 
-                    key={btn.id} 
-                    style={styles.actionGridItem} 
-                    onPress={() => navigation.navigate(btn.route)}
-                    accessibilityLabel={`Navigate to ${btn.label}`}
-                    accessibilityRole="button"
-                  >
-                    <View style={[styles.circleButton, { backgroundColor: btn.color }]}>
-                      {btn.icon}
-                    </View>
-                    <Typography variant="caption1" color={theme.colors.textHigh} style={{ marginTop: 8 }}>
-                      {btn.label}
-                    </Typography>
-                  </BounceButton>
-                ))}
-              </View>
-            </Card>
-
-            {/* 3. Daily Reflection Card */}
-            <Card style={styles.reflectionCard}>
-              <Typography variant="headline" color={theme.colors.primaryDark} style={{ marginBottom: theme.spacing[2] }}>
-                {t('home.dailyReflection')}
-              </Typography>
-              <RNAnimated.View style={{ opacity: fadeAnim }}>
-                <Typography variant="body" color={theme.colors.textMedium} style={{ fontStyle: 'italic' }}>
-                  "{dailyQuote}"
-                </Typography>
-              </RNAnimated.View>
-            </Card>
-
-          </View>
-
-          {/* Daily Insights */}
-          <View  style={styles.insightsSection}>
-            <Typography variant="title3" color={theme.colors.textHigh} style={styles.sectionTitle}>
-              {t('home.insightsTitle')}
-            </Typography>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.insightsScroll}>
-              {insights.map(item => (
-                <BounceButton 
-                  key={item.id} 
-                  onPress={() => navigation.navigate(item.route)}
-                >
-                  <View style={[styles.insightCard, { backgroundColor: item.color }]}>
-                    <Typography variant="headline" color={item.textLight ? '#fff' : theme.colors.textHigh} style={styles.insightTitle}>
-                      {item.title}
-                    </Typography>
-                    <Typography variant="subhead" color={item.textLight ? '#ffffffa0' : theme.colors.primaryDark}>
-                      {item.subtitle}
-                    </Typography>
-                  </View>
-                </BounceButton>
-              ))}
-            </ScrollView>
-          </View>
-
-        </ScrollView>
-      </SafeAreaView>
-    </LinearGradient>
+    <Svg width={RING_SIZE} height={RING_SIZE} style={{ transform: [{ rotate: '-90deg' }] }}>
+      {/* Track */}
+      <Circle
+        cx={RING_SIZE / 2}
+        cy={RING_SIZE / 2}
+        r={R}
+        stroke={isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}
+        strokeWidth={STROKE}
+        fill="none"
+      />
+      {/* Progress */}
+      <AnimatedCircle
+        cx={RING_SIZE / 2}
+        cy={RING_SIZE / 2}
+        r={R}
+        stroke={theme.colors.primaryDark}
+        strokeWidth={STROKE}
+        fill="none"
+        strokeLinecap="round"
+        strokeDasharray={CIRCUMFERENCE}
+        strokeDashoffset={strokeDashoffset}
+      />
+    </Svg>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: theme.spacing[8],
-  },
+// ── Main Screen ──────────────────────────────────────────
+export default function HomeScreen({ navigation }: any) {
+  const { theme, isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
+  const { user } = useAuth();
+  const { t } = useTranslation();
+
+  const dueDate = user?.due_date || '';
+  const rawWeeks = dueDate ? getWeeksPregnant(dueDate) : 0;
+  const weeksPregnant = rawWeeks > 0 ? rawWeeks : 0;
+  const daysLeft = dueDate ? getDaysUntilDue(dueDate) : 0;
+  const trimester = weeksPregnant === 0 ? 0 : weeksPregnant < 13 ? 1 : weeksPregnant < 27 ? 2 : 3;
+  const babySize = getBabySize(weeksPregnant);
+  const weeklyData = getWeeklyData(weeksPregnant);
+  const progressPercent = Math.min((weeksPregnant / 40) * 100, 100);
+
+  const formatDueDate = (dateStr: string) => {
+    if (!dateStr) return 'Unknown';
+    let d = parseDateSafely(dateStr);
+    if (isNaN(d.getTime())) return dateStr; // Just return raw string if parsing fails
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  const dayOfYear = Math.floor((new Date().getTime() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24);
+  const dayIndex = dayOfYear % DAILY_TIPS.length;
+  const todayTip = DAILY_TIPS[dayIndex];
+  
+  const todayDateFormatted = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+
+  const [nextVisit, setNextVisit] = useState<any>(null);
+  const [dynamicTip, setDynamicTip] = useState<{title: string, body: string} | null>(null);
+  const headerAnim = useRef(new Animated.Value(0)).current;
+  
+  const [motivationIndex, setMotivationIndex] = useState(0);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
+
+  const getConditionInsight = (conditions: string | undefined) => {
+    if (!conditions) return null;
+    const lower = conditions.toLowerCase();
+    if (lower.includes('diabet') || lower.includes('sugar')) {
+      return { title: 'Blood Sugar Management', text: 'Remember to log your fasting blood sugar this morning.', color: theme.colors.danger, icon: (props:any) => <Activity {...props} /> };
+    }
+    if (lower.includes('hyperten') || lower.includes('blood pressure') || lower.includes('preeclamp')) {
+      return { title: 'Blood Pressure Monitor', text: 'Take a moment to relax and check your blood pressure today.', color: theme.colors.danger, icon: (props:any) => <Heart {...props} /> };
+    }
+    if (lower.includes('asthma')) {
+      return { title: 'Asthma Care', text: 'Keep your inhaler nearby and avoid triggers today.', color: theme.colors.info, icon: (props:any) => <Wind {...props} /> };
+    }
+    if (lower.includes('anemia') || lower.includes('iron')) {
+      return { title: 'Iron Intake', text: 'Don\'t forget your iron supplements and vitamin C for absorption.', color: theme.colors.danger, icon: (props:any) => <Droplets {...props} /> };
+    }
+    return { title: 'Health Profile Active', text: 'We are keeping your medical history in mind for personalized care.', color: theme.colors.primaryDark, icon: (props:any) => <Stethoscope {...props} /> };
+  };
+
+  const conditionInsight = getConditionInsight(user?.medical_conditions);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      Animated.parallel([
+        Animated.timing(fadeAnim, { toValue: 0, duration: 400, useNativeDriver: true }),
+        Animated.timing(slideAnim, { toValue: -15, duration: 400, useNativeDriver: true })
+      ]).start(() => {
+        setMotivationIndex(prev => (prev + 1) % MOTIVATIONS.length);
+        slideAnim.setValue(15);
+        Animated.parallel([
+          Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
+          Animated.timing(slideAnim, { toValue: 0, duration: 600, useNativeDriver: true })
+        ]).start();
+      });
+    }, 7000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const hour = new Date().getHours();
+  const isMorning = hour < 12;
+  const isAfternoon = hour >= 12 && hour < 18;
+  const isEvening = hour >= 18;
+  const greeting = isMorning ? t('home.greeting.morning', 'Good Morning') : isAfternoon ? t('home.greeting.afternoon', 'Good Afternoon') : t('home.greeting.evening', 'Good Evening');
+  const greetingIconColor = isMorning ? '#F59E0B' : isAfternoon ? '#F97316' : '#818CF8';
+
+  useEffect(() => {
+    Animated.timing(headerAnim, {
+      toValue: 1,
+      duration: 700,
+      useNativeDriver: true,
+    }).start();
+
+    if (user?.id) {
+      getAncVisits()
+        .then(data => {
+          const upcoming = (data || []).find((v: any) => v.status === 'scheduled');
+          setNextVisit(upcoming);
+        })
+        .catch(() => {});
+        
+      getEducationalContent(trimester, 'general')
+        .then(content => {
+          if (content && content.length > 0) {
+            // Pick a random tip for today
+            const randomArticle = content[Math.floor(Math.random() * content.length)];
+            setDynamicTip({ title: randomArticle.title, body: randomArticle.content });
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user, trimester]);
+
+  const headerStyle = {
+    opacity: headerAnim,
+    transform: [{ translateY: headerAnim.interpolate({ inputRange: [0, 1], outputRange: [16, 0] }) }],
+  };
+
+  const PREGNANCY_RESOURCES = [
+    { id: 'audio', label: t('home.resources.audio', 'Audio'), icon: Headphones, bg: '#818CF8', route: 'ResourceList', params: { category: 'audio', title: t('home.resources.audio', 'Audio') } },
+    { id: 'video', label: t('home.resources.video', 'Videos'), icon: PlayCircle, bg: '#F87171', route: 'ResourceList', params: { category: 'video', title: t('home.resources.video', 'Videos') } },
+    { id: 'book', label: t('home.resources.book', 'Books'), icon: BookOpen, bg: '#34D399', route: 'ResourceList', params: { category: 'book', title: t('home.resources.book', 'Books') } },
+    { id: 'article', label: t('home.resources.article', 'Articles'), icon: FileText, bg: '#FBBF24', route: 'ResourceList', params: { category: 'article', title: t('home.resources.article', 'Articles') } },
+  ];
+
+  const INTERACTIVE_TOOLS = [
+    { id: 'kick', label: t('home.interactive.kickCounter', 'Kick Counter'), icon: Baby, bg: '#9013FE', route: 'KickCounter' },
+    { id: 'timer', label: t('home.interactive.timer', 'Contraction Timer'), icon: Timer, bg: '#F5A623', route: 'ContractionTimer' },
+    { id: 'breathe', label: t('home.interactive.breathing', 'Breathing'), icon: Zap, bg: '#4A90E2', route: 'BreathingExercise' },
+    { id: 'gallery', label: t('home.interactive.gallery', 'Bump Gallery'), icon: Camera, bg: '#E06253', route: 'BumpGallery' },
+    { id: 'anc', label: t('home.interactive.anc', 'ANC Visits'), icon: Stethoscope, bg: '#E11D48', route: 'ANCVisit' },
+  ];
+  const calendarDates = React.useMemo(() => {
+    const today = new Date();
+    const dates = [];
+    // Generate 3 days before today, today, and 10 days ahead
+    for (let i = -3; i <= 10; i++) {
+      const d = new Date();
+      d.setDate(today.getDate() + i);
+      dates.push({
+        date: d,
+        dayName: d.toLocaleDateString('en-US', { weekday: 'short' }),
+        dayNum: d.getDate(),
+        isToday: i === 0,
+      });
+    }
+    return dates;
+  }, []);
+
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+
+      {/* Subtle background tint */}
+      <LinearGradient
+        colors={isDark
+          ? ['#1A1212', '#121212']
+          : ['#FDF4F4', '#FAFAFA']}
+        style={StyleSheet.absoluteFillObject}
+        start={{ x: 0, y: 0 }} end={{ x: 0, y: 0.5 }}
+      />
+
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+
+          {/* ── Header ── */}
+          <Animated.View style={[styles.header, headerStyle]}>
+            <View>
+              <View style={styles.greetingRow}>
+                {isEvening
+                  ? <Moon size={14} color={greetingIconColor} />
+                  : <Sun size={14} color={greetingIconColor} />
+                }
+                <Typography variant="caption1" style={styles.greetingText}>{greeting}</Typography>
+              </View>
+              <Typography variant="title1" style={styles.nameText}>
+                {user?.name ? user.name : t('home.mama', 'Mama')}
+              </Typography>
+            </View>
+            <TouchableOpacity style={styles.bellBtn} onPress={() => {}}>
+              <Bell size={20} color={theme.colors.textHigh} strokeWidth={1.8} />
+            </TouchableOpacity>
+          </Animated.View>
+
+          {/* ── Top Calendar Strip ── */}
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.calendarStrip}
+          >
+            {calendarDates.map((item, index) => (
+              <View 
+                key={index} 
+                style={[
+                  styles.calendarItem, 
+                  item.isToday && styles.calendarItemActive,
+                  { backgroundColor: 'transparent', overflow: 'hidden' }
+                ]}
+              >
+                <BlurView intensity={isDark ? 40 : 80} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+                <LinearGradient
+                  colors={item.isToday 
+                    ? [theme.colors.primaryDark, theme.colors.primary]
+                    : (isDark ? ['rgba(255,255,255,0.08)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.2)'])}
+                  style={StyleSheet.absoluteFillObject}
+                />
+                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography variant="caption2" style={{ color: item.isToday ? '#FFF' : theme.colors.textMedium, marginBottom: 4 }}>
+                    {item.dayName.toUpperCase()}
+                  </Typography>
+                  <Typography variant="headline" style={{ color: item.isToday ? '#FFF' : theme.colors.textHigh }}>
+                    {item.dayNum}
+                  </Typography>
+                </View>
+              </View>
+            ))}
+          </ScrollView>
+
+          {/* ── Personalized Condition Insight ── */}
+          {conditionInsight && (
+            <Animated.View style={[styles.heroCard, { marginBottom: 16, borderColor: conditionInsight.color, transform: [{ scale: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [0.95, 1] }) }] }]}>
+              <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+              <LinearGradient
+                colors={isDark ? ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.01)'] : ['rgba(255,255,255,0.9)', 'rgba(255,255,255,0.4)']}
+                style={StyleSheet.absoluteFillObject}
+              />
+              <View style={{ padding: 20, flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+                <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', alignItems: 'center', justifyContent: 'center' }}>
+                  {conditionInsight.icon({ size: 24, color: conditionInsight.color })}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                    <Heart size={14} color={conditionInsight.color} />
+                    <Typography variant="headline" style={{ color: theme.colors.textHigh }}>{conditionInsight.title}</Typography>
+                  </View>
+                  <Typography variant="caption1" style={{ color: theme.colors.textMedium, lineHeight: 18 }}>{conditionInsight.text}</Typography>
+                </View>
+              </View>
+            </Animated.View>
+          )}
+
+          {/* ── Hero Card ── */}
+          <Animated.View style={[styles.heroCard, { transform: [{ scale: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [0.95, 1] }) }] }]}>
+            <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+            <LinearGradient
+              colors={isDark ? ['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.02)'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']}
+              style={StyleSheet.absoluteFillObject}
+            />
+
+            <View style={styles.heroInner}>
+              {/* Left: Ring */}
+              <View style={styles.ringContainer}>
+                <CircularProgress percent={progressPercent} isDark={isDark} theme={theme} />
+                <View style={styles.ringCenter}>
+                  <Typography variant="largeTitle" style={styles.ringWeek}>{weeksPregnant}</Typography>
+                  <Typography variant="caption1" style={styles.ringLabel}>{t('home.week', 'weeks').toLowerCase()}</Typography>
+                </View>
+              </View>
+
+              {/* Right: Stats */}
+              <View style={styles.heroStats}>
+                <View style={styles.trimBadge}>
+                  <Typography variant="caption2" style={styles.trimBadgeText}>
+                    {trimester === 0 ? t('home.notStarted', 'NOT STARTED') : `${t('home.trimester', 'TRIMESTER')} ${trimester}`}
+                  </Typography>
+                </View>
+
+                {dueDate ? (
+                  <View style={{ marginBottom: 12 }}>
+                    <Typography variant="caption2" style={{ color: theme.colors.textMedium, fontSize: 9, letterSpacing: 0.5, marginBottom: 2, textTransform: 'uppercase' }}>{t('home.estDueDate', 'Est. Due Date')}</Typography>
+                    <Typography variant="body" style={{ color: theme.colors.textHigh, fontFamily: theme.typography.families.headingBold, fontSize: 13 }}>
+                      {formatDueDate(dueDate)}
+                    </Typography>
+                  </View>
+                ) : null}
+
+                <View style={styles.statBlock}>
+                  <Typography variant="title2" style={styles.statNum}>{daysLeft}</Typography>
+                  <Typography variant="caption1" style={styles.statLbl}>{t('home.daysLeft', 'days left')}</Typography>
+                </View>
+
+                <View style={styles.statDivider} />
+
+                <View style={styles.statBlock}>
+                  <Typography variant="title2" style={styles.statNum}>{40 - weeksPregnant}</Typography>
+                  <Typography variant="caption1" style={styles.statLbl}>{t('home.weeksToGo', 'weeks to go')}</Typography>
+                </View>
+
+                <View style={styles.statDivider} />
+
+                <View style={styles.statBlock}>
+                  <Typography variant="title2" style={styles.statNum}>{Math.round(progressPercent)}%</Typography>
+                  <Typography variant="caption1" style={styles.statLbl}>{t('home.complete', 'complete')}</Typography>
+                </View>
+              </View>
+            </View>
+          </Animated.View>
+
+          {/* ── Inspiration Card ── */}
+          <View style={[styles.fullCard, { padding: 0, overflow: 'hidden', borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)' }]}>
+            <BlurView intensity={isDark ? 40 : 80} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+            <LinearGradient
+              colors={isDark ? ['rgba(147,51,234,0.15)', 'rgba(147,51,234,0.03)'] : ['rgba(250,245,255,0.8)', 'rgba(243,232,255,0.4)']}
+              style={StyleSheet.absoluteFillObject}
+            />
+            <Typography style={{ position: 'absolute', right: 8, top: -10, fontSize: 120, color: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(147,51,234,0.04)', fontFamily: 'serif', lineHeight: 120 }}>
+              “
+            </Typography>
+            <View style={{ padding: 24 }}>
+              <View style={[styles.milestoneBadge, { backgroundColor: isDark ? 'rgba(216,180,254,0.15)' : 'rgba(147,51,234,0.1)', alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, marginBottom: 16 }]}>
+                <Typography variant="caption2" style={{ fontSize: 10, color: isDark ? '#E9D5FF' : '#9333EA', letterSpacing: 1, fontWeight: 'bold' }}>
+                  {t('home.inspiration', 'INSPIRATION')}
+                </Typography>
+              </View>
+              
+              <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+                <Typography variant="body" style={{ color: isDark ? '#F3E8FF' : '#4C1D95', fontFamily: theme.typography.families.headingSemibold, fontStyle: 'italic', lineHeight: 22, marginBottom: 12 }} numberOfLines={4}>
+                  "{MOTIVATIONS[motivationIndex].quote}"
+                </Typography>
+                <Typography variant="caption2" style={{ color: isDark ? '#D8B4FE' : '#7E22CE', fontFamily: theme.typography.families.headingBold, textTransform: 'uppercase', fontSize: 10, letterSpacing: 0.5 }}>
+                  — {MOTIVATIONS[motivationIndex].author}
+                </Typography>
+              </Animated.View>
+            </View>
+          </View>
+
+          {/* ── Baby Size Card ── */}
+          <View style={[styles.fullCard, { borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)', padding: 0, overflow: 'hidden' }]}>
+            <BlurView intensity={isDark ? 40 : 80} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+            <LinearGradient
+              colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'transparent']}
+              style={StyleSheet.absoluteFillObject}
+            />
+            
+            {/* Centered Image (Floating) */}
+            <View style={{ padding: 24, alignItems: 'center' }}>
+              <Typography variant="caption2" style={[styles.halfCardLabel, { marginBottom: 20, letterSpacing: 1.5 }]}>{t('home.fetalDev', 'FETAL DEVELOPMENT')}</Typography>
+              
+              <View style={{ 
+                width: 140, 
+                height: 140, 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                marginBottom: 24,
+                backgroundColor: '#000000',
+                borderRadius: 70,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.1,
+                shadowRadius: 8,
+                elevation: 4
+              }}>
+                <Image 
+                  source={babySize.image} 
+                  style={{ width: '100%', height: '100%', borderRadius: 70 }} 
+                  resizeMode="cover" 
+                />
+              </View>
+
+              <Typography variant="title2" style={[styles.halfCardTitle, { marginBottom: 20, fontSize: 26 }]}>{babySize.stageName}</Typography>
+              
+              <View style={{ flexDirection: 'row', gap: 12, width: '100%' }}>
+                <View style={{ flex: 1, backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', padding: 16, borderRadius: 16 }}>
+                  <Typography variant="caption2" style={{ color: theme.colors.textMedium, marginBottom: 4 }}>{t('home.estLength', 'EST. LENGTH')}</Typography>
+                  <Typography variant="title3" style={{ color: theme.colors.textHigh, fontSize: 18 }}>{babySize.length}</Typography>
+                </View>
+                <View style={{ flex: 1, backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', padding: 16, borderRadius: 16 }}>
+                  <Typography variant="caption2" style={{ color: theme.colors.textMedium, marginBottom: 4 }}>{t('home.estWeight', 'EST. WEIGHT')}</Typography>
+                  <Typography variant="title3" style={{ color: theme.colors.textHigh, fontSize: 18 }}>{babySize.weight}</Typography>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* ── Today's Tip (Full Width Editorial) ── */}
+          <View style={[styles.fullCard, { padding: 20, paddingTop: 24, minHeight: 100, borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)', overflow: 'hidden' }]}>
+            <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+            <LinearGradient
+              colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(253,248,240,0.8)', 'rgba(253,248,240,0.3)']}
+              style={StyleSheet.absoluteFillObject}
+            />
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+              <Info size={16} color={theme.colors.primaryDark} strokeWidth={2.5} style={{ marginRight: 6 }} />
+              <Typography variant="caption2" style={[styles.halfCardLabel, { letterSpacing: 1, color: theme.colors.primaryDark }]}>{t('home.todaysTip', "TODAY'S TIP")}</Typography>
+            </View>
+            <Typography variant="body" style={{ color: theme.colors.textHigh, lineHeight: 24, fontFamily: theme.typography.families.headingSemibold, fontSize: 16 }}>
+              {todayTip.tip}
+            </Typography>
+          </View>
+
+          {/* ── My Journey Hub ── */}
+          <View style={[styles.sectionHeader, { marginTop: 16 }]}>
+            <Typography variant="title2" style={styles.sectionTitle}>{t('home.myJourney', 'My Journey')}</Typography>
+          </View>
+
+          <View style={[styles.milestoneCard, { padding: 0, overflow: 'hidden' }]}>
+            {/* Milestone Section */}
+            <View style={{ padding: 20 }}>
+              <View style={styles.milestoneBadge}>
+                <Lightbulb size={14} color={theme.colors.primaryDark} />
+                <Typography variant="caption2" style={styles.milestoneBadgeText}>
+                  {dynamicTip ? t('home.dynamicInsight', "DYNAMIC INSIGHT") : `${t('home.week', 'WEEK').toUpperCase()} ${weeksPregnant} ${t('home.milestone', 'MILESTONE')}`}
+                </Typography>
+              </View>
+              
+              {dynamicTip ? (
+                <>
+                  <Typography variant="title3" style={styles.milestoneTitle}>{dynamicTip.title}</Typography>
+                  <Typography variant="body" style={styles.milestoneBody}>{dynamicTip.body}</Typography>
+                </>
+              ) : (
+                <View>
+                  <Typography variant="title3" style={styles.milestoneTitle}>{t('home.fetalDevTitle', 'Fetal Development')}</Typography>
+                  <Typography variant="body" style={styles.milestoneBody}>{weeklyData.fetal}</Typography>
+                  
+                  <View style={{ height: 1, backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : '#E5E7EB', marginVertical: 12 }} />
+                  
+                  <Typography variant="title3" style={styles.milestoneTitle}>{t('home.maternalChanges', 'Maternal Changes')}</Typography>
+                  <Typography variant="body" style={styles.milestoneBody}>{weeklyData.maternal}</Typography>
+                </View>
+              )}
+            </View>
+
+            {/* Next Appointment Section */}
+            {nextVisit && (
+              <TouchableOpacity
+                style={[styles.apptCard, { marginHorizontal: 0, marginBottom: 0, borderLeftWidth: 0, borderRightWidth: 0, borderBottomWidth: 0, borderRadius: 0, backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : '#FAFAFA' }]}
+                onPress={() => navigation.navigate('ANCVisit')}
+                activeOpacity={0.8}
+              >
+                <View style={styles.apptLeft}>
+                  <View style={styles.apptIconBg}>
+                    <Stethoscope size={18} color={theme.colors.primaryDark} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Typography variant="caption1" style={styles.apptLabel}>{t('home.nextAppt', 'NEXT APPOINTMENT')}</Typography>
+                    <Typography variant="headline" style={styles.apptDate}>
+                      {nextVisit.scheduled_date || nextVisit.date || t('home.upcomingVisit', 'Upcoming Visit')}
+                    </Typography>
+                    <Typography variant="caption1" style={styles.apptFacility}>
+                      {nextVisit.facility || t('home.clinicVisit', 'Clinic Visit')}
+                    </Typography>
+                    
+                    <View style={{ marginTop: 8, padding: 8, backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#F3F4F6', borderRadius: 8 }}>
+                      <Typography variant="caption2" style={{ color: theme.colors.textMedium, marginBottom: 2 }}>{t('home.whatToExpect', 'What to expect:')}</Typography>
+                      <Typography variant="caption1" style={{ color: theme.colors.textHigh }}>{weeklyData.ancPreview}</Typography>
+                    </View>
+                  </View>
+                </View>
+                <ChevronRight size={18} color={theme.colors.textMedium} />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* ── Pregnancy Resources ── */}
+          <View style={[styles.sectionHeader, { marginTop: 16 }]}>
+            <Typography variant="title2" style={styles.sectionTitle}>{t('home.pregnancyResources', 'PREGNANCY RESOURCES')}</Typography>
+          </View>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            contentContainerStyle={{ paddingHorizontal: 24, gap: 12, paddingBottom: 24 }}
+          >
+            {PREGNANCY_RESOURCES.map((tool) => (
+              <TouchableOpacity
+                key={tool.label}
+                style={[styles.toolCard, { width: 110 }]}
+                onPress={() => tool.route ? navigation.navigate(tool.route, tool.params) : Alert.alert('Coming Soon', 'We are building this feature!')}
+                activeOpacity={0.75}
+              >
+                <View style={[styles.toolIconWrapper, { backgroundColor: tool.bg }]}>
+                  <tool.icon size={26} color={theme.colors.background} strokeWidth={2.5} />
+                </View>
+                <Typography variant="caption1" style={styles.toolLabel} numberOfLines={2}>{tool.label}</Typography>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          {/* ── Interactive Tools ── */}
+          <View style={[styles.sectionHeader, { marginTop: 8 }]}>
+            <Typography variant="title2" style={styles.sectionTitle}>{t('home.interactiveTools', 'INTERACTIVE TOOLS')}</Typography>
+          </View>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            contentContainerStyle={{ paddingHorizontal: 24, gap: 12, paddingBottom: 32 }}
+          >
+            {INTERACTIVE_TOOLS.map((tool) => (
+              <TouchableOpacity
+                key={tool.label}
+                style={[styles.toolCard, { width: 110 }]}
+                onPress={() => tool.route ? navigation.navigate(tool.route) : Alert.alert('Coming Soon', 'We are building this feature!')}
+                activeOpacity={0.75}
+              >
+                <View style={[styles.toolIconWrapper, { backgroundColor: tool.bg }]}>
+                  <tool.icon size={26} color={theme.colors.background} strokeWidth={2.5} />
+                </View>
+                <Typography variant="caption1" style={styles.toolLabel} numberOfLines={2}>{tool.label}</Typography>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </ScrollView>
+      </SafeAreaView>
+    </View>
+  );
+}
+
+// ── Styles ────────────────────────────────────────────────
+const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: theme.colors.background },
+  safeArea: { flex: 1 },
+  scrollContent: { paddingBottom: 140 },
+
+  // Header
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: theme.spacing[4],
-    marginTop: theme.spacing[2],
-    marginBottom: theme.spacing[4],
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 16,
   },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: theme.colors.success,
-    alignItems: 'center',
-    justifyContent: 'center',
+  calendarStrip: { paddingHorizontal: 24, gap: 12, paddingBottom: 16 },
+  calendarItem: { width: 48, height: 64, borderRadius: 24, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)' },
+  calendarItemActive: { shadowColor: theme.colors.primaryDark, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
+  greetingRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 3 },
+  greetingText: {
+    color: theme.colors.primaryDark,
+    fontFamily: theme.typography.families.headingSemibold,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    fontSize: 11,
   },
-  dateSelector: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  calendarRibbon: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing[4],
-    marginBottom: theme.spacing[6],
-  },
-  dayColumn: {
-    alignItems: 'center',
-    width: 44,
-    height: 60,
-    justifyContent: 'center',
-    borderRadius: 22,
-  },
-  todayColumn: {
-    backgroundColor: '#E5E5EA', // Or a very light gray shadow
-  },
-  dayStr: {
-    marginBottom: 4,
-  },
-  dateNum: {
-    fontFamily: theme.typography.families.bodyBold,
-  },
-  contentLayout: {
-    paddingHorizontal: theme.spacing[4],
-    gap: theme.spacing[4],
-    marginBottom: theme.spacing[6],
-  },
-  statusCard: {
-    alignItems: 'center',
-    paddingVertical: theme.spacing[6],
-  },
-  statusHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginBottom: theme.spacing[4],
-  },
-  heroTitle: {
+  nameText: {
+    color: theme.colors.textHigh,
     fontFamily: theme.typography.families.headingBold,
-    fontSize: 48,
-    lineHeight: 56,
+    fontSize: 26,
+    letterSpacing: -0.5,
   },
-  heroSubtitle: {
-    marginTop: theme.spacing[1],
+  bellBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: theme.colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
-  progressContainer: {
-    width: '100%',
-    height: 6,
+
+  // Hero Card
+  heroCard: {
+    marginHorizontal: 24,
+    marginBottom: 16,
+    borderRadius: 28,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(241,149,155,0.2)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: isDark ? 0.3 : 0.1,
+    shadowRadius: 24,
+    elevation: 6,
+  },
+  heroInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 24,
+    gap: 20,
+  },
+  ringContainer: {
+    width: RING_SIZE,
+    height: RING_SIZE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ringCenter: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ringWeek: {
+    color: theme.colors.textHigh,
+    fontFamily: theme.typography.families.headingBold,
+    fontSize: 42,
+    letterSpacing: -2,
+    lineHeight: 46,
+  },
+  ringLabel: {
+    color: theme.colors.textMedium,
+    fontFamily: theme.typography.families.bodyRegular,
+    fontSize: 12,
+  },
+  heroStats: {
+    flex: 1,
+    gap: 4,
+  },
+  trimBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: isDark ? 'rgba(216,122,128,0.2)' : theme.colors.primaryLight,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 100,
+    marginBottom: 12,
+  },
+  trimBadgeText: {
+    color: theme.colors.primaryDark,
+    fontFamily: theme.typography.families.headingBold,
+    fontSize: 10,
+    letterSpacing: 0.8,
+  },
+  statBlock: { marginVertical: 2 },
+  statNum: {
+    color: theme.colors.textHigh,
+    fontFamily: theme.typography.families.headingBold,
+    fontSize: 22,
+    letterSpacing: -0.5,
+  },
+  statLbl: {
+    color: theme.colors.textMedium,
+    fontFamily: theme.typography.families.bodyRegular,
+    fontSize: 11,
+  },
+  statDivider: {
+    height: 1,
     backgroundColor: theme.colors.border,
-    borderRadius: 3,
-    marginTop: theme.spacing[4],
-    marginBottom: theme.spacing[2],
+    marginVertical: 6,
+  },
+
+  // Row Cards
+  rowCards: {
+    flexDirection: 'row',
+    marginHorizontal: 24,
+    marginBottom: 16,
+    gap: 12,
+  },
+  halfCard: {
+    flex: 1,
+    borderRadius: 24,
+    overflow: 'hidden',
+    padding: 18,
+    borderWidth: 1,
+    borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+    minHeight: 160,
+    justifyContent: 'flex-end',
+  },
+  halfCardLabel: {
+    color: theme.colors.primaryDark,
+    fontFamily: theme.typography.families.headingBold,
+    fontSize: 9,
+    letterSpacing: 1.2,
+    marginBottom: 6,
+  },
+  halfCardEmoji: {
+    fontSize: 36,
+    marginBottom: 8,
+    alignSelf: 'flex-start',
+  },
+  halfCardTitle: {
+    color: theme.colors.textHigh,
+    fontFamily: theme.typography.families.headingBold,
+    fontSize: 14,
+    marginBottom: 2,
+  },
+  halfCardSub: {
+    color: theme.colors.textMedium,
+    fontSize: 12,
+  },
+  fullCard: {
+    marginHorizontal: 24,
+    marginBottom: 16,
+    borderRadius: 24,
+    overflow: 'hidden',
+    padding: 20,
+    borderWidth: 1,
+    borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+    minHeight: 120,
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: isDark ? 0.2 : 0.05,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  dateBadgeContainer: {
+    position: 'absolute',
+    top: -1,
+    right: -1,
+    paddingTop: 12,
+    paddingRight: 20,
+    paddingLeft: 30,
+    paddingBottom: 20,
+    borderBottomLeftRadius: 40,
+    zIndex: 10,
     overflow: 'hidden',
   },
-  progressBar: {
-    height: '100%',
-    backgroundColor: theme.colors.primary,
-    borderRadius: 3,
+  dateBadgeBg: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: '#F9C985',
+    borderBottomLeftRadius: 40,
+    opacity: isDark ? 0.9 : 1,
   },
-  babySizeChip: {
+  dateBadgeText: {
+    color: theme.colors.textHigh,
+    fontFamily: theme.typography.families.headingBold,
+  },
+
+  // Milestone
+  milestoneCard: {
+    marginHorizontal: 24,
+    marginBottom: 28,
+    padding: 20,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  milestoneBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.primaryLight,
-    paddingHorizontal: theme.spacing[3],
-    paddingVertical: theme.spacing[2],
-    borderRadius: theme.radii.pill,
-    marginTop: theme.spacing[3],
+    gap: 5,
+    marginBottom: 10,
   },
-  actionsCard: {
-    padding: theme.spacing[5],
+  milestoneBadgeText: {
+    color: theme.colors.primaryDark,
+    fontFamily: theme.typography.families.headingBold,
+    fontSize: 10,
+    letterSpacing: 1,
   },
-  actionGrid: {
+  milestoneTitle: {
+    color: theme.colors.textHigh,
+    fontFamily: theme.typography.families.headingBold,
+    marginBottom: 6,
+  },
+  milestoneBody: {
+    color: theme.colors.textMedium,
+    fontFamily: theme.typography.families.bodyRegular,
+    lineHeight: 22,
+  },
+
+  // Section header
+  sectionHeader: {
+    paddingHorizontal: 24,
+    marginBottom: 14,
+  },
+  sectionTitle: {
+    color: theme.colors.textHigh,
+    fontFamily: theme.typography.families.headingBold,
+  },
+
+  // Pregnancy Tools Grid
+  actionsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    gap: 12,
+    marginBottom: 24,
   },
-  actionGridItem: {
+  toolCard: {
+    width: (width - 72) / 3, // 3 columns, 2 gaps of 12 = 24, 2 padding of 24 = 48. Total 72.
+    backgroundColor: theme.colors.surface,
+    borderRadius: 16,
+    padding: 16,
     alignItems: 'center',
-    width: '22%',
-    marginBottom: theme.spacing[4],
+    justifyContent: 'flex-start',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: isDark ? 0.2 : 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+    minHeight: 120,
   },
-  circleButton: {
+  toolIconWrapper: {
     width: 56,
     height: 56,
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: theme.colors.primaryDark,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
+    marginBottom: 12,
   },
-  reflectionCard: {
-    padding: theme.spacing[5],
-    backgroundColor: theme.colors.surface,
-  },
-  insightsSection: {
-    paddingLeft: theme.spacing[4],
-    marginBottom: theme.spacing[8],
-  },
-  sectionTitle: {
-    marginBottom: theme.spacing[3],
-  },
-  insightsScroll: {
-    paddingRight: theme.spacing[4],
-    gap: theme.spacing[3],
-  },
-  insightCard: {
-    width: 140,
-    height: 140,
-    borderRadius: theme.radii.xl,
-    padding: theme.spacing[4],
-    justifyContent: 'space-between',
-  },
-  insightTitle: {
-    lineHeight: 22,
+  toolLabel: {
+    color: theme.colors.textHigh,
     fontFamily: theme.typography.families.headingBold,
-  }
+    textAlign: 'center',
+    lineHeight: 14,
+  },
+
+  // Appointment
+  apptCard: {
+    marginHorizontal: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: theme.colors.surface,
+    borderRadius: 22,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderLeftWidth: 4,
+    borderLeftColor: theme.colors.primaryDark,
+    marginBottom: 8,
+  },
+  apptLeft: { flexDirection: 'row', alignItems: 'center', gap: 14, flex: 1 },
+  apptIconBg: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: isDark ? 'rgba(216,122,128,0.15)' : theme.colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  apptLabel: {
+    color: theme.colors.primaryDark,
+    fontFamily: theme.typography.families.headingBold,
+    fontSize: 10,
+    letterSpacing: 1,
+    marginBottom: 2,
+  },
+  apptDate: {
+    color: theme.colors.textHigh,
+    fontFamily: theme.typography.families.headingBold,
+    marginBottom: 1,
+  },
+  apptFacility: { color: theme.colors.textMedium, fontSize: 12 },
 });

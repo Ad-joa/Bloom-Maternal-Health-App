@@ -1,21 +1,100 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Animated, Platform, FlatList, KeyboardAvoidingView, Switch, UIManager, LayoutAnimation, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Switch, StatusBar, Alert, TextInput, Image, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
-import { theme } from '../theme/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
+import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { useAuth } from '../context/AuthContext';
-import { Settings, Bell, CircleHelp, LogOut, ChevronRight, Lock, FileText } from 'lucide-react-native';
-import { scheduleDailyReminder } from '../utils/notifications';
-import * as Notifications from 'expo-notifications';
+import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import * as ImagePicker from 'expo-image-picker';
+import { getSymptomLogs, deleteAccount, updateUserProfile, getBaseUrl } from '../api/api';
+import { parseDateSafely } from '../utils/dateUtils';
+import { BackgroundMesh } from '../components/BackgroundMesh';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Trophy, Droplets, Flame, Award } from 'lucide-react-native';
 
 export default function ProfileScreen({ navigation }: any) {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
+  const { theme, isDark, toggleTheme } = useTheme();
+  const styles = getStyles(theme, isDark);
+  const { t, i18n } = useTranslation();
   const [biometricsEnabled, setBiometricsEnabled] = useState(false);
+  const [selectedLang, setSelectedLang] = useState(i18n.language || 'en');
+  const [isEditing, setIsEditing] = useState(false);
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: user?.name || '',
+    due_date: user?.due_date || '',
+    trimester: user?.trimester?.toString() || '',
+    last_period_date: user?.last_period_date || '',
+    blood_group: user?.blood_group || '',
+    height: user?.height || '',
+    dietary_preferences: user?.dietary_preferences || '',
+    medical_conditions: user?.medical_conditions || '',
+    emergency_contact_name: user?.emergency_contact_name || '',
+    emergency_contact_phone: user?.emergency_contact_phone || '',
+    avatarBase64: ''
+  });
+
+  const handleSave = async () => {
+    try {
+      if (!user?.id) return;
+      
+      let finalDueDate = editForm.due_date;
+      if (editForm.last_period_date && editForm.last_period_date !== user.last_period_date) {
+        const cleanedDate = editForm.last_period_date.trim().replace(/-/g, '/');
+        const lmpParts = cleanedDate.split('/');
+        if (lmpParts.length === 3) {
+          const dayStr = lmpParts[0].trim().padStart(2, '0');
+          const monthStr = lmpParts[1].trim().padStart(2, '0');
+          const yearStr = lmpParts[2].trim();
+          const lmpDate = new Date(`${yearStr}-${monthStr}-${dayStr}T12:00:00Z`);
+          if (!isNaN(lmpDate.getTime())) {
+            const calculatedDueDate = new Date(lmpDate.getTime() + (280 * 24 * 60 * 60 * 1000));
+            const month = String(calculatedDueDate.getUTCMonth() + 1).padStart(2, '0');
+            const day = String(calculatedDueDate.getUTCDate()).padStart(2, '0');
+            const year = calculatedDueDate.getUTCFullYear();
+            finalDueDate = `${day}/${month}/${year}`;
+          }
+        }
+      }
+
+      const updatedUser = await updateUserProfile(user.id, {
+        ...editForm,
+        due_date: finalDueDate,
+        trimester: editForm.trimester ? parseInt(editForm.trimester) : undefined
+      });
+      await updateUser(updatedUser);
+      setIsEditing(false);
+      Alert.alert("Success", "Profile updated successfully!");
+    } catch (e) {
+      console.error(e);
+      Alert.alert("Error", "Failed to update profile.");
+    }
+  };
+
+  const handleImagePick = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+        base64: true,
+      });
+
+      if (!result.canceled && result.assets[0].base64) {
+        setEditForm({ ...editForm, avatarBase64: `data:image/jpeg;base64,${result.assets[0].base64}` });
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to pick image");
+    }
+  };
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -25,221 +104,741 @@ export default function ProfileScreen({ navigation }: any) {
     loadSettings();
   }, []);
 
-
   const toggleBiometrics = async (value: boolean) => {
     setBiometricsEnabled(value);
     await AsyncStorage.setItem('@app_biometrics_enabled', value ? 'true' : 'false');
   };
 
+
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Delete Account",
+      "Are you sure you want to permanently delete your account? This action cannot be undone and all your health data will be lost.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete Permanently", 
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteAccount();
+              logout();
+            } catch (e) {
+              Alert.alert("Error", "Failed to delete account. Please try again.");
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const handleExportPDF = async () => {
     try {
+      let latestWeight = 'Not Recorded';
+      let latestBP = 'Not Recorded';
+      let recentSymptoms = 'No symptoms recorded recently.';
+
+      if (user?.id) {
+        const logs = await getSymptomLogs(user.id);
+        if (logs && logs.length > 0) {
+          const logWithWeight = logs.find((l: any) => l.weight);
+          if (logWithWeight) latestWeight = `${logWithWeight.weight} kg`;
+          
+          const logWithBP = logs.find((l: any) => l.blood_pressure);
+          if (logWithBP) latestBP = logWithBP.blood_pressure;
+
+          const recentLogs = logs.slice(0, 3);
+          recentSymptoms = recentLogs.map((l: any) => {
+            const date = new Date(l.created_at).toLocaleDateString();
+            return `<b>${date}:</b> ${l.severity ? l.severity.toUpperCase() : ''} - ${l.symptoms || 'None'} ${l.notes ? `(Note: ${l.notes})` : ''}`;
+          }).join('<br><br>');
+        }
+      }
+
       const html = `
         <html>
-          <body style="font-family: Helvetica, sans-serif; padding: 40px; color: #333;">
-            <h1 style="color: #FF6B8B; border-bottom: 2px solid #fce7eb; padding-bottom: 10px;">Bloom Medical Report</h1>
-            <p style="font-size: 18px;"><strong>Patient Name:</strong> ${user?.name || 'N/A'}</p>
-            <p style="font-size: 18px;"><strong>Email:</strong> ${user?.email || 'N/A'}</p>
-            <p style="font-size: 16px; color: #666;">Report generated on ${new Date().toLocaleDateString()}</p>
-            
+        <body style="font-family: Helvetica, sans-serif; padding: 40px; color: #333;">
+            <h1 style="color: ${theme.colors.primaryDark}; border-bottom: 2px solid ${theme.colors.primaryLight}; padding-bottom: 10px;">Bloom Medical Report</h1>
+            <div style="margin-bottom: 30px;">
+              <p><strong>Patient:</strong> ${user?.name || 'Unknown'}</p>
+              <p><strong>Due Date:</strong> ${user?.due_date ? new Date(user.due_date).toLocaleDateString() : 'Not Set'}</p>
+              <p style="font-size: 16px; color: #666;">Report generated on ${new Date().toLocaleDateString()}</p>
+            </div>
             <h2 style="margin-top: 40px; color: #444;">Recent Vitals</h2>
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-              <tr style="background-color: #fdf2f4;">
-                <td style="padding: 10px; border: 1px solid #fce7eb;"><strong>Weight</strong></td>
-                <td style="padding: 10px; border: 1px solid #fce7eb;">145 lbs</td>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+              <tr style="background-color: ${theme.colors.surfaceVariant};">
+                <td style="padding: 10px; border: 1px solid ${theme.colors.primaryLight};"><strong>Weight</strong></td>
+                <td style="padding: 10px; border: 1px solid ${theme.colors.primaryLight};">${latestWeight}</td>
               </tr>
               <tr>
-                <td style="padding: 10px; border: 1px solid #fce7eb;"><strong>Blood Pressure</strong></td>
-                <td style="padding: 10px; border: 1px solid #fce7eb;">120/80</td>
+                <td style="padding: 10px; border: 1px solid ${theme.colors.primaryLight};"><strong>Blood Pressure</strong></td>
+                <td style="padding: 10px; border: 1px solid ${theme.colors.primaryLight};">${latestBP}</td>
               </tr>
             </table>
-
-            <h2 style="color: #444;">Recent Symptoms</h2>
-            <p style="font-size: 16px; line-height: 1.5; padding: 15px; background-color: #fdf2f4; border-radius: 8px;">
-              Fatigue, Nausea, Back Pain
+            <h2 style="color: #444;">Recent Symptoms & Notes</h2>
+            <p style="font-size: 14px; line-height: 1.5; padding: 15px; background-color: ${theme.colors.background}; border: 1px solid ${theme.colors.primaryLight}; border-radius: 8px;">
+              ${recentSymptoms}
             </p>
-            
             <p style="margin-top: 50px; font-style: italic; color: #888; font-size: 12px; text-align: center;">
               Generated securely by Bloom Maternal Health App
             </p>
           </body>
         </html>
       `;
-      
       const { uri } = await Print.printToFileAsync({ html });
       await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
     } catch (e) {
-      console.error("Error generating PDF:", e);
+      console.error('Error generating PDF:', e);
     }
   };
 
   const menuItems = [
-    { title: 'Personal Information', icon: <Settings size={20} color={theme.colors.textMedium} />, isToggle: false },
-    { 
-      title: 'Daily Reminders', 
-      icon: <Bell size={20} color={theme.colors.textMedium} />,
-      isToggle: false,
-      onPress: () => navigation.navigate('Reminders')
+    { title: t('profile.ancVisits', 'ANC Visits'), icon: 'calendar', route: 'ANCVisit' },
+    { title: t('profile.partnerMode', 'Partner Mode'), icon: 'people', route: 'PartnerMode' },
+    { title: t('profile.reminders', 'Daily Reminders'), icon: 'notifications', onPress: () => navigation.navigate('Reminders') },
+    {
+      title: t('profile.appLanguage', 'App Language'),
+      icon: 'language',
+      onPress: () => setShowLanguageModal(true)
     },
-    { 
-      title: 'App Lock (FaceID/TouchID)', 
-      icon: <Lock size={20} color={theme.colors.textMedium} />,
+    {
+      title: t('profile.appLock', 'App Lock (FaceID/TouchID)'),
+      icon: 'lock-closed',
       isToggle: true,
       value: biometricsEnabled,
-      onToggle: toggleBiometrics
+      onToggle: toggleBiometrics,
     },
-    { title: 'Help & Support', icon: <CircleHelp size={20} color={theme.colors.textMedium} />, isToggle: false },
+    { title: t('profile.helpSupport', 'Help & Support'), icon: 'help-circle', onPress: () => navigation.navigate('HelpSupport') },
   ];
 
+  const languages = [
+    { code: 'en', label: 'English' },
+    { code: 'twi', label: 'Twi' },
+    { code: 'ewe', label: 'Ewe' }
+  ];
+
+  const changeLanguage = async (code: string) => {
+    setSelectedLang(code);
+    await i18n.changeLanguage(code);
+    await AsyncStorage.setItem('@app_language', code);
+    setShowLanguageModal(false);
+  };
+
   return (
-    <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.container}>
-      <SafeAreaView edges={['top']} style={styles.safeArea}>
+    <View style={[styles.container, { backgroundColor: 'transparent' }]}>
+      <BackgroundMesh />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: 'transparent' }]} edges={['top']}>
+
+        {/* Header */}
+        <View style={styles.header}>
+          <Typography variant="largeTitle" style={styles.headerTitle}>{t('profile.title', 'Profile')}</Typography>
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            {isEditing ? (
+              <>
+                <TouchableOpacity style={styles.themeToggle} onPress={() => {
+                  setEditForm({
+                    name: user?.name || '', due_date: user?.due_date || '', trimester: user?.trimester?.toString() || '',
+                    last_period_date: user?.last_period_date || '', blood_group: user?.blood_group || '', height: user?.height || '',
+                    dietary_preferences: user?.dietary_preferences || '', medical_conditions: user?.medical_conditions || '',
+                    emergency_contact_name: user?.emergency_contact_name || '', emergency_contact_phone: user?.emergency_contact_phone || '',
+                    avatarBase64: ''
+                  });
+                  setIsEditing(false);
+                }}>
+                  <Ionicons name="close" size={22} color={theme.colors.danger} />
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.themeToggle, { backgroundColor: theme.colors.primaryDark, borderColor: theme.colors.primaryDark }]} onPress={handleSave}>
+                  <Ionicons name="checkmark" size={22} color={theme.colors.background} />
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <TouchableOpacity style={styles.themeToggle} onPress={() => setIsEditing(true)}>
+                  <Ionicons name="pencil" size={20} color={theme.colors.primaryDark} />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.themeToggle} onPress={toggleTheme}>
+                  <Ionicons name={isDark ? 'sunny' : 'moon'} size={22} color={theme.colors.primaryDark} />
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </View>
+
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
-      <View style={styles.profileHeader}>
-        <View style={styles.avatarLarge}>
-          <Typography variant="largeTitle" color={theme.colors.primaryDark}>
-            {user?.name ? user.name[0].toUpperCase() : 'B'}
-          </Typography>
-        </View>
-        <Typography variant="title2" style={styles.name}>{user?.name || 'Bloom User'}</Typography>
-        <Typography variant="body" color={theme.colors.textMedium}>{user?.email || 'user@example.com'}</Typography>
-      </View>
-
-      <View style={styles.section}>
-        <Typography variant="subhead" color={theme.colors.textMedium} style={styles.sectionLabel}>
-          ACCOUNT
-        </Typography>
-
-        <Card style={styles.menuCard}>
-          {menuItems.map((item, index) => (
-            <TouchableOpacity
-              key={item.title}
-              style={[
-                styles.menuItem,
-                index !== menuItems.length - 1 && styles.menuItemBorder
-              ]}
-              onPress={item.onPress}
-            >
-              <View style={styles.menuItemLeft}>
-                {item.icon}
-                <Typography variant="body" style={styles.menuItemText}>{item.title}</Typography>
-              </View>
-              {item.isToggle ? (
-                <Switch 
-                  value={item.value} 
-                  onValueChange={item.onToggle}
-                  trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
-                  thumbColor="#fff"
+          {/* Avatar & Name */}
+          <View style={styles.section}>
+            <View style={[styles.menuCard, { alignItems: 'center', paddingVertical: 24, borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)' }]}>
+              <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+              <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
+              <TouchableOpacity style={styles.avatarLarge} onPress={isEditing ? handleImagePick : undefined} activeOpacity={isEditing ? 0.7 : 1}>
+                {editForm.avatarBase64 || user?.avatar ? (
+                  <Image 
+                    source={{ uri: editForm.avatarBase64 || (user?.avatar ? `${getBaseUrl()}${user.avatar}` : '') }} 
+                    style={{ width: '100%', height: '100%', borderRadius: 48 }} 
+                  />
+                ) : (
+                  <Typography variant="largeTitle" style={{ color: theme.colors.background, fontFamily: theme.typography.families.headingBold }}>
+                    {user?.name ? user.name[0].toUpperCase() : 'B'}
+                  </Typography>
+                )}
+                {isEditing && (
+                  <View style={styles.editAvatarBadge}>
+                    <Ionicons name="camera" size={14} color={theme.colors.background} />
+                  </View>
+                )}
+              </TouchableOpacity>
+              {isEditing ? (
+                <TextInput
+                  style={[styles.inputInline, { fontSize: 22, fontFamily: theme.typography.families.headingBold, textAlign: 'center', marginBottom: 4 }]}
+                  value={editForm.name}
+                  onChangeText={(val) => setEditForm({ ...editForm, name: val })}
+                  placeholder={t('profile.yourName', 'Your Name')}
+                  placeholderTextColor={theme.colors.textMedium}
                 />
               ) : (
-                <ChevronRight size={20} color={theme.colors.textMedium} />
+                <Typography variant="title2" style={styles.name}>{user?.name || 'Bloom User'}</Typography>
               )}
-            </TouchableOpacity>
-          ))}
-        </Card>
-      </View>
-
-      <View style={styles.section}>
-        <Typography variant="subhead" color={theme.colors.textMedium} style={styles.sectionLabel}>
-          MEDICAL
-        </Typography>
-        <Card style={styles.menuCard}>
-          <TouchableOpacity style={styles.menuItem} onPress={handleExportPDF}>
-            <View style={styles.menuItemLeft}>
-              <FileText size={20} color={theme.colors.primaryDark} />
-              <Typography variant="body" color={theme.colors.primaryDark} style={styles.menuItemText}>
-                Export Medical Report (PDF)
-              </Typography>
+              <Typography variant="body" style={styles.email}>{user?.email || 'user@example.com'}</Typography>
             </View>
-            <ChevronRight size={20} color={theme.colors.primaryDark} />
-          </TouchableOpacity>
-        </Card>
-      </View>
+          </View>
 
-      <TouchableOpacity onPress={logout} style={styles.logoutButton}>
-        <Card style={styles.logoutCard}>
-          <LogOut size={20} color={theme.colors.danger} />
-          <Typography variant="body" color={theme.colors.danger} style={styles.logoutText}>
-            Log Out
-          </Typography>
-        </Card>
-      </TouchableOpacity>
+          {/* Milestones & Badges (Gamification) - Earned dynamically */}
+          {(() => {
+            // Compute earned badges from real user data
+            const earnedBadges: Array<{id: string, icon: any, iconColor: string, bgColor: string, title: string, description: string}> = [];
+
+            // 1. Profile Completeness badge
+            const profileFields = [user?.name, user?.email, user?.due_date, user?.blood_group, user?.height, user?.emergency_contact_name, user?.emergency_contact_phone, user?.medical_conditions];
+            const filledFields = profileFields.filter(f => f && String(f).trim() !== '').length;
+            if (filledFields >= 6) {
+              earnedBadges.push({
+                id: 'profile_complete',
+                icon: Award,
+                iconColor: '#9B59B6',
+                bgColor: '#9B59B620',
+                title: 'Profile Pro',
+                description: 'Completed your health profile.',
+              });
+            }
+
+            // 2. Trimester milestones based on real due_date
+            if (user?.due_date) {
+              const dueDate = parseDateSafely(user.due_date);
+              if (dueDate) {
+                const now = new Date();
+                const gestationalMs = (40 * 7 * 24 * 60 * 60 * 1000) - (dueDate.getTime() - now.getTime());
+                const weeksPregnant = Math.max(0, Math.floor(gestationalMs / (7 * 24 * 60 * 60 * 1000)));
+                
+                if (weeksPregnant >= 13) {
+                  earnedBadges.push({
+                    id: 'second_trimester',
+                    icon: Trophy,
+                    iconColor: '#F5A623',
+                    bgColor: '#F5A62320',
+                    title: 'Second Trimester',
+                    description: 'Reached week 13!',
+                  });
+                }
+                if (weeksPregnant >= 28) {
+                  earnedBadges.push({
+                    id: 'third_trimester',
+                    icon: Trophy,
+                    iconColor: '#E74C3C',
+                    bgColor: '#E74C3C20',
+                    title: 'Third Trimester',
+                    description: 'Reached week 28!',
+                  });
+                }
+                if (weeksPregnant >= 37) {
+                  earnedBadges.push({
+                    id: 'full_term',
+                    icon: Trophy,
+                    iconColor: '#2ECC71',
+                    bgColor: '#2ECC7120',
+                    title: 'Full Term',
+                    description: 'Your baby is full term!',
+                  });
+                }
+              }
+            }
+
+            // 3. First log badge — user has medical_conditions filled (they've engaged with tracking)
+            if (user?.medical_conditions && user.medical_conditions.trim() !== '') {
+              earnedBadges.push({
+                id: 'health_aware',
+                icon: Flame,
+                iconColor: '#3498DB',
+                bgColor: '#3498DB20',
+                title: 'Health Aware',
+                description: 'Added your health conditions.',
+              });
+            }
+
+            // 4. Due date set badge
+            if (user?.due_date) {
+              earnedBadges.push({
+                id: 'journey_started',
+                icon: Droplets,
+                iconColor: '#1ABC9C',
+                bgColor: '#1ABC9C20',
+                title: 'Journey Started',
+                description: 'Set your due date.',
+              });
+            }
+
+            if (earnedBadges.length === 0) return null;
+
+            return (
+              <View style={styles.section}>
+                <Typography variant="caption1" style={styles.sectionLabel}>MILESTONES & BADGES</Typography>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }}>
+                  {earnedBadges.map((badge, index) => (
+                    <View key={badge.id} style={[styles.badgeCard, { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)', marginLeft: index > 0 ? 16 : 0 }]}>
+                      <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+                      <View style={[styles.badgeIconWrap, { backgroundColor: badge.bgColor }]}>
+                        <badge.icon color={badge.iconColor} size={28} />
+                      </View>
+                      <Typography variant="subhead" style={{ marginTop: 12, fontFamily: theme.typography.families.headingBold }}>{badge.title}</Typography>
+                      <Typography variant="caption1" color={theme.colors.textMedium} style={{ textAlign: 'center', marginTop: 4 }}>{badge.description}</Typography>
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
+            );
+          })()}
+
+          {/* Language */}
+          <View style={styles.section}>
+            <Typography variant="caption1" style={styles.sectionLabel}>{t('profile.languageTitle', 'LANGUAGE')}</Typography>
+            <View style={[styles.menuCard, { borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)' }]}>
+              <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+              <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
+              <View style={styles.menuItem}>
+                <View style={styles.menuItemLeft}>
+                  <Ionicons name="language" size={20} color={theme.colors.primaryDark} />
+                  <Typography variant="body" style={styles.menuItemText}>{t('profile.appLanguage', 'App Language')}</Typography>
+                </View>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  {['en', 'twi', 'ewe'].map(lang => (
+                    <TouchableOpacity key={lang} onPress={() => changeLanguage(lang)} style={{ padding: 4 }}>
+                      <Typography
+                        variant="subhead"
+                        style={[styles.langChip, selectedLang === lang && styles.langChipActive]}
+                      >
+                        {lang.toUpperCase()}
+                      </Typography>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* Pregnancy Details */}
+          <View style={styles.section}>
+            <Typography variant="caption1" style={styles.sectionLabel}>{t('profile.pregnancyDetails', 'PREGNANCY DETAILS')}</Typography>
+            <View style={[styles.menuCard, { borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)' }]}>
+              <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+              <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
+              {[
+                { icon: 'calendar', label: t('profile.dueDate', 'Due Date'), value: user?.due_date ? parseDateSafely(user.due_date).toLocaleDateString() : t('profile.notSet', 'Not set'), field: 'due_date' },
+                { icon: 'time', label: t('profile.trimesterTitle', 'Trimester'), value: user?.trimester ? `${t('home.trimester', 'Trimester')} ${user.trimester}` : t('profile.notSet', 'Not set'), field: 'trimester' },
+                { icon: 'water', label: t('profile.lastPeriod', 'Last Period'), value: user?.last_period_date || t('profile.notSet', 'Not set'), field: 'last_period_date', danger: true },
+                { icon: 'medkit', label: t('profile.bloodGroup', 'Blood Group'), value: user?.blood_group || t('profile.notSet', 'Not set'), field: 'blood_group' },
+                { icon: 'body', label: t('profile.height', 'Height'), value: user?.height || t('profile.notSet', 'Not set'), field: 'height' },
+              ].map((row, i, arr) => (
+                <View key={row.label} style={[styles.menuItem, i < arr.length - 1 && styles.menuItemBorder]}>
+                  <View style={styles.menuItemLeft}>
+                    <Ionicons name={row.icon as any} size={20} color={row.danger ? theme.colors.danger : theme.colors.primaryDark} />
+                    <Typography variant="body" style={styles.menuItemText}>{row.label}</Typography>
+                  </View>
+                  {isEditing ? (
+                    <TextInput
+                      style={styles.inputInline}
+                      value={(editForm as any)[row.field]}
+                      onChangeText={(val) => setEditForm({ ...editForm, [row.field]: val })}
+                      placeholder={row.label}
+                      placeholderTextColor={theme.colors.textMedium}
+                    />
+                  ) : (
+                    <Typography variant="body" style={styles.menuItemValue}>{row.value}</Typography>
+                  )}
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {/* Health & Lifestyle */}
+          <View style={styles.section}>
+            <Typography variant="caption1" style={styles.sectionLabel}>{t('profile.healthLifestyle', 'HEALTH & LIFESTYLE')}</Typography>
+            <View style={[styles.menuCard, { borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)' }]}>
+              <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+              <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
+              {[
+                { icon: 'nutrition', label: t('profile.dietaryPrefs', 'Dietary Prefs'), value: user?.dietary_preferences || t('profile.none', 'None'), field: 'dietary_preferences' },
+                { icon: 'medical', label: t('profile.conditions', 'Conditions'), value: user?.medical_conditions || t('profile.none', 'None'), field: 'medical_conditions' },
+              ].map((row, i, arr) => (
+                <View key={row.label} style={[styles.menuItem, i < arr.length - 1 && styles.menuItemBorder]}>
+                  <View style={styles.menuItemLeft}>
+                    <Ionicons name={row.icon as any} size={20} color={theme.colors.primaryDark} />
+                    <Typography variant="body" style={styles.menuItemText}>{row.label}</Typography>
+                  </View>
+                  {isEditing ? (
+                    <TextInput
+                      style={styles.inputInline}
+                      value={(editForm as any)[row.field]}
+                      onChangeText={(val) => setEditForm({ ...editForm, [row.field]: val })}
+                      placeholder={row.label}
+                      placeholderTextColor={theme.colors.textMedium}
+                    />
+                  ) : (
+                    <Typography variant="body" style={styles.menuItemValue}>{row.value}</Typography>
+                  )}
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {/* Emergency Contact */}
+          <View style={styles.section}>
+            <Typography variant="caption1" style={styles.sectionLabel}>{t('profile.emergencyContact', 'EMERGENCY CONTACT')}</Typography>
+            <View style={[styles.menuCard, { borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)' }]}>
+              <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+              <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
+              {[
+                { icon: 'person', label: t('profile.name', 'Name'), value: user?.emergency_contact_name || t('profile.notSet', 'Not set'), field: 'emergency_contact_name' },
+                { icon: 'call', label: t('profile.phone', 'Phone'), value: user?.emergency_contact_phone || t('profile.notSet', 'Not set'), field: 'emergency_contact_phone' },
+              ].map((row, i, arr) => (
+                <View key={row.label} style={[styles.menuItem, i < arr.length - 1 && styles.menuItemBorder]}>
+                  <View style={styles.menuItemLeft}>
+                    <Ionicons name={row.icon as any} size={20} color={theme.colors.danger} />
+                    <Typography variant="body" style={styles.menuItemText}>{row.label}</Typography>
+                  </View>
+                  {isEditing ? (
+                    <TextInput
+                      style={styles.inputInline}
+                      value={(editForm as any)[row.field]}
+                      onChangeText={(val) => setEditForm({ ...editForm, [row.field]: val })}
+                      placeholder={row.label}
+                      placeholderTextColor={theme.colors.textMedium}
+                    />
+                  ) : (
+                    <Typography variant="body" style={styles.menuItemValue}>{row.value}</Typography>
+                  )}
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {/* Account Settings */}
+          <View style={styles.section}>
+            <Typography variant="caption1" style={styles.sectionLabel}>{t('profile.account', 'ACCOUNT')}</Typography>
+            <View style={[styles.menuCard, { borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)' }]}>
+              <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+              <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.1)']} style={StyleSheet.absoluteFillObject} />
+              {menuItems.map((item, index) => (
+                <TouchableOpacity
+                  key={`${item.title}-${index}`}
+                  style={[styles.menuItem, index !== menuItems.length - 1 && styles.menuItemBorder]}
+                  onPress={item.onPress || (item.route ? () => navigation.navigate(item.route!) : undefined)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.menuItemLeft}>
+                    <Ionicons name={item.icon as any} size={20} color={theme.colors.textMedium} />
+                    <Typography variant="body" style={styles.menuItemText}>{item.title}</Typography>
+                  </View>
+                  {item.isToggle ? (
+                    <Switch
+                      value={item.value}
+                      onValueChange={item.onToggle}
+                      trackColor={{ false: theme.colors.border, true: theme.colors.primaryDark }}
+                      thumbColor="#fff"
+                    />
+                  ) : (
+                    <Ionicons name="chevron-forward" size={20} color={theme.colors.textMedium} />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Medical Export */}
+          <View style={styles.section}>
+            <Typography variant="caption1" style={styles.sectionLabel}>{t('profile.medical', 'MEDICAL')}</Typography>
+            <View style={styles.menuCard}>
+              <TouchableOpacity style={styles.menuItem} onPress={handleExportPDF} activeOpacity={0.7}>
+                <View style={styles.menuItemLeft}>
+                  <Ionicons name="document-text" size={20} color={theme.colors.primaryDark} />
+                  <Typography variant="body" style={[styles.menuItemText, { color: theme.colors.primaryDark }]}>
+                    {t('profile.exportMedical', 'Export Medical Report (PDF)')}
+                  </Typography>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={theme.colors.primaryDark} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Logout */}
+          <TouchableOpacity onPress={logout} style={styles.logoutButton} activeOpacity={0.8}>
+            <View style={styles.logoutCard}>
+              <Ionicons name="log-out" size={20} color={theme.colors.danger} />
+              <Typography variant="body" style={styles.logoutText}>{t('profile.logout', 'Log Out')}</Typography>
+            </View>
+          </TouchableOpacity>
+
+          {/* Delete Account */}
+          <TouchableOpacity onPress={handleDeleteAccount} style={[styles.logoutButton, { marginTop: 12 }]} activeOpacity={0.8}>
+            <View style={[styles.logoutCard, { borderColor: '#FF3B30', backgroundColor: 'rgba(255, 59, 48, 0.05)' }]}>
+              <Ionicons name="trash" size={20} color="#FF3B30" />
+              <Typography variant="body" style={[styles.logoutText, { color: '#FF3B30' }]}>{t('profile.deleteAccount', 'Delete Account')}</Typography>
+            </View>
+          </TouchableOpacity>
 
         </ScrollView>
       </SafeAreaView>
-    </LinearGradient>
+
+      {/* Language Selection Modal */}
+      <Modal
+        visible={showLanguageModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowLanguageModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <BlurView intensity={20} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+          <View style={[styles.modalContent, { backgroundColor: theme.colors.surface }]}>
+            <Typography variant="title2" style={{ fontFamily: theme.typography.families.headingBold, marginBottom: 20 }}>
+              {t('profile.selectLanguage', 'Select Language')}
+            </Typography>
+            {languages.map((lng) => (
+              <TouchableOpacity
+                key={lng.code}
+                style={[
+                  styles.languageOption,
+                  selectedLang === lng.code && { backgroundColor: theme.colors.primaryLight }
+                ]}
+                onPress={() => changeLanguage(lng.code)}
+              >
+                <Typography variant="body" style={{ color: theme.colors.textHigh }}>{lng.label}</Typography>
+                {selectedLang === lng.code && (
+                  <Ionicons name="checkmark" size={20} color={theme.colors.primaryDark} />
+                )}
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity
+              style={{ marginTop: 20, padding: 12, alignItems: 'center' }}
+              onPress={() => setShowLanguageModal(false)}
+            >
+              <Typography variant="body" style={{ color: theme.colors.textMedium }}>{t('profile.cancel', 'Cancel')}</Typography>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: theme.colors.background,
   },
-  safeArea: {
-    flex: 1,
+  safeArea: { flex: 1 },
+  header: {
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 40,
+    lineHeight: 44,
+    color: theme.colors.textHigh,
+    fontFamily: theme.typography.families.headingBold,
+    letterSpacing: -1,
+  },
+  themeToggle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: theme.colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   scrollContent: {
-    padding: theme.spacing[5],
-    paddingBottom: theme.spacing[8],
+    paddingHorizontal: 24,
+    paddingBottom: 140,
   },
   profileHeader: {
     alignItems: 'center',
-    marginVertical: theme.spacing[8],
+    marginVertical: 24,
   },
   avatarLarge: {
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: theme.colors.primaryLight,
+    backgroundColor: theme.colors.primaryDark,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: theme.spacing[4],
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 6,
+  },
+  editAvatarBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: theme.colors.textHigh,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: theme.colors.background,
   },
   name: {
-    marginBottom: theme.spacing[1],
+    color: theme.colors.textHigh,
+    fontFamily: theme.typography.families.headingBold,
+    marginBottom: 4,
+  },
+  email: {
+    color: theme.colors.textMedium,
+  },
+  badgeCard: {
+    width: 140,
+    borderRadius: 20,
+    padding: 16,
+    alignItems: 'center',
+    overflow: 'hidden',
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  badgeIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   section: {
-    marginBottom: theme.spacing[6],
+    marginBottom: 24,
   },
   sectionLabel: {
-    marginBottom: theme.spacing[2],
-    marginLeft: theme.spacing[2],
+    color: theme.colors.textMedium,
+    fontFamily: theme.typography.families.headingBold,
+    letterSpacing: 1.2,
+    marginBottom: 8,
+    marginLeft: 4,
   },
   menuCard: {
-    padding: 0,
+    backgroundColor: 'transparent',
+    borderRadius: 20,
     overflow: 'hidden',
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: theme.spacing[4],
-    backgroundColor: theme.colors.surface,
+    padding: 16,
+    backgroundColor: 'transparent',
+    minHeight: 52,
   },
   menuItemBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    borderBottomColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
   },
   menuItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing[3],
+    gap: 12,
+    flex: 1,
   },
   menuItemText: {
-    marginTop: 2, // optical alignment
+    color: theme.colors.textHigh,
+    fontFamily: theme.typography.families.bodyMedium,
+  },
+  menuItemValue: {
+    color: theme.colors.textMedium,
+    maxWidth: 140,
+    textAlign: 'right',
+  },
+  langChip: {
+    color: theme.colors.textMedium,
+    fontFamily: theme.typography.families.headingSemibold,
+    fontSize: 11,
+  },
+  langChipActive: {
+    color: theme.colors.primaryDark,
+    fontFamily: theme.typography.families.headingBold,
   },
   logoutButton: {
-    marginTop: 'auto',
-    marginBottom: theme.spacing[8],
+    marginBottom: 16,
   },
   logoutCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: theme.spacing[2],
-    padding: theme.spacing[4],
+    gap: 8,
+    backgroundColor: isDark ? 'rgba(255,59,48,0.12)' : '#FFF1F0',
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: isDark ? 'rgba(255,59,48,0.2)' : '#FECACA',
   },
   logoutText: {
-    fontFamily: theme.typography.families.bodySemibold,
+    color: theme.colors.danger,
+    fontFamily: theme.typography.families.headingBold,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  languageOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  inputInline: {
+    flex: 1,
+    textAlign: 'right',
+    color: theme.colors.textHigh,
+    fontFamily: theme.typography.families.bodyMedium,
+    fontSize: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.primary,
+    paddingVertical: 4,
+    marginLeft: 16,
   }
 });

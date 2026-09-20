@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView, Animated, Platform, FlatList, KeyboardAvoidingView, Switch, UIManager, LayoutAnimation, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -13,6 +13,9 @@ type Props = {
 };
 
 export default function ArticleScreen({ route, navigation }: Props) {
+  const { theme } = useTheme();
+  const { isDark } = useTheme();
+  const styles = getStyles(theme, isDark);
   const { title, content } = route.params;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
@@ -34,16 +37,16 @@ export default function ArticleScreen({ route, navigation }: Props) {
   }, []);
 
   return (
-    <LinearGradient colors={['#ffffff', '#fdf2f4', '#fce7eb']} style={styles.container}>
+    <LinearGradient colors={[theme.colors.background, theme.colors.surfaceVariant, theme.colors.primaryLight]} style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Placeholder for an article header image */}
-        <View style={[styles.headerImagePlaceholder, { opacity: fadeAnim }]}>
-          <Typography variant="title2" color="#fff" style={styles.imageText}>
+        <Animated.View style={[styles.headerImagePlaceholder, { opacity: fadeAnim }]}>
+          <Typography variant="title2" color={theme.colors.background} style={styles.imageText}>
             Bloom Guide
           </Typography>
-        </View>
+        </Animated.View>
 
-        <View style={[
+        <Animated.View style={[
           styles.contentContainer, 
           { 
             opacity: fadeAnim,
@@ -69,11 +72,11 @@ export default function ArticleScreen({ route, navigation }: Props) {
             Rest when you need to rest. Your body is working overtime to build a new life, and fatigue is a natural response. Don’t feel guilty for taking that afternoon nap.
           </Typography>
 
-          <View style={styles.pullQuote}>
-            <Typography variant="bodyBold" color={theme.colors.primaryDark} style={{ fontStyle: 'italic' }}>
+          <Animated.View style={styles.pullQuote}>
+            <Typography variant="headline" color={theme.colors.primaryDark} style={{ fontStyle: 'italic' }}>
               "The most important thing she'd learned over the years was that there was no way to be a perfect mother and a million ways to be a good one."
             </Typography>
-          </View>
+          </Animated.View>
 
           <Typography variant="title3" color={theme.colors.textHigh} style={styles.subtitle}>
             2. Stay Hydrated
@@ -85,13 +88,13 @@ export default function ArticleScreen({ route, navigation }: Props) {
           <Typography variant="body" color={theme.colors.textMedium} style={styles.paragraph}>
             {content}
           </Typography>
-        </View>
+        </Animated.View>
       </ScrollView>
     </LinearGradient>
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean = false) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -107,7 +110,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: theme.spacing[5],
-    backgroundColor: '#fff',
+    backgroundColor: isDark ? theme.colors.background : theme.colors.surface,
     borderTopLeftRadius: theme.radii.xl,
     borderTopRightRadius: theme.radii.xl,
     marginTop: -30, // Overlap the image slightly

@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
   container: {
     paddingVertical: theme.spacing[2],
     paddingHorizontal: theme.spacing[4],
-    borderRadius: theme.radii.pill, // Flo App uses highly rounded, pill-like tags
+    borderRadius: theme.borderRadius.full, // Flo App uses highly rounded, pill-like tags
     borderWidth: 1,
     alignSelf: 'flex-start',
     justifyContent: 'center',

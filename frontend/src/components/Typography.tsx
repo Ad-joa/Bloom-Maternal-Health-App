@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, TextProps, StyleSheet } from 'react-native';
-import { theme } from '../theme/theme';
+import { useTheme } from '../theme/ThemeContext';
 
 export type TypographyVariant = 
   | 'largeTitle'
@@ -24,19 +24,23 @@ export interface TypographyProps extends TextProps {
 
 export const Typography: React.FC<TypographyProps> = ({
   variant = 'body',
-  color = theme.colors.textHigh,
+  color,
   align = 'auto',
   style,
   children,
   ...props
 }) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
+  const finalColor = color || theme.colors.textHigh;
+
   return (
     <Text
       allowFontScaling={true}
       style={[
         styles.base,
-        styles[variant],
-        { color, textAlign: align },
+        styles[variant as keyof typeof styles],
+        { color: finalColor, textAlign: align },
         style,
       ]}
       {...props}
@@ -46,8 +50,7 @@ export const Typography: React.FC<TypographyProps> = ({
   );
 };
 
-// Map variants to specific font families instead of generic weights
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   base: {
     // Default base styles
   },

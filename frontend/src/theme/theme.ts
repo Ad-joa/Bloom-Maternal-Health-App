@@ -1,36 +1,38 @@
 import tokens from '../../design-tokens.json';
 
-// Note: For a robust app, you would export separate `lightTheme` and `darkTheme`
-// and switch between them using Context and `useColorScheme()`.
-// This is the default Light Theme mapping for immediate usage.
-
-export const theme = {
+export const lightTheme = {
   colors: {
-    primary: tokens.colors.primary["500"].value,
-    primaryLight: tokens.colors.primary["100"].value,
-    primaryDark: tokens.colors.primary["700"].value,
+    // Pink Palette (Primary)
+    primary: '#F1959B',       // Salmon Pink
+    primaryLight: '#FBE8E9',  // Light Pink
+    primaryDark: '#D87A80',   // Darker Pink
     
-    success: tokens.colors.semantic.success.value,
-    warning: tokens.colors.semantic.warning.value,
-    danger: tokens.colors.semantic.danger.value,
-    info: tokens.colors.semantic.info.value,
+    accentTeal: '#00767E',    // Deep Teal
+    accentOrange: '#EFAC5C',  // Terracotta
     
-    surface: tokens.colors.light.surface.value,
-    surfaceVariant: tokens.colors.light.surfaceVariant.value,
-    textHigh: tokens.colors.light.textHigh.value,
-    textMedium: tokens.colors.light.textMedium.value,
-    border: tokens.colors.light.border.value,
+    background: '#FCF6EA',    // Warm Cream
+    
+    success: '#34C759',       
+    warning: '#FF9500',       
+    danger: '#FF3B30',        
+    info: '#007AFF',          
+    
+    surface: '#FFFFFF',       // Clean white cards
+    surfaceVariant: '#F4E9D0',// Warm Sand for tags/chips
+    textHigh: '#2A3A38',      // Dark slate
+    textMedium: '#8C9A97',    // Muted grey-teal
+    border: 'rgba(0, 0, 0, 0.05)', 
   },
   typography: {
     families: {
-      headingRegular: tokens.typography.families.headingRegular.value,
-      headingMedium: tokens.typography.families.headingMedium.value,
-      headingSemibold: tokens.typography.families.headingSemibold.value,
-      headingBold: tokens.typography.families.headingBold.value,
-      bodyRegular: tokens.typography.families.bodyRegular.value,
-      bodyMedium: tokens.typography.families.bodyMedium.value,
-      bodySemibold: tokens.typography.families.bodySemibold.value,
-      bodyBold: tokens.typography.families.bodyBold.value,
+      headingRegular: 'Montserrat_400Regular',
+      headingMedium: 'Montserrat_500Medium',
+      headingSemibold: 'Montserrat_600SemiBold',
+      headingBold: 'Montserrat_700Bold',
+      bodyRegular: 'Montserrat_400Regular',
+      bodyMedium: 'Montserrat_500Medium',
+      bodySemibold: 'Montserrat_600SemiBold',
+      bodyBold: 'Montserrat_700Bold',
     },
     sizes: {
       largeTitle: parseInt(tokens.typography.sizes.largeTitle.value, 10),
@@ -44,46 +46,80 @@ export const theme = {
       footnote: parseInt(tokens.typography.sizes.footnote.value, 10),
       caption1: parseInt(tokens.typography.sizes.caption1.value, 10),
       caption2: parseInt(tokens.typography.sizes.caption2.value, 10),
-    },
-    weights: {
-      regular: tokens.typography.weights.regular.value,
-      medium: tokens.typography.weights.medium.value,
-      semibold: tokens.typography.weights.semibold.value,
-      bold: tokens.typography.weights.bold.value,
     }
   },
   spacing: {
-    1: parseInt(tokens.spacing["1"].value, 10),
-    2: parseInt(tokens.spacing["2"].value, 10),
-    3: parseInt(tokens.spacing["3"].value, 10),
-    4: parseInt(tokens.spacing["4"].value, 10),
-    5: parseInt(tokens.spacing["5"].value, 10),
-    6: parseInt(tokens.spacing["6"].value, 10),
-    7: parseInt(tokens.spacing["7"].value, 10),
-    8: parseInt(tokens.spacing["8"].value, 10),
+    1: 4,
+    2: 8,
+    3: 12,
+    4: 16,
+    5: 20,
+    6: 24,
+    7: 28,
+    8: 32,
+    9: 36,
+    10: 40
   },
-  radii: {
-    none: parseInt(tokens.radii.none.value, 10),
-    sm: parseInt(tokens.radii.sm.value, 10),
-    md: parseInt(tokens.radii.md.value, 10),
-    lg: parseInt(tokens.radii.lg.value, 10),
-    xl: parseInt(tokens.radii.xl.value, 10),
-    pill: 9999,
+  borderRadius: {
+    sm: 4,
+    md: 8,
+    lg: 12,
+    xl: 16,
+    '2xl': 24,
+    full: 9999,
   },
   shadows: {
     soft: {
-      shadowColor: tokens.colors.primary["700"].value,
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.08,
-      shadowRadius: 24,
-      elevation: 4,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 4,
+      elevation: 2,
     },
     medium: {
-      shadowColor: tokens.colors.primary["700"].value,
-      shadowOffset: { width: 0, height: 12 },
-      shadowOpacity: 0.12,
-      shadowRadius: 32,
-      elevation: 8,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+      elevation: 4,
     }
+  },
+  radii: {
+    sm: 4,
+    md: 8,
+    lg: 12,
+    xl: 16,
+    '2xl': 24,
+    full: 9999,
+    pill: 9999,
   }
 };
+
+export const darkTheme = {
+  ...lightTheme,
+  colors: {
+    primary: '#D87A80',
+    primaryLight: '#3E2A2C', 
+    primaryDark: '#F1959B', 
+    
+    accentTeal: '#689D96',    
+    accentOrange: '#EFAC5C',  
+    
+    background: '#121212',    // Deep Dark
+    
+    success: '#34C759',       
+    warning: '#FF9500',       
+    danger: '#FF453A',        
+    info: '#0A84FF',          
+    
+    surface: '#1E1E1E',       // Dark surface
+    surfaceVariant: '#2C2C2E',
+    textHigh: '#F5F5F5',      // Light text
+    textMedium: '#A0A0A5',    // Muted light text
+    border: 'rgba(255, 255, 255, 0.1)', 
+  }
+};
+
+// Default export for backward compatibility during refactor
+export const theme = lightTheme;
+export type Theme = typeof lightTheme;
