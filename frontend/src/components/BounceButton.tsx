@@ -9,6 +9,8 @@ interface BounceButtonProps extends PressableProps {
   hapticStyle?: Haptics.ImpactFeedbackStyle;
 }
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 export const BounceButton: React.FC<BounceButtonProps> = ({ 
   children, 
   style, 
@@ -49,17 +51,16 @@ export const BounceButton: React.FC<BounceButtonProps> = ({
   };
 
   return (
-    <Animated.View style={[{ transform: [{ scale: scaleValue }] }, style]}>
-      <Pressable
-        accessible={true}
-        accessibilityRole={props.accessibilityRole || 'button'}
-        onPress={onPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        {...props}
-      >
-        {children}
-      </Pressable>
-    </Animated.View>
+    <AnimatedPressable
+      accessible={true}
+      accessibilityRole={props.accessibilityRole || 'button'}
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      style={[{ transform: [{ scale: scaleValue }] }, style]}
+      {...props}
+    >
+      {children}
+    </AnimatedPressable>
   );
 };
