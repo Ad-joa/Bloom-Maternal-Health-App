@@ -6,14 +6,18 @@ import { BlurView } from 'expo-blur';
 import { Typography } from '../components/Typography';
 import { useTheme } from '../theme/ThemeContext';
 import { ChevronLeft, Play, Square } from 'lucide-react-native';
+import { useAuth } from '../context/AuthContext';
+import { saveBreathingSession } from '../api/breathing';
 
 export default function BreathingExerciseScreen({ navigation }: any) {
   const { theme, isDark } = useTheme();
   const styles = getStyles(theme, isDark);
+  const { user } = useAuth();
 
   const [isActive, setIsActive] = useState(false);
   const [phase, setPhase] = useState<'Ready' | 'Breathe In' | 'Hold' | 'Breathe Out'>('Ready');
   const [timer, setTimer] = useState(0);
+  const sessionStartRef = useRef<Date | null>(null);
 
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const opacityAnim = useRef(new Animated.Value(0.5)).current;
@@ -73,7 +77,25 @@ export default function BreathingExerciseScreen({ navigation }: any) {
     });
   };
 
-  const toggleSession = () => setIsActive(!isActive);
+  const toggleSession = () => {
+    if (isActive) {
+      // Session ending — save to DB
+      if (user && sessionStartRef.current) {
+        const durationSec = Math.floor(
+          (new Date().getTime() - sessionStartRef.current.getTime()) / 1000
+        );
+        if (durationSec >= 5) {
+          saveBreathingSession(durationSec).catch(e =>
+            console.error('Failed to save breathing session:', e)
+          );
+        }
+      }
+      sessionStartRef.current = null;
+    } else {
+      sessionStartRef.current = new Date();
+    }
+    setIsActive(!isActive);
+  };
 
   return (
     <View style={styles.container}>

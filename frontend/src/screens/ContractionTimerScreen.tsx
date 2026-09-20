@@ -6,6 +6,8 @@ import { useTheme } from '../theme/ThemeContext';
 import { ChevronLeft, Play, Square, Activity, AlertTriangle } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
+import { useAuth } from '../context/AuthContext';
+import { saveContraction } from '../api/contractions';
 
 type Contraction = {
   id: string;
@@ -19,6 +21,7 @@ export default function ContractionTimerScreen({ navigation }: any) {
   const { theme, isDark } = useTheme();
   const styles = getStyles(theme, isDark);
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
   
   const [isTiming, setIsTiming] = useState(false);
   const [currentStart, setCurrentStart] = useState<Date | null>(null);
@@ -54,7 +57,7 @@ export default function ContractionTimerScreen({ navigation }: any) {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  const handleToggleTimer = () => {
+  const handleToggleTimer = async () => {
     if (isTiming) {
       // Stop timer
       const now = new Date();
@@ -81,6 +84,13 @@ export default function ContractionTimerScreen({ navigation }: any) {
       setElapsedSeconds(0);
       
       checkAlertStatus(newHistory);
+
+      // Save to DB (fire and forget)
+      if (user) {
+        saveContraction(currentStart!, now, duration, frequency).catch(e =>
+          console.error('Failed to save contraction:', e)
+        );
+      }
     } else {
       // Start timer
       setCurrentStart(new Date());
