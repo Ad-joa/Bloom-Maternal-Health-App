@@ -7,10 +7,16 @@ import { useTheme } from '../theme/ThemeContext';
 import { Typography } from '../components/Typography';
 import { ChevronLeft, PlayCircle, PauseCircle, Headphones, BookOpen, FileText, Clock, User, ChevronRight } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
-import { Audio } from 'expo-av';
 import { useAuth } from '../context/AuthContext';
 import { getEducationalContent } from '../api/api';
 import { Star } from 'lucide-react-native';
+
+let Audio: any = null;
+try {
+  Audio = require('expo-av').Audio;
+} catch (e) {
+  console.warn('Audio module (expo-av) not available in this build:', e);
+}
 
 export default function ResourceListScreen({ route, navigation }: any) {
   const { category, title } = route.params || { category: 'article', title: 'Resources' };
@@ -67,6 +73,10 @@ export default function ResourceListScreen({ route, navigation }: any) {
     : rawResources;
 
   const handleAudioPress = async (item: any) => {
+    if (!Audio) {
+      Alert.alert('Notice', 'Audio playback is not supported in this version of Expo Go.');
+      return;
+    }
     if (playingAudioId === item.id && sound) {
       const status = await sound.getStatusAsync();
       if (status.isLoaded) {
