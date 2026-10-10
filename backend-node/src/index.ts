@@ -42,29 +42,31 @@ const io = new Server(httpServer, {
 setupCommunitySocket(io);
 
 // Middlewares
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors({ origin: allowedOrigin }));
 app.use(express.json({ limit: '10mb' }));
-app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads'), { maxAge: '1d' }));
 
-// Global Rate Limiting: 100 requests per 15 minutes
+// API Rate Limiting: 1000 requests per 15 minutes for dynamic API routes
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 1000,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
     success: false,
     error: 'TooManyRequests',
-    message: 'Too many requests from this IP, please try again after 15 minutes'
+    message: 'Too many requests from this IP, please try again later'
   }
 });
 
-app.use('/', apiLimiter);
+// Apply Rate Limiter to Authentication and Sensitive Routes
+app.use('/auth', apiLimiter);
 
 // Modular routes
 app.use('/auth', authRoutes);
 app.use('/logs', logsRoutes);
+app.use('/sync', logsRoutes);
 app.use('/anc', ancRoutes);
 app.use('/educational', educationalRoutes);
 app.use('/hospitals', hospitalsRoutes);

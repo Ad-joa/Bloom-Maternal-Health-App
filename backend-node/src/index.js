@@ -56,6 +56,7 @@ app.use('/', apiLimiter);
 // Modular routes
 app.use('/auth', auth_1.default);
 app.use('/logs', logs_1.default);
+app.use('/sync', logs_1.default);
 app.use('/anc', anc_1.default);
 app.use('/educational', educational_1.default);
 app.use('/hospitals', hospitals_1.default);

@@ -27,7 +27,7 @@ export default function ResourceListScreen({ route, navigation }: any) {
   
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [sound, setSound] = useState<any>(null);
 
   const [rawResources, setRawResources] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,7 +104,7 @@ export default function ResourceListScreen({ route, navigation }: any) {
         setSound(newSound);
         setIsPlaying(true);
 
-        newSound.setOnPlaybackStatusUpdate((status) => {
+        newSound.setOnPlaybackStatusUpdate((status: any) => {
           if (status.isLoaded && status.didJustFinish) {
             setIsPlaying(false);
           }
@@ -142,8 +142,8 @@ export default function ResourceListScreen({ route, navigation }: any) {
     const isThisAudioPlaying = playingAudioId === item.id && isPlaying;
     return (
       <TouchableOpacity key={item.id} style={styles.audioCard} activeOpacity={0.8} onPress={() => handleAudioPress(item)}>
-        <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
-        <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.3)']} style={StyleSheet.absoluteFillObject} />
+        <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+        <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.3)']} style={StyleSheet.absoluteFill} />
         
         <Image source={{ uri: item.image_url }} style={styles.audioImage} />
         <View style={styles.audioInfo}>
@@ -171,7 +171,7 @@ export default function ResourceListScreen({ route, navigation }: any) {
       <View style={styles.videoOverlay}>
         <LinearGradient 
           colors={['transparent', 'rgba(0,0,0,0.85)']} 
-          style={StyleSheet.absoluteFillObject} 
+          style={StyleSheet.absoluteFill} 
         />
         <View style={styles.playBtnLarge}>
           <PlayCircle size={48} color="#FFF" strokeWidth={1.5} />
@@ -184,8 +184,8 @@ export default function ResourceListScreen({ route, navigation }: any) {
 
   const renderBook = (item: any) => (
     <TouchableOpacity key={item.id} style={styles.bookCard} activeOpacity={0.8} onPress={() => handleBookPress(item)}>
-      <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
-      <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.3)']} style={StyleSheet.absoluteFillObject} />
+      <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.3)']} style={StyleSheet.absoluteFill} />
       
       <Image source={{ uri: item.image_url }} style={styles.bookImage} />
       <View style={styles.bookInfo}>
@@ -202,8 +202,8 @@ export default function ResourceListScreen({ route, navigation }: any) {
 
   const renderArticle = (item: any) => (
     <TouchableOpacity key={item.id} style={styles.articleCard} activeOpacity={0.8} onPress={() => handleArticlePress(item)}>
-      <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
-      <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.3)']} style={StyleSheet.absoluteFillObject} />
+      <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={isDark ? ['rgba(255,255,255,0.05)', 'transparent'] : ['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.3)']} style={StyleSheet.absoluteFill} />
       
       <View style={styles.articleInfo}>
         <Typography variant="headline" style={{ color: theme.colors.textHigh, marginBottom: 6 }}>{item.title}</Typography>
@@ -232,14 +232,14 @@ export default function ResourceListScreen({ route, navigation }: any) {
     <View style={styles.container}>
       <LinearGradient
         colors={isDark ? ['#1A1212', '#121212'] : ['#FDF4F4', '#FAFAFA']}
-        style={StyleSheet.absoluteFillObject}
+        style={StyleSheet.absoluteFill}
         start={{ x: 0, y: 0 }} end={{ x: 0, y: 0.5 }}
       />
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
-            <BlurView intensity={isDark ? 20 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
+            <BlurView intensity={isDark ? 20 : 60} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
             <ChevronLeft size={24} color={theme.colors.textHigh} />
           </TouchableOpacity>
           <Typography variant="title2" style={{ color: theme.colors.textHigh, marginLeft: 16 }}>

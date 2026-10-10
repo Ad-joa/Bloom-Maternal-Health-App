@@ -85,8 +85,8 @@ router.post('/', authenticateToken, validate(logSchema), async (req: any, res: a
   }
 });
 
-// POST /sync/symptoms - Sync offline logs
-router.post('/sync', async (req: any, res: any, next: any) => {
+// POST /logs/sync or /logs/sync/symptoms - Sync offline logs
+router.post(['/sync', '/sync/symptoms'], async (req: any, res: any, next: any) => {
   try {
     const { logs } = req.body;
     if (!logs || !Array.isArray(logs)) {

@@ -36,7 +36,7 @@ export const getSymptomLogs = async (userId: number) => {
 
 export const syncSymptoms = async (logs: any[]) => {
     try {
-        const response = await apiClient.post(`/sync/symptoms`, { logs });
+        const response = await apiClient.post(`/logs/sync`, { logs });
         return response;
     } catch (error) {
         console.error("Error syncing symptoms:", error);

@@ -79,8 +79,8 @@ router.post('/', authMiddleware_1.authenticateToken, (0, validate_1.validate)(lo
         next(error);
     }
 });
-// POST /sync/symptoms - Sync offline logs
-router.post('/sync', async (req, res, next) => {
+// POST /logs/sync or /logs/sync/symptoms - Sync offline logs
+router.post(['/sync', '/sync/symptoms'], async (req, res, next) => {
     try {
         const { logs } = req.body;
         if (!logs || !Array.isArray(logs)) {
