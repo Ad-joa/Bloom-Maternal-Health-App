@@ -1,18 +1,18 @@
-# 🌸 Bloom Maternal Health App
+# Bloom Maternal Health App
 
 **Bloom Maternal Health App** is a modern, comprehensive maternal and prenatal care mobile platform designed to empower expectant mothers with personalized health tracking, clinical guidance, real-time community support, and emergency locator services.
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 - **Personalized Maternal Dashboard**: Daily insights, trimester-specific guidance, pregnancy progress, and key health indicators.
 - **Symptom & Vital Logging**: Track symptoms, blood pressure, and weight with automated risk assessment and health alerts.
 - **Antenatal Care (ANC) Tracker**: Schedule, manage, and receive reminders for upcoming hospital and clinic visits.
 - **Interactive Maternal Tools**:
-  - 👶 **Kick Counter**: Session-based fetal movement monitoring.
-  - ⏱️ **Contraction Timer**: Real-time labor contraction tracking and frequency calculation.
-  - 🧘 **Guided Breathing Exercises**: Visual and animated relaxation tools for stress reduction.
+  - **Kick Counter**: Session-based fetal movement monitoring.
+  - **Contraction Timer**: Real-time labor contraction tracking and frequency calculation.
+  - **Guided Breathing Exercises**: Visual and animated relaxation tools for stress reduction.
 - **Educational Library**: Rich articles, audio podcasts, videos, and books curated for each trimester.
 - **Emergency Locator**: Find nearby hospitals, emergency contacts, and medical facilities instantly.
 - **Real-Time Community Forum**: Connect with other mothers via real-time websockets (Socket.io).
@@ -20,7 +20,7 @@
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 ### **Frontend Mobile App**
 - **Framework**: [React Native](https://reactnative.dev/) with [Expo](https://expo.dev/) (SDK 57)
@@ -38,7 +38,7 @@
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Bloom-Maternal-Health-App/
@@ -73,7 +73,7 @@ Bloom-Maternal-Health-App/
 
 ---
 
-## ⚙️ Getting Started
+## Getting Started
 
 ### **Prerequisites**
 - Node.js `v18.x` or later
@@ -137,7 +137,7 @@ npm run dev:frontend  # Starts Expo development server
 
 ---
 
-## 📡 API Endpoints Overview
+## API Endpoints Overview
 
 | Category | Endpoint | Method | Description |
 | :--- | :--- | :--- | :--- |
@@ -152,7 +152,7 @@ npm run dev:frontend  # Starts Expo development server
 
 ---
 
-## 🛡️ Security & Performance Enhancements
+## Security & Performance Enhancements
 
 - **Rate Limiting**: Protects authentication and critical API endpoints against brute force attempts.
 - **Static Asset Caching**: Optimized headers for smooth loading of assets and avatars.
@@ -161,6 +161,6 @@ npm run dev:frontend  # Starts Expo development server
 
 ---
 
-## 📄 License
+## License
 
 This project is open source and available under the [ISC License](LICENSE).
